@@ -560,22 +560,17 @@ footer {
   color: var(--white);
   margin-top: 0;
 }
-.footer-newsletter {
-  background: var(--accent);
-  padding: 48px 32px;
-  text-align: center;
-  width: 100%;
-}
-.footer-newsletter-inner { max-width: 560px; margin: 0 auto; }
-.footer-newsletter h3 { font-family: var(--font-display); font-size: 22px; font-weight: 800; color: #fff; margin-bottom: 8px; }
-.footer-newsletter p { font-size: 14px; color: rgba(255,255,255,0.8); margin-bottom: 20px; line-height: 1.6; }
-.footer-newsletter-form { display: flex; gap: 8px; max-width: 420px; margin: 0 auto; }
-.footer-newsletter-input { flex: 1; padding: 12px 18px; border: none; border-radius: var(--r-md); font-size: 14px; font-family: var(--font-body); outline: none; background: rgba(255,255,255,0.15); color: #fff; border: 1.5px solid rgba(255,255,255,0.25); }
-.footer-newsletter-input::placeholder { color: rgba(255,255,255,0.55); }
-.footer-newsletter-input:focus { background: rgba(255,255,255,0.25); }
-.footer-newsletter-btn { padding: 11px 22px; background: var(--white); color: var(--accent); border: 2px solid var(--white); border-radius: var(--r-md); font-size: 13px; font-weight: 600; cursor: pointer; font-family: var(--font-body); white-space: nowrap; transition: all var(--t-base); }
-.footer-newsletter-btn:hover { background: var(--gray-100); }
-.footer-newsletter-note { font-size: 11px; color: rgba(255,255,255,0.5); margin-top: 12px; }
+.signup-cta{max-width:1160px;margin:0 auto;padding:0 32px 64px;}
+.signup-cta-inner{background:var(--lime);border-radius:var(--r-2xl);padding:52px 48px;display:flex;align-items:center;justify-content:space-between;gap:40px;flex-wrap:wrap;}
+.signup-cta-text h2{font-family:var(--font-display);font-size:36px;font-weight:800;letter-spacing:-1.5px;line-height:1.05;color:var(--indigo);margin-bottom:12px;}
+.signup-cta-text p{font-size:15px;line-height:1.55;color:rgba(11,18,32,0.7);max-width:400px;margin:0;}
+.signup-cta-form{display:flex;flex-direction:column;gap:10px;min-width:280px;}
+.signup-cta-row{display:flex;align-items:center;gap:8px;background:var(--white);border-radius:var(--r-full);padding:5px 5px 5px 18px;}
+.signup-cta-row input{flex:1;border:1.5px solid transparent;border-radius:var(--r-full);outline:none;font-size:14px;font-family:var(--font-body);color:var(--text);background:transparent;padding:8px 2px;transition:border-color var(--t-base);}
+.signup-cta-row input::placeholder{color:var(--text-light);}
+.signup-cta-btn{height:44px;padding:0 22px;border-radius:var(--r-full);background:var(--accent);color:var(--white);border:none;font-size:14px;font-weight:600;cursor:pointer;font-family:var(--font-body);white-space:nowrap;transition:all var(--t-base);flex-shrink:0;}
+.signup-cta-btn:hover{background:var(--gray-800);}
+.signup-cta-note{font-size:12.5px;color:rgba(11,18,32,0.6);padding-left:18px;}
 .footer-main { display: grid; grid-template-columns: 1.6fr 1fr 1fr 1fr; gap: 48px; max-width: 1160px; margin: 0 auto; padding: 56px 32px 40px; }
 .footer-brand-logo { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
 .footer-logo-badge { width: 32px; height: 32px; border-radius: 9px; background: var(--lime); color: var(--indigo); display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 700; flex-shrink: 0; }
@@ -1223,20 +1218,24 @@ footer {
 
 </div>
 
-<footer>
+<!-- ══ SIGNUP CTA ══ -->
+<section class="signup-cta">
+ <div class="signup-cta-inner">
+ <div class="signup-cta-text">
+ <h2>Bli en bättre<br>Ungekonom – redan idag.</h2>
+ <p>Skapa ett konto, gör ditt startquiz och få ett spår som passar där du är just nu.</p>
+ </div>
+ <div class="signup-cta-form">
+ <div class="signup-cta-row">
+ <input type="email" placeholder="din@mejl.se" id="nl-email">
+ <button class="signup-cta-btn" onclick="handleNewsletter()">Kom igång</button>
+ </div>
+ <span class="signup-cta-note">Gratis. Tar 2 minuter.</span>
+ </div>
+ </div>
+</section>
 
- <!-- NEWSLETTER STRIP -->
- <div class="footer-newsletter">
- <div class="footer-newsletter-inner">
- <h3>Håll dig uppdaterad </h3>
- <p>Få nya lektioner, investeringstips och marknadsinsikter direkt i din inkorg. Ingen spam – bara värde.</p>
- <div class="footer-newsletter-form">
- <input class="footer-newsletter-input" type="email" placeholder="din@email.se" id="nl-email">
- <button class="footer-newsletter-btn" onclick="handleNewsletter()">Prenumerera</button>
- </div>
- <p class="footer-newsletter-note">Gratis · Avsluta när som helst · Inga konstigheter</p>
- </div>
- </div>
+<footer>
 
  <!-- MAIN FOOTER -->
  <div class="footer-main">
