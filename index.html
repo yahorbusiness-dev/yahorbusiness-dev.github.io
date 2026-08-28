@@ -217,40 +217,42 @@ nav{display:flex;gap:4px;align-items:center;}
 .progress-see-more-btn:hover{background:var(--accent);color:var(--white);border-color:var(--accent);}
 
 /* ARTIKEL CARDS */
-.artikel-card{background:var(--white);border:1px solid var(--border);border-radius:var(--r-xl);padding:28px;margin-bottom:16px;cursor:pointer;transition:all var(--t-base) var(--ease-smooth);box-shadow:var(--shadow-xs);position:relative;overflow:hidden;animation:fadeUp 0.4s ease both;}
-.artikel-card::before{content:'ARTIKEL';position:absolute;top:20px;right:20px;font-size:9px;letter-spacing:2px;font-weight:700;color:var(--text-light);font-family:var(--font-body);opacity:0.6;}
+#artiklar-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:16px;}
+.artikel-card{background:var(--white);border:1px solid var(--border);border-radius:var(--r-xl);cursor:pointer;transition:all var(--t-base) var(--ease-smooth);box-shadow:var(--shadow-xs);position:relative;overflow:hidden;animation:fadeUp 0.4s ease both;display:flex;flex-direction:column;}
 .artikel-card:hover{transform:translateY(-3px);box-shadow:var(--shadow-lg);border-color:rgba(11,77,255,0.2);}
-.artikel-card.card-done{border-color:rgba(101,163,13,0.3);background:linear-gradient(145deg,#fff 0%,#f3fbe0 100%);}
-.artikel-card.card-done::before{content:' LÄST';color:var(--emerald);opacity:1;}
-.artikel-card h2{font-family:var(--font-display);font-size:17px;font-weight:700;color:var(--text);margin-bottom:8px;line-height:1.35;letter-spacing:-0.3px;}
-.artikel-card p{font-size:14px;color:var(--text-mid);line-height:1.65;}
-.card-meta{margin-top:16px;display:flex;gap:10px;align-items:center;}
+.artikel-card.card-done{border-color:rgba(101,163,13,0.35);}
+.artikel-banner{height:88px;flex-shrink:0;background:repeating-linear-gradient(135deg,rgba(11,18,32,0.07) 0 9px,rgba(11,18,32,0.03) 9px 18px);display:flex;align-items:center;justify-content:center;}
+.artikel-banner-label{font-family:ui-monospace,Menlo,monospace;font-size:10px;letter-spacing:0.6px;color:var(--text-light);}
+.artikel-card-body{padding:18px 20px 20px;display:flex;flex-direction:column;gap:9px;flex:1;}
+.artikel-card h2{font-family:var(--font-display);font-size:16.5px;font-weight:700;color:var(--text);line-height:1.32;letter-spacing:-0.3px;}
+.artikel-card p{font-size:13.5px;color:var(--text-mid);line-height:1.55;}
+.card-meta{margin-top:auto;padding-top:8px;display:flex;gap:10px;align-items:center;}
 .card-readtime{font-size:11px;color:var(--text-light);font-weight:500;}
+.artikel-card.card-done .card-readtime::after{content:' · Läst';color:var(--emerald);font-weight:600;}
 
 /* LEKTION CARDS */
-.lektion-card{background:var(--white);border:1px solid var(--border);border-left:4px solid var(--emerald);border-radius:0 var(--r-xl) var(--r-xl) 0;padding:44px 28px 24px;margin-bottom:16px;cursor:pointer;transition:all var(--t-base) var(--ease-smooth);box-shadow:var(--shadow-xs);position:relative;overflow:hidden;animation:fadeUp 0.4s ease both;}
-.lektion-card::before{content:'LEKTION';position:absolute;top:20px;right:20px;font-size:9px;letter-spacing:2px;font-weight:700;color:var(--emerald);opacity:0.5;font-family:var(--font-body);}
-.lektion-card:hover{transform:translateY(-3px);box-shadow:var(--shadow-emerald);border-left-color:#65a30d;}
-.lektion-group{display:contents;}
+.lektion-group{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;}
 .lektion-group.collapsed > .lektion-card:nth-child(n+4){display:none;}
-.see-more-container{display:flex;justify-content:center;margin:32px 0;}
+.lektion-card{background:var(--white);border:1px solid var(--border);border-radius:var(--r-xl);padding:20px;cursor:pointer;transition:all var(--t-base) var(--ease-smooth);box-shadow:var(--shadow-xs);position:relative;overflow:hidden;animation:fadeUp 0.4s ease both;display:flex;flex-direction:column;gap:10px;}
+.lektion-card:hover{transform:translateY(-3px);box-shadow:var(--shadow-emerald);border-color:rgba(101,163,13,0.35);}
+.see-more-container{display:flex;justify-content:center;margin:32px 0;grid-column:1/-1;}
 .see-more-btn{padding:11px 32px;font-size:14px;font-weight:600;background:var(--accent);color:var(--white);border:2px solid var(--accent);border-radius:var(--r-md);cursor:pointer;font-family:var(--font-body);box-shadow:var(--shadow-sm);transition:all var(--t-base);letter-spacing:-0.1px;}
 .see-more-btn:hover{background:var(--gray-800);border-color:var(--gray-800);box-shadow:var(--shadow-md);transform:translateY(-1px);}
 .see-more-btn.expanded{background:var(--white);color:var(--text-mid);border-color:var(--border-md);}
 .see-more-btn.expanded:hover{background:var(--gray-50);color:var(--text);}
-.lektion-card.card-done{background:linear-gradient(145deg,#f3fbe0 0%,#eef8d0 100%);border-left-color:#65a30d;}
-.lektion-card.card-done::before{content:' KLAR';opacity:1;}
-.lektion-card .lektion-num{position:absolute;top:14px;left:14px;font-family:var(--font-display);font-size:11px;font-weight:700;color:var(--accent);background:var(--indigo-pale);padding:2px 8px;border-radius:var(--r-full);}
-.lektion-badge{display:flex;align-items:center;gap:8px;margin-bottom:12px;}
+.lektion-card.card-done{background:linear-gradient(145deg,#f3fbe0 0%,#eef8d0 100%);border-color:rgba(101,163,13,0.35);}
+.lektion-card .lektion-num{position:static;align-self:flex-start;font-family:var(--font-display);font-size:13px;font-weight:800;color:var(--accent);background:var(--indigo-pale);width:30px;height:30px;display:flex;align-items:center;justify-content:center;border-radius:var(--r-md);}
+.lektion-badge{display:flex;align-items:center;gap:8px;}
 .step-dots{display:flex;gap:4px;}
 .step-dot{width:7px;height:7px;border-radius:50%;background:var(--gray-200);}
 .step-dot.done{background:var(--emerald);}
 .lektion-steps-count{font-size:11px;color:var(--text-light);font-weight:500;font-family:var(--font-body);}
-.lektion-card h2{font-family:var(--font-display);font-size:17px;font-weight:700;color:var(--text);margin-bottom:8px;line-height:1.35;letter-spacing:-0.3px;}
-.lektion-card p{font-size:14px;color:var(--text-mid);line-height:1.65;margin-bottom:16px;}
-.lektion-.lektion-info{display:flex;align-items:center;gap:8px;}
+.lektion-card h2{font-family:var(--font-display);font-size:16.5px;font-weight:700;color:var(--text);line-height:1.32;letter-spacing:-0.3px;}
+.lektion-card p{font-size:13.5px;color:var(--text-mid);line-height:1.55;}
+.lektion-footer{margin-top:auto;padding-top:6px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;}
+.lektion-info{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
 .quiz-badge{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;color:var(--emerald);background:#f3fbe0;padding:3px 10px;border-radius:var(--r-full);border:1px solid rgba(101,163,13,0.25);font-family:var(--font-body);}
-.start-btn{font-size:12px;font-weight:600;color:var(--accent);background:var(--indigo-pale);padding:6px 14px;border-radius:var(--r-full);transition:all var(--t-base);}
+.start-btn{font-size:12px;font-weight:600;color:var(--accent);background:var(--indigo-pale);padding:6px 14px;border-radius:var(--r-full);transition:all var(--t-base);flex-shrink:0;}
 .lektion-card:hover .start-btn{background:var(--accent);color:var(--white);}
 
 /* TAGS */
@@ -833,6 +835,8 @@ footer {
  <div id="artiklar-list">
 
  <div class="artikel-card" data-id="vad-ar-aktie" data-cat="aktier" onclick="openArtikel('vad-ar-aktie')">
+ <div class="artikel-banner"><span class="artikel-banner-label">[ ikon: aktie ]</span></div>
+ <div class="artikel-card-body">
  <h2>Vad är en aktie – och varför finns de?</h2>
  <p>När ett företag behöver kapital kan det dela upp sig i ägarandelar och sälja dem till allmänheten. Dessa kallas aktier och ger dig rätt till en del av bolagets vinst och värde.</p>
  <div class="card-meta">
@@ -840,8 +844,11 @@ footer {
  <span class="card-readtime">5 min läsning</span>
  </div>
  </div>
+ </div>
 
  <div class="artikel-card" data-id="utdelning" data-cat="aktier" onclick="openArtikel('utdelning')">
+ <div class="artikel-banner"><span class="artikel-banner-label">[ ikon: utdelning ]</span></div>
+ <div class="artikel-card-body">
  <h2>Utdelning – att få betalt för att äga aktier</h2>
  <p>Många bolag delar ut en del av vinsten direkt till sina ägare. Vad är utdelningsyield och hur fungerar återinvestering?</p>
  <div class="card-meta">
@@ -849,8 +856,11 @@ footer {
  <span class="card-readtime">4 min läsning</span>
  </div>
  </div>
+ </div>
 
  <div class="artikel-card" data-id="vad-ar-fond" data-cat="fonder" onclick="openArtikel('vad-ar-fond')">
+ <div class="artikel-banner"><span class="artikel-banner-label">[ ikon: fond ]</span></div>
+ <div class="artikel-card-body">
  <h2>Vad är en fond och hur skiljer den sig från en aktie?</h2>
  <p>En fond samlar ihop kapital från många sparare och sprider det i ett brett urval av tillgångar. Allt du behöver veta om grunderna.</p>
  <div class="card-meta">
@@ -858,8 +868,11 @@ footer {
  <span class="card-readtime">5 min läsning</span>
  </div>
  </div>
+ </div>
 
  <div class="artikel-card" data-id="avgifter" data-cat="fonder" onclick="openArtikel('avgifter')">
+ <div class="artikel-banner"><span class="artikel-banner-label">[ ikon: fondavgifter ]</span></div>
+ <div class="artikel-card-body">
  <h2>Fondavgifter – en liten skillnad med enorm effekt</h2>
  <p>En avgift på 1,3% istället för 0,2% kan kosta dig hundratusentals kronor över ett spararliv. Förstå TER och varför avgiften är avgörande.</p>
  <div class="card-meta">
@@ -867,8 +880,11 @@ footer {
  <span class="card-readtime">4 min läsning</span>
  </div>
  </div>
+ </div>
 
  <div class="artikel-card" data-id="risk-avkastning" data-cat="risk" onclick="openArtikel('risk-avkastning')">
+ <div class="artikel-banner"><span class="artikel-banner-label">[ ikon: risk ]</span></div>
+ <div class="artikel-card-body">
  <h2>Risk och avkastning – den oundvikliga avvägningen</h2>
  <p>Ingen investering ger hög avkastning utan risk. Men risk är inte binärt – det handlar om att förstå och hantera osäkerheten på ett smart sätt.</p>
  <div class="card-meta">
@@ -876,13 +892,17 @@ footer {
  <span class="card-readtime">5 min läsning</span>
  </div>
  </div>
+ </div>
 
  <div class="artikel-card" data-id="ranta-historia" data-cat="ranta" onclick="openArtikel('ranta-historia')">
+ <div class="artikel-banner"><span class="artikel-banner-label">[ ikon: ränta på ränta ]</span></div>
+ <div class="artikel-card-body">
  <h2>Ränta på ränta – historien bakom begreppet</h2>
  <p>Hur kom begreppet till? Från Babyloniens handelsmän till moderna börsproffs – en kort historia om exponentiell tillväxt.</p>
  <div class="card-meta">
  <span class="cat-tag tag-ranta">4. Ränta på ränta</span>
  <span class="card-readtime">3 min läsning</span>
+ </div>
  </div>
  </div>
 
