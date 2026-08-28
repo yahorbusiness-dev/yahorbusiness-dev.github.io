@@ -35,9 +35,9 @@
  --gray-50: #f8f3ea;
  --white: #ffffff;
 
- --bg: #fbf6f0;
- --bg-subtle: #f3ecdf;
- --bg-glass: rgba(251,246,240,0.85);
+ --bg: #ffffff;
+ --bg-subtle: #fafafa;
+ --bg-glass: rgba(255,255,255,0.85);
  --border: rgba(11,18,32,0.08);
  --border-md: rgba(11,18,32,0.14);
  --text: #0b1220;
@@ -47,7 +47,7 @@
  --accent-2: #0b1220;
 
  /* Inga gradienter – solida varumärkesfärger */
- --grad-hero: linear-gradient(160deg, #fbf6f0 0%, #e8eeff 100%);
+ --grad-hero: linear-gradient(160deg, #ffffff 0%, #e8eeff 100%);
  --grad-accent: #0b4dff;
  --grad-card: linear-gradient(145deg, #ffffff 0%, #f8f3ea 100%);
  --grad-lektion: linear-gradient(145deg, #f6faec 0%, #eef6d0 100%);
@@ -82,7 +82,7 @@ body { font-family:var(--font-body); background:var(--bg); color:var(--text); li
 ::-webkit-scrollbar{width:6px;} ::-webkit-scrollbar-thumb{background:var(--gray-300);border-radius:99px;}
 
 /* HEADER */
-header { position:sticky;top:0;z-index:200; background:rgba(251,246,240,0.88); backdrop-filter:blur(20px) saturate(180%); border-bottom:1px solid var(--border); padding:0 32px; transition:box-shadow var(--t-base); }
+header { position:sticky;top:0;z-index:200; background:rgba(255,255,255,0.88); backdrop-filter:blur(20px) saturate(180%); border-bottom:1px solid var(--border); padding:0 32px; transition:box-shadow var(--t-base); }
 header.scrolled{box-shadow:var(--shadow-md);}
 .header-inner{max-width:1160px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;height:64px;gap:16px;}
 .logo{display:flex;align-items:center;gap:10px;text-decoration:none;cursor:pointer;flex-shrink:0;}
@@ -107,7 +107,7 @@ nav{display:flex;gap:4px;align-items:center;}
 .hamburger-btn.open span:nth-child(1){transform:translateY(7px) rotate(45deg);}
 .hamburger-btn.open span:nth-child(2){opacity:0;transform:scaleX(0);}
 .hamburger-btn.open span:nth-child(3){transform:translateY(-7px) rotate(-45deg);}
-.mobile-menu{display:none;position:fixed;top:64px;left:0;right:0;background:rgba(251,246,240,0.97);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);z-index:199;padding:8px 0;box-shadow:var(--shadow-lg);}
+.mobile-menu{display:none;position:fixed;top:64px;left:0;right:0;background:rgba(255,255,255,0.97);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);z-index:199;padding:8px 0;box-shadow:var(--shadow-lg);}
 .mobile-menu.open{display:block;animation:slideDown 0.2s var(--ease-smooth);}
 .mobile-menu-overlay{display:none;position:fixed;inset:0;z-index:198;}
 .mobile-menu-overlay.open{display:block;}
@@ -177,7 +177,7 @@ nav{display:flex;gap:4px;align-items:center;}
 .pledge-note{margin-left:auto;font-size:13px;color:rgba(251,246,240,0.6);}
 
 /* CAT BAR */
-.cat-bar{border-bottom:1px solid var(--border);padding:0 32px;background:rgba(251,246,240,0.92);backdrop-filter:blur(12px);}
+.cat-bar{border-bottom:1px solid var(--border);padding:0 32px;background:rgba(255,255,255,0.92);backdrop-filter:blur(12px);}
 .cat-bar-inner{max-width:1160px;margin:0 auto;display:flex;gap:0;overflow-x:auto;scrollbar-width:none;}
 .cat-bar-inner::-webkit-scrollbar{display:none;}
 .cat-btn{padding:13px 18px;font-size:13px;font-weight:500;color:var(--text-light);cursor:pointer;border:none;border-bottom:2px solid transparent;background:none;white-space:nowrap;font-family:var(--font-body);transition:all var(--t-base);letter-spacing:-0.1px;}
@@ -185,7 +185,7 @@ nav{display:flex;gap:4px;align-items:center;}
 .cat-btn.active{color:var(--accent);font-weight:600;border-bottom-color:var(--accent);}
 
 /* MAIN */
-.page-main{max-width:1160px;margin:0 auto;padding:48px 32px;display:grid;grid-template-columns:1fr 300px;gap:48px;clear:both;}
+.page-main{max-width:840px;margin:0 auto;padding:48px 32px;clear:both;}
 .section-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;}
 .section-hdr-label{font-family:var(--font-display);font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-light);}
 .section-hdr-count{font-size:12px;color:var(--text-light);background:var(--gray-100);padding:2px 10px;border-radius:var(--r-full);}
@@ -1219,52 +1219,6 @@ footer {
 
  </div>
  </div>
-
- <!-- SIDEBAR -->
- <aside class="sidebar">
- <div>
- <p class="sb-title">Snabbfakta</p>
- <div class="sb-fact">
- <h4>Historisk avkastning</h4>
- <p>Börsen har historiskt gett ca 7–10% per år i reala termer – men med stora svängningar på kort sikt.</p>
- </div>
- <div class="sb-fact">
- <h4>ISK-kontot</h4>
- <p>Investeringssparkontot är skattemässigt fördelaktigt för de flesta och kräver ingen löpande deklaration av affärer.</p>
- </div>
- <div class="sb-fact">
- <h4>Indexfonder slår aktivt</h4>
- <p>Forskning visar att de flesta aktivt förvaltade fonder underpresterar mot index på 10+ år, efter avgifter.</p>
- </div>
- </div>
- <div>
- <p class="sb-title">Ordlista</p>
- <div class="sb-glossary-item">
- <div class="sb-term">Portfölj</div>
- <div class="sb-def">Samlingen av alla dina investeringar – aktier, fonder, m.m.</div>
- </div>
- <div class="sb-glossary-item">
- <div class="sb-term">P/E-tal</div>
- <div class="sb-def">Pris i förhållande till vinst. Mäter bolagets värdering relativt dess vinst.</div>
- </div>
- <div class="sb-glossary-item">
- <div class="sb-term">Volatilitet</div>
- <div class="sb-def">Hur mycket kursen svänger. Hög volatilitet = större kursrörelser.</div>
- </div>
- <div class="sb-glossary-item">
- <div class="sb-term">TER</div>
- <div class="sb-def">Total Expense Ratio. Den totala årliga avgiften för en fond.</div>
- </div>
- <div class="sb-glossary-item">
- <div class="sb-term">NAV</div>
- <div class="sb-def">Net Asset Value. Värdet per fondandel, beräknas dagligen.</div>
- </div>
- <div class="sb-glossary-item">
- <div class="sb-term">Utdelningsyield</div>
- <div class="sb-def">Utdelning per aktie delat med aktiekurs, i procent.</div>
- </div>
- </div>
- </aside>
 </div>
 
 </div>
