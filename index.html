@@ -1265,7 +1265,7 @@ footer {
 </div>
 
 <!-- ══ SIGNUP CTA ══ -->
-<section class="signup-cta">
+<section class="signup-cta" id="signup-cta">
  <div class="signup-cta-inner">
  <div class="signup-cta-text">
  <h2>Bli en bättre<br>Ungekonom – redan idag.</h2>
@@ -1332,11 +1332,10 @@ footer {
  <div>
  <p class="footer-col-title">Om oss</p>
  <div class="footer-links">
- <span class="footer-link" style="cursor:default;color:var(--gray-500)">Fri utbildning</span>
- <span class="footer-link" style="cursor:default;color:var(--gray-500)">Oberoende innehåll</span>
- <span class="footer-link" style="cursor:default;color:var(--gray-500)">Ingen finansiell rådgivning</span>
- <span class="footer-link" style="cursor:default;color:var(--gray-500)">Ingen reklam</span>
-        <span class="footer-link" style="cursor:default;color:var(--gray-500)">Ge en gåva :)</span>
+ <button class="footer-link" onclick="goHome()">Vår vision</button>
+ <button class="footer-link" onclick="document.getElementById('signup-cta').scrollIntoView({behavior:'smooth'})">För gymnasieskolor</button>
+ <button class="footer-link" onclick="document.getElementById('signup-cta').scrollIntoView({behavior:'smooth'})">Engagera dig</button>
+ <button class="footer-link" onclick="document.getElementById('signup-cta').scrollIntoView({behavior:'smooth'})">Ge en gåva :)</button>
  </div>
  <div style="margin-top:20px;padding:14px;background:rgba(11,77,255,0.1);border:1px solid rgba(11,77,255,0.2);border-radius:var(--r-lg);">
  <div style="font-size:11px;font-weight:700;color:var(--indigo-light);margin-bottom:4px;font-family:var(--font-display);letter-spacing:0.5px;">DISCLAIMER</div>
