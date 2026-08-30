@@ -167,14 +167,15 @@ nav{display:flex;gap:4px;align-items:center;}
 .hero-phone-tab.active{color:var(--accent);}
 .badge-desc{font-size:11px;color:var(--text-light);}
 
-/* TRE LÖFTEN */
-.pledge-bar{background:var(--indigo);color:var(--bg);}
-.pledge-bar-inner{max-width:1160px;margin:0 auto;padding:20px 32px;display:flex;align-items:center;gap:40px;flex-wrap:wrap;}
-.pledge-label{font-size:11px;font-weight:700;letter-spacing:2px;color:rgba(251,246,240,0.45);}
-.pledge-items{display:flex;gap:36px;flex-wrap:wrap;}
-.pledge-item{font-size:15px;font-weight:600;}
-.pledge-item.pledge-lime{color:var(--lime);}
-.pledge-note{margin-left:auto;font-size:13px;color:rgba(251,246,240,0.6);}
+/* STATS MARQUEE */
+.stats-marquee{background:var(--indigo);color:var(--bg);overflow:hidden;padding:22px 0;}
+.marquee-track{display:flex;width:max-content;animation:marquee 26s linear infinite;}
+.marquee-set{display:flex;align-items:center;flex-shrink:0;}
+.marquee-item{display:inline-flex;align-items:baseline;gap:7px;font-size:16px;font-weight:600;padding:0 30px;white-space:nowrap;}
+.marquee-item strong{font-family:var(--font-display);font-size:19px;font-weight:800;color:var(--lime);letter-spacing:-0.3px;}
+.marquee-dot{opacity:0.3;font-size:14px;}
+@keyframes marquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+@media (prefers-reduced-motion: reduce){.marquee-track{animation:none;}}
 
 /* CAT BAR */
 .cat-bar{border-bottom:1px solid var(--border);padding:0 32px;background:rgba(255,255,255,0.92);backdrop-filter:blur(12px);}
@@ -753,16 +754,61 @@ footer {
   </div>
 </section>
 
-<!-- ══ TRE LÖFTEN ══ -->
-<section class="pledge-bar">
-  <div class="pledge-bar-inner">
-    <span class="pledge-label">TRE LÖFTEN</span>
-    <div class="pledge-items">
-      <span class="pledge-item">Kunskap</span>
-      <span class="pledge-item">Framsteg</span>
-      <span class="pledge-item pledge-lime">Frihet</span>
+<!-- ══ STATS MARQUEE ══ -->
+<section class="stats-marquee">
+  <div class="marquee-track">
+    <div class="marquee-set">
+      <span class="marquee-item"><strong>11+</strong> elever</span>
+      <span class="marquee-dot">&#9679;</span>
+      <span class="marquee-item"><strong>1</strong> gymnasieskola</span>
+      <span class="marquee-dot">&#9679;</span>
+      <span class="marquee-item"><strong>1</strong> hållet event</span>
+      <span class="marquee-dot">&#9679;</span>
+      <span class="marquee-item"><strong>11+</strong> elever</span>
+      <span class="marquee-dot">&#9679;</span>
+      <span class="marquee-item"><strong>1</strong> gymnasieskola</span>
+      <span class="marquee-dot">&#9679;</span>
+      <span class="marquee-item"><strong>1</strong> hållet event</span>
+      <span class="marquee-dot">&#9679;</span>
+      <span class="marquee-item"><strong>11+</strong> elever</span>
+      <span class="marquee-dot">&#9679;</span>
+      <span class="marquee-item"><strong>1</strong> gymnasieskola</span>
+      <span class="marquee-dot">&#9679;</span>
+      <span class="marquee-item"><strong>1</strong> hållet event</span>
+      <span class="marquee-dot">&#9679;</span>
+      <span class="marquee-item"><strong>11+</strong> elever</span>
+      <span class="marquee-dot">&#9679;</span>
+      <span class="marquee-item"><strong>1</strong> gymnasieskola</span>
+      <span class="marquee-dot">&#9679;</span>
+      <span class="marquee-item"><strong>1</strong> hållet event</span>
+      <span class="marquee-dot">&#9679;</span>
     </div>
-    <span class="pledge-note">Inga avgifter. Ingen reklam. Inga finansiella råd.</span>
+    <div class="marquee-set">
+      <span class="marquee-item"><strong>11+</strong> elever</span>
+      <span class="marquee-dot">&#9679;</span>
+      <span class="marquee-item"><strong>1</strong> gymnasieskola</span>
+      <span class="marquee-dot">&#9679;</span>
+      <span class="marquee-item"><strong>1</strong> hållet event</span>
+      <span class="marquee-dot">&#9679;</span>
+      <span class="marquee-item"><strong>11+</strong> elever</span>
+      <span class="marquee-dot">&#9679;</span>
+      <span class="marquee-item"><strong>1</strong> gymnasieskola</span>
+      <span class="marquee-dot">&#9679;</span>
+      <span class="marquee-item"><strong>1</strong> hållet event</span>
+      <span class="marquee-dot">&#9679;</span>
+      <span class="marquee-item"><strong>11+</strong> elever</span>
+      <span class="marquee-dot">&#9679;</span>
+      <span class="marquee-item"><strong>1</strong> gymnasieskola</span>
+      <span class="marquee-dot">&#9679;</span>
+      <span class="marquee-item"><strong>1</strong> hållet event</span>
+      <span class="marquee-dot">&#9679;</span>
+      <span class="marquee-item"><strong>11+</strong> elever</span>
+      <span class="marquee-dot">&#9679;</span>
+      <span class="marquee-item"><strong>1</strong> gymnasieskola</span>
+      <span class="marquee-dot">&#9679;</span>
+      <span class="marquee-item"><strong>1</strong> hållet event</span>
+      <span class="marquee-dot">&#9679;</span>
+    </div>
   </div>
 </section>
 
