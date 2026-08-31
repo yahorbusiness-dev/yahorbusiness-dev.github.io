@@ -2,61 +2,63 @@
 <html lang="sv">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>InvestAcademy – Artiklar & Lektioner</title>
+<meta name="viewport" content="width=1180">
+<title>UngEkonom – Artiklar & Lektioner</title>
  <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap');
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
- /* ── Studiefärger – mörkblå, grå, varm off-white ── */
- --indigo: #1a1a2e;
- --indigo-light: #2c3e50;
- --indigo-pale: #eef0f4;
- --violet: #2c3e50;
- --emerald: #2d6a4f;
+ /* ── Varumärkesfärger – koboltblå, limegrön, varm cream, nästan svart ── */
+ --indigo: #0b1220;
+ --indigo-light: #0b4dff;
+ --indigo-pale: #e8eeff;
+ --violet: #0b4dff;
+ --emerald: #3f6212;
+ --lime: #bbf53d;
+ --lime-pale: #f3fbe0;
  --rose: #c0392b;
 
- --gray-950: #0d0d0d;
- --gray-900: #1a1a1a;
- --gray-800: #2c2c2c;
- --gray-700: #3d3d3d;
- --gray-600: #555555;
- --gray-500: #777777;
- --gray-400: #999999;
- --gray-300: #c0c0c0;
- --gray-200: #dcdcdc;
- --gray-100: #f0ede8;
- --gray-50: #f7f5f2;
+ --gray-950: #0b1220;
+ --gray-900: #161f33;
+ --gray-800: #26304a;
+ --gray-700: #3c4661;
+ --gray-600: #5a6480;
+ --gray-500: #767f99;
+ --gray-400: #979fb5;
+ --gray-300: #c1c6d4;
+ --gray-200: #e1e4ec;
+ --gray-100: #f1ece1;
+ --gray-50: #f8f3ea;
  --white: #ffffff;
 
  --bg: #ffffff;
- --bg-subtle: #f7f5f2;
- --bg-glass: rgba(255,255,255,0.80);
- --border: rgba(0,0,0,0.09);
- --border-md: rgba(0,0,0,0.14);
- --text: #1a1a1a;
- --text-mid: #555555;
- --text-light: #999999;
- --accent: #1a1a2e;
- --accent-2: #2c3e50;
+ --bg-subtle: #fafafa;
+ --bg-glass: rgba(255,255,255,0.85);
+ --border: rgba(11,18,32,0.08);
+ --border-md: rgba(11,18,32,0.14);
+ --text: #0b1220;
+ --text-mid: rgba(11,18,32,0.62);
+ --text-light: rgba(11,18,32,0.45);
+ --accent: #0b4dff;
+ --accent-2: #0b1220;
 
- /* Inga gradienter – solida studiefärger */
- --grad-hero: linear-gradient(160deg, #f7f5f2 0%, #eef0f4 100%);
- --grad-accent: #1a1a2e;
- --grad-card: linear-gradient(145deg, #ffffff 0%, #f7f5f2 100%);
- --grad-lektion: linear-gradient(145deg, #f0f4f0 0%, #e8f0eb 100%);
+ /* Inga gradienter – solida varumärkesfärger */
+ --grad-hero: linear-gradient(160deg, #ffffff 0%, #e8eeff 100%);
+ --grad-accent: #0b4dff;
+ --grad-card: linear-gradient(145deg, #ffffff 0%, #f8f3ea 100%);
+ --grad-lektion: linear-gradient(145deg, #f6faec 0%, #eef6d0 100%);
 
- --shadow-xs: 0 1px 2px rgba(0,0,0,0.04);
- --shadow-sm: 0 2px 8px rgba(0,0,0,0.07);
- --shadow-md: 0 4px 16px rgba(0,0,0,0.09);
- --shadow-lg: 0 8px 32px rgba(0,0,0,0.11);
- --shadow-xl: 0 20px 60px rgba(0,0,0,0.13);
- --shadow-accent: 0 8px 24px rgba(26,26,46,0.20);
- --shadow-emerald: 0 8px 24px rgba(45,106,79,0.18);
+ --shadow-xs: 0 1px 2px rgba(11,18,32,0.05);
+ --shadow-sm: 0 2px 8px rgba(11,18,32,0.08);
+ --shadow-md: 0 4px 16px rgba(11,18,32,0.1);
+ --shadow-lg: 0 8px 32px rgba(11,18,32,0.12);
+ --shadow-xl: 0 20px 60px rgba(11,18,32,0.16);
+ --shadow-accent: 0 8px 24px rgba(11,77,255,0.28);
+ --shadow-emerald: 0 8px 24px rgba(63,98,18,0.2);
 
  --r-sm: 8px;
  --r-md: 12px;
@@ -65,8 +67,8 @@
  --r-2xl: 32px;
  --r-full: 999px;
 
- --font-display: 'Sora', sans-serif;
- --font-body: 'DM Sans', sans-serif;
+ --font-display: 'Inter', sans-serif;
+ --font-body: 'Inter', sans-serif;
 
  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
  --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
@@ -80,10 +82,15 @@ body { font-family:var(--font-body); background:var(--bg); color:var(--text); li
 ::-webkit-scrollbar{width:6px;} ::-webkit-scrollbar-thumb{background:var(--gray-300);border-radius:99px;}
 
 /* HEADER */
-header { position:sticky;top:0;z-index:200; background:rgba(255,255,255,0.85); backdrop-filter:blur(20px) saturate(180%); border-bottom:1px solid var(--border); padding:0 32px; transition:box-shadow var(--t-base); }
+header { position:sticky;top:0;z-index:200; background:rgba(255,255,255,0.88); backdrop-filter:blur(20px) saturate(180%); border-bottom:1px solid var(--border); padding:0 32px; transition:box-shadow var(--t-base); }
 header.scrolled{box-shadow:var(--shadow-md);}
 .header-inner{max-width:1160px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;height:64px;gap:16px;}
-.logo{font-family:var(--font-display);font-size:20px;font-weight:800;letter-spacing:-0.5px;text-decoration:none;color:var(--accent);cursor:pointer;}
+.logo{display:flex;align-items:center;gap:10px;text-decoration:none;cursor:pointer;flex-shrink:0;}
+.logo-badge{width:34px;height:34px;border-radius:10px;background:var(--indigo);color:var(--lime);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;flex-shrink:0;}
+.logo-text{display:flex;flex-direction:column;line-height:1;}
+.logo-word{font-family:var(--font-display);font-size:19px;font-weight:800;letter-spacing:-0.6px;color:var(--text);}
+.logo-word em{font-style:normal;color:var(--accent);}
+.logo-tagline{font-size:9px;font-weight:600;letter-spacing:2px;color:var(--text-light);margin-top:3px;}
 nav{display:flex;gap:4px;align-items:center;}
 .nav-link{font-family:var(--font-body);font-size:14px;font-weight:500;color:var(--text-mid);background:none;border:none;cursor:pointer;padding:6px 12px;border-radius:var(--r-full);transition:all var(--t-fast);}
 .nav-link:hover{color:var(--text);background:var(--gray-100);}
@@ -110,8 +117,8 @@ nav{display:flex;gap:4px;align-items:center;}
 
 /* HERO */
 .hero-strip{background:var(--bg-subtle);border-bottom:1px solid var(--border);padding:0 32px;position:relative;overflow:hidden;}
-.hero-strip::before{content:'';position:absolute;top:-50%;left:-10%;width:500px;height:500px;background:radial-gradient(circle,rgba(26,26,46,0.12) 0%,transparent 70%);pointer-events:none;}
-.hero-strip::after{content:'';position:absolute;bottom:-30%;right:-5%;width:400px;height:400px;background:radial-gradient(circle,rgba(44,62,80,0.10) 0%,transparent 70%);pointer-events:none;}
+.hero-strip::before{content:'';position:absolute;top:-50%;left:-10%;width:500px;height:500px;background:radial-gradient(circle,rgba(11,77,255,0.10) 0%,transparent 70%);pointer-events:none;}
+.hero-strip::after{content:'';position:absolute;bottom:-30%;right:-5%;width:400px;height:400px;background:radial-gradient(circle,rgba(187,245,61,0.18) 0%,transparent 70%);pointer-events:none;}
 .hero-strip-inner{max-width:1160px;margin:0 auto;display:grid;grid-template-columns:1fr auto;gap:64px;align-items:center;padding:64px 0;position:relative;z-index:1;}
 .hero-free-chip{background:var(--grad-accent);color:var(--white);font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:3px 10px;border-radius:var(--r-full);}
 .hero-h1{font-family:var(--font-display);font-size:clamp(32px,4vw,52px);font-weight:800;line-height:1.1;letter-spacing:-1.5px;color:var(--text);margin-bottom:20px;}
@@ -124,17 +131,54 @@ nav{display:flex;gap:4px;align-items:center;}
 .btn-ghost:hover{color:var(--text);border-color:var(--gray-700);background:var(--gray-50);}
 .hero-note{font-size:12px;color:var(--text-light);margin-top:20px;display:flex;align-items:center;gap:8px;}
 .hero-note-check{width:16px;height:16px;border-radius:50%;background:var(--emerald);color:white;display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;flex-shrink:0;}
-.hero-badges{display:flex;flex-direction:column;gap:0;width:260px;background:rgba(255,255,255,0.85);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,0.9);border-radius:var(--r-xl);box-shadow:var(--shadow-xl);overflow:hidden;}
-.hero-badge{padding:18px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:14px;transition:background var(--t-fast);}
-.hero-badge:last-child{border-bottom:none;}
-.hero-badge:hover{background:rgba(255,255,255,0.6);}
-.badge-icon-wrap{width:38px;height:38px;border-radius:var(--r-md);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;}
-.badge-icon-wrap.blue{background:#eff6ff;} .badge-icon-wrap.green{background:#f0fdf4;} .badge-icon-wrap.purple{background:#faf5ff;}
-.badge-label{font-family:var(--font-display);font-size:13px;font-weight:700;color:var(--text);margin-bottom:1px;}
+.hero-eyebrow{display:inline-flex;align-items:center;gap:8px;padding:6px 13px 6px 8px;border-radius:var(--r-full);background:var(--lime);font-size:12px;font-weight:700;letter-spacing:0.2px;color:var(--indigo);margin-bottom:22px;}
+.hero-eyebrow-tag{background:var(--indigo);color:var(--lime);border-radius:var(--r-full);padding:2px 9px;font-size:10.5px;letter-spacing:0.5px;}
+.hero-highlight{position:relative;display:inline-block;}
+.hero-highlight::after{content:'';position:absolute;left:-2px;right:-4px;bottom:5px;height:11px;background:var(--lime);z-index:-1;border-radius:2px;}
+.hero-stats{display:flex;gap:32px;margin-top:36px;flex-wrap:wrap;}
+.hero-stat-num{font-family:var(--font-display);font-size:25px;font-weight:800;letter-spacing:-1px;color:var(--text);}
+.hero-stat-label{font-size:12px;color:var(--text-light);font-weight:500;margin-top:2px;}
+.hero-phone-wrap{position:relative;display:flex;justify-content:center;width:320px;}
+.hero-phone-blob-blue{position:absolute;inset:26px 0 0;background:var(--accent);border-radius:28px;}
+.hero-phone-blob-lime{position:absolute;left:14%;right:14%;bottom:0;height:96px;background:var(--lime);border-radius:0 0 28px 28px;}
+.hero-phone{position:relative;width:280px;border-radius:36px;background:var(--indigo);padding:9px;box-shadow:var(--shadow-xl);margin:48px 0 24px;}
+.hero-phone-screen{border-radius:28px;background:var(--bg);overflow:hidden;font-family:var(--font-body);}
+.hero-phone-statusbar{height:34px;display:flex;align-items:flex-end;justify-content:space-between;padding:0 18px 4px;font-size:11px;font-weight:600;color:var(--text);}
+.hero-phone-brand{padding:12px 16px 6px;display:flex;align-items:center;gap:8px;font-size:13px;font-weight:800;letter-spacing:-0.3px;color:var(--text);}
+.hero-phone-logo{width:24px;height:24px;border-radius:7px;background:var(--indigo);color:var(--lime);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;}
+.hero-phone-progress{margin:9px 13px;padding:13px;border-radius:14px;background:var(--white);border:1px solid var(--border);}
+.hero-phone-progress-row{display:flex;justify-content:space-between;align-items:center;font-size:11.5px;font-weight:600;color:var(--text);margin-bottom:9px;}
+.hero-phone-progress-track{height:7px;border-radius:99px;background:var(--gray-200);overflow:hidden;}
+.hero-phone-progress-fill{width:70%;height:100%;background:var(--accent);border-radius:99px;}
+.hero-phone-modules{display:flex;flex-direction:column;gap:7px;padding:2px 13px 11px;}
+.hero-phone-module{display:flex;align-items:center;gap:10px;padding:10px 11px;border-radius:13px;background:var(--white);border:1px solid var(--border);}
+.hero-phone-module.locked{opacity:0.72;}
+.hero-phone-module-icon{width:30px;height:30px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;}
+.hero-phone-module-icon.lime{background:var(--lime);}
+.hero-phone-module-icon.blue{background:rgba(11,77,255,0.1);color:var(--accent);}
+.hero-phone-module-text{flex:1;}
+.hero-phone-module-label{font-size:9px;color:var(--text-light);font-weight:600;}
+.hero-phone-module-name{font-size:12px;font-weight:700;color:var(--text);}
+.hero-phone-module-check{width:18px;height:18px;border-radius:99px;background:var(--lime);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--indigo);flex-shrink:0;}
+.hero-phone-module-arrow{color:var(--text-light);font-size:13px;}
+.hero-phone-tabbar{display:flex;justify-content:space-around;padding:9px 0 13px;border-top:1px solid var(--border);font-size:9px;font-weight:600;color:var(--text-light);}
+.hero-phone-tab{display:flex;flex-direction:column;align-items:center;gap:3px;}
+.hero-phone-tab span{font-size:13px;}
+.hero-phone-tab.active{color:var(--accent);}
 .badge-desc{font-size:11px;color:var(--text-light);}
 
+/* STATS MARQUEE */
+.stats-marquee{background:var(--indigo);color:var(--bg);overflow:hidden;padding:22px 0;}
+.marquee-track{display:flex;width:max-content;animation:marquee 26s linear infinite;}
+.marquee-set{display:flex;align-items:center;flex-shrink:0;}
+.marquee-item{display:inline-flex;align-items:baseline;gap:7px;font-size:16px;font-weight:600;padding:0 30px;white-space:nowrap;}
+.marquee-item strong{font-family:var(--font-display);font-size:19px;font-weight:800;color:var(--lime);letter-spacing:-0.3px;}
+.marquee-dot{opacity:0.3;font-size:14px;}
+@keyframes marquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+@media (prefers-reduced-motion: reduce){.marquee-track{animation:none;}}
+
 /* CAT BAR */
-.cat-bar{border-bottom:1px solid var(--border);padding:0 32px;background:rgba(255,255,255,0.9);backdrop-filter:blur(12px);}
+.cat-bar{border-bottom:1px solid var(--border);padding:0 32px;background:rgba(255,255,255,0.92);backdrop-filter:blur(12px);}
 .cat-bar-inner{max-width:1160px;margin:0 auto;display:flex;gap:0;overflow-x:auto;scrollbar-width:none;}
 .cat-bar-inner::-webkit-scrollbar{display:none;}
 .cat-btn{padding:13px 18px;font-size:13px;font-weight:500;color:var(--text-light);cursor:pointer;border:none;border-bottom:2px solid transparent;background:none;white-space:nowrap;font-family:var(--font-body);transition:all var(--t-base);letter-spacing:-0.1px;}
@@ -142,24 +186,24 @@ nav{display:flex;gap:4px;align-items:center;}
 .cat-btn.active{color:var(--accent);font-weight:600;border-bottom-color:var(--accent);}
 
 /* MAIN */
-.page-main{max-width:1160px;margin:0 auto;padding:48px 32px;display:grid;grid-template-columns:1fr 300px;gap:48px;clear:both;}
+.page-main{max-width:840px;margin:0 auto;padding:48px 32px;clear:both;}
 .section-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;}
 .section-hdr-label{font-family:var(--font-display);font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-light);}
 .section-hdr-count{font-size:12px;color:var(--text-light);background:var(--gray-100);padding:2px 10px;border-radius:var(--r-full);}
 
 /* PROGRESS */
-.progress-section{background:linear-gradient(145deg,rgba(255,255,255,0.95),rgba(248,248,255,0.9));backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,0.9);border-radius:var(--r-xl);padding:28px 28px 24px;margin-bottom:36px;box-shadow:var(--shadow-md);position:relative;overflow:hidden;}
+.progress-section{background:linear-gradient(145deg,rgba(255,255,255,0.95),rgba(232,238,255,0.85));backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,0.9);border-radius:var(--r-xl);padding:28px 28px 24px;margin-bottom:36px;box-shadow:var(--shadow-md);position:relative;overflow:hidden;}
 .progress-section::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--accent);}
 .progress-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}
 .progress-title{font-family:var(--font-display);font-size:15px;font-weight:700;color:var(--text);}
 .progress-pct{font-family:var(--font-display);font-size:24px;font-weight:800;color:var(--accent);}
 .progress-track{height:8px;background:var(--gray-200);border-radius:var(--r-full);margin-bottom:12px;overflow:hidden;}
-.progress-fill{height:100%;border-radius:var(--r-full);background:var(--accent);transition:width 0.7s cubic-bezier(0.34,1.56,0.64,1);box-shadow:0 0 8px rgba(26,26,46,0.2);}
+.progress-fill{height:100%;border-radius:var(--r-full);background:var(--accent);transition:width 0.7s cubic-bezier(0.34,1.56,0.64,1);box-shadow:0 0 8px rgba(11,77,255,0.2);}
 .progress-sub{font-size:12px;color:var(--text-light);margin-bottom:14px;}
 .progress-items{display:flex;flex-wrap:wrap;gap:6px;}
 .progress-item{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--text-mid);font-weight:500;padding:5px 12px;border-radius:var(--r-full);border:1.5px solid var(--border);background:var(--white);transition:all var(--t-base);cursor:pointer;}
 .progress-item:hover{border-color:var(--indigo-light);color:var(--accent);transform:translateY(-1px);box-shadow:var(--shadow-sm);}
-.progress-item.done{color:var(--emerald);border-color:rgba(16,185,129,0.3);background:#f0fdf4;}
+.progress-item.done{color:var(--emerald);border-color:rgba(101,163,13,0.3);background:#f3fbe0;}
 .pi-dot{width:6px;height:6px;border-radius:50%;background:var(--gray-300);flex-shrink:0;transition:background 0.2s;}
 .progress-item.done .pi-dot{background:var(--emerald);}
 .progress-item.hidden-item{display:none;}
@@ -174,47 +218,49 @@ nav{display:flex;gap:4px;align-items:center;}
 .progress-see-more-btn:hover{background:var(--accent);color:var(--white);border-color:var(--accent);}
 
 /* ARTIKEL CARDS */
-.artikel-card{background:var(--white);border:1px solid var(--border);border-radius:var(--r-xl);padding:28px;margin-bottom:16px;cursor:pointer;transition:all var(--t-base) var(--ease-smooth);box-shadow:var(--shadow-xs);position:relative;overflow:hidden;animation:fadeUp 0.4s ease both;}
-.artikel-card::before{content:'ARTIKEL';position:absolute;top:20px;right:20px;font-size:9px;letter-spacing:2px;font-weight:700;color:var(--text-light);font-family:var(--font-body);opacity:0.6;}
-.artikel-card:hover{transform:translateY(-3px);box-shadow:var(--shadow-lg);border-color:rgba(26,26,46,0.2);}
-.artikel-card.card-done{border-color:rgba(16,185,129,0.3);background:linear-gradient(145deg,#fff 0%,#f0fdf4 100%);}
-.artikel-card.card-done::before{content:' LÄST';color:var(--emerald);opacity:1;}
-.artikel-card h2{font-family:var(--font-display);font-size:17px;font-weight:700;color:var(--text);margin-bottom:8px;line-height:1.35;letter-spacing:-0.3px;}
-.artikel-card p{font-size:14px;color:var(--text-mid);line-height:1.65;}
-.card-meta{margin-top:16px;display:flex;gap:10px;align-items:center;}
+#artiklar-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:16px;}
+.artikel-card{background:var(--white);border:1px solid var(--border);border-radius:var(--r-xl);cursor:pointer;transition:all var(--t-base) var(--ease-smooth);box-shadow:var(--shadow-xs);position:relative;overflow:hidden;animation:fadeUp 0.4s ease both;display:flex;flex-direction:column;}
+.artikel-card:hover{transform:translateY(-3px);box-shadow:var(--shadow-lg);border-color:rgba(11,77,255,0.2);}
+.artikel-card.card-done{border-color:rgba(101,163,13,0.35);}
+.artikel-banner{height:88px;flex-shrink:0;background:repeating-linear-gradient(135deg,rgba(11,18,32,0.07) 0 9px,rgba(11,18,32,0.03) 9px 18px);display:flex;align-items:center;justify-content:center;}
+.artikel-banner-label{font-family:ui-monospace,Menlo,monospace;font-size:10px;letter-spacing:0.6px;color:var(--text-light);}
+.artikel-card-body{padding:18px 20px 20px;display:flex;flex-direction:column;gap:9px;flex:1;}
+.artikel-card h2{font-family:var(--font-display);font-size:16.5px;font-weight:700;color:var(--text);line-height:1.32;letter-spacing:-0.3px;}
+.artikel-card p{font-size:13.5px;color:var(--text-mid);line-height:1.55;}
+.card-meta{margin-top:auto;padding-top:8px;display:flex;gap:10px;align-items:center;}
 .card-readtime{font-size:11px;color:var(--text-light);font-weight:500;}
+.artikel-card.card-done .card-readtime::after{content:' · Läst';color:var(--emerald);font-weight:600;}
 
 /* LEKTION CARDS */
-.lektion-card{background:var(--white);border:1px solid var(--border);border-left:4px solid var(--emerald);border-radius:0 var(--r-xl) var(--r-xl) 0;padding:44px 28px 24px;margin-bottom:16px;cursor:pointer;transition:all var(--t-base) var(--ease-smooth);box-shadow:var(--shadow-xs);position:relative;overflow:hidden;animation:fadeUp 0.4s ease both;}
-.lektion-card::before{content:'LEKTION';position:absolute;top:20px;right:20px;font-size:9px;letter-spacing:2px;font-weight:700;color:var(--emerald);opacity:0.5;font-family:var(--font-body);}
-.lektion-card:hover{transform:translateY(-3px);box-shadow:var(--shadow-emerald);border-left-color:#059669;}
-.lektion-group{display:contents;}
+.lektion-group{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;}
 .lektion-group.collapsed > .lektion-card:nth-child(n+4){display:none;}
-.see-more-container{display:flex;justify-content:center;margin:32px 0;}
+.lektion-card{background:var(--white);border:1px solid var(--border);border-radius:var(--r-xl);padding:20px;cursor:pointer;transition:all var(--t-base) var(--ease-smooth);box-shadow:var(--shadow-xs);position:relative;overflow:hidden;animation:fadeUp 0.4s ease both;display:flex;flex-direction:column;gap:10px;}
+.lektion-card:hover{transform:translateY(-3px);box-shadow:var(--shadow-emerald);border-color:rgba(101,163,13,0.35);}
+.see-more-container{display:flex;justify-content:center;margin:32px 0;grid-column:1/-1;}
 .see-more-btn{padding:11px 32px;font-size:14px;font-weight:600;background:var(--accent);color:var(--white);border:2px solid var(--accent);border-radius:var(--r-md);cursor:pointer;font-family:var(--font-body);box-shadow:var(--shadow-sm);transition:all var(--t-base);letter-spacing:-0.1px;}
 .see-more-btn:hover{background:var(--gray-800);border-color:var(--gray-800);box-shadow:var(--shadow-md);transform:translateY(-1px);}
 .see-more-btn.expanded{background:var(--white);color:var(--text-mid);border-color:var(--border-md);}
 .see-more-btn.expanded:hover{background:var(--gray-50);color:var(--text);}
-.lektion-card.card-done{background:linear-gradient(145deg,#f0fdf4 0%,#ecfdf5 100%);border-left-color:#059669;}
-.lektion-card.card-done::before{content:' KLAR';opacity:1;}
-.lektion-card .lektion-num{position:absolute;top:14px;left:14px;font-family:var(--font-display);font-size:11px;font-weight:700;color:var(--accent);background:var(--indigo-pale);padding:2px 8px;border-radius:var(--r-full);}
-.lektion-badge{display:flex;align-items:center;gap:8px;margin-bottom:12px;}
+.lektion-card.card-done{background:linear-gradient(145deg,#f3fbe0 0%,#eef8d0 100%);border-color:rgba(101,163,13,0.35);}
+.lektion-card .lektion-num{position:static;align-self:flex-start;font-family:var(--font-display);font-size:13px;font-weight:800;color:var(--accent);background:var(--indigo-pale);width:30px;height:30px;display:flex;align-items:center;justify-content:center;border-radius:var(--r-md);}
+.lektion-badge{display:flex;align-items:center;gap:8px;}
 .step-dots{display:flex;gap:4px;}
 .step-dot{width:7px;height:7px;border-radius:50%;background:var(--gray-200);}
 .step-dot.done{background:var(--emerald);}
 .lektion-steps-count{font-size:11px;color:var(--text-light);font-weight:500;font-family:var(--font-body);}
-.lektion-card h2{font-family:var(--font-display);font-size:17px;font-weight:700;color:var(--text);margin-bottom:8px;line-height:1.35;letter-spacing:-0.3px;}
-.lektion-card p{font-size:14px;color:var(--text-mid);line-height:1.65;margin-bottom:16px;}
-.lektion-.lektion-info{display:flex;align-items:center;gap:8px;}
-.quiz-badge{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;color:var(--emerald);background:#f0fdf4;padding:3px 10px;border-radius:var(--r-full);border:1px solid rgba(16,185,129,0.25);font-family:var(--font-body);}
-.start-btn{font-size:12px;font-weight:600;color:var(--accent);background:var(--indigo-pale);padding:6px 14px;border-radius:var(--r-full);transition:all var(--t-base);}
+.lektion-card h2{font-family:var(--font-display);font-size:16.5px;font-weight:700;color:var(--text);line-height:1.32;letter-spacing:-0.3px;}
+.lektion-card p{font-size:13.5px;color:var(--text-mid);line-height:1.55;}
+.lektion-footer{margin-top:auto;padding-top:6px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;}
+.lektion-info{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.quiz-badge{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;color:var(--emerald);background:#f3fbe0;padding:3px 10px;border-radius:var(--r-full);border:1px solid rgba(101,163,13,0.25);font-family:var(--font-body);}
+.start-btn{font-size:12px;font-weight:600;color:var(--accent);background:var(--indigo-pale);padding:6px 14px;border-radius:var(--r-full);transition:all var(--t-base);flex-shrink:0;}
 .lektion-card:hover .start-btn{background:var(--accent);color:var(--white);}
 
 /* TAGS */
 .cat-tag{display:inline-flex;align-items:center;font-size:10px;font-weight:700;letter-spacing:0.8px;text-transform:uppercase;padding:3px 10px;border-radius:var(--r-full);font-family:var(--font-body);}
 .tag-aktier{background:#eff6ff;color:#1d4ed8;} .tag-fonder{background:#f5f3ff;color:#6d28d9;}
 .tag-risk{background:#fff7ed;color:#c2410c;} .tag-ranta{background:#fefce8;color:#a16207;}
-.tag-krypto{background:#ecfeff;color:#0e7490;} .tag-vardering{background:#f0fdf4;color:#166534;}
+.tag-krypto{background:#ecfeff;color:#0e7490;} .tag-vardering{background:#f3fbe0;color:#3f6212;}
 .tag-privatekonomi{background:#fdf2f8;color:#9d174d;}
 
 /* LEARNING PATH */
@@ -254,11 +300,11 @@ nav{display:flex;gap:4px;align-items:center;}
 .done-reading-btn{
  display:inline-flex;align-items:center;gap:10px;
  margin-top:32px;padding:14px 28px;font-size:14px;font-weight:600;
- background:linear-gradient(135deg,#ecfdf5,#d1fae5);
- color:#065f46;border:1.5px solid rgba(16,185,129,0.3);
+ background:linear-gradient(135deg,#eef8d0,#e4f5b0);
+ color:#365314;border:1.5px solid rgba(101,163,13,0.3);
  border-radius:var(--r-full);cursor:pointer;font-family:var(--font-body);
  transition:all var(--t-base) var(--ease-smooth);
- box-shadow:0 2px 8px rgba(16,185,129,0.15);
+ box-shadow:0 2px 8px rgba(101,163,13,0.15);
 }
 .done-reading-btn:hover{
  background:var(--emerald);color:var(--white);
@@ -293,7 +339,7 @@ nav{display:flex;gap:4px;align-items:center;}
  background:var(--grad-accent);color:var(--white);border-color:transparent;
  box-shadow:var(--shadow-accent);
 }
-.lektion-nav-btn.primary:hover{transform:translateY(-2px);box-shadow:0 12px 32px rgba(26,26,46,0.35);}
+.lektion-nav-btn.primary:hover{transform:translateY(-2px);box-shadow:0 12px 32px rgba(11,77,255,0.35);}
 .lektion-nav-btn:disabled{opacity:0.3;cursor:default;pointer-events:none;}
 
 /* QUIZ */
@@ -304,12 +350,12 @@ nav{display:flex;gap:4px;align-items:center;}
 .quiz-options{display:flex;flex-direction:column;gap:10px;}
 .quiz-option{padding:13px 18px;border:1.5px solid var(--border);border-radius:var(--r-md);cursor:pointer;font-size:14px;color:var(--text);transition:all var(--t-fast);background:var(--white);text-align:left;font-family:var(--font-body);}
 .quiz-option:hover:not(:disabled){border-color:var(--accent);color:var(--accent);background:var(--bg-subtle);}
-.quiz-option.correct{background:#f0fdf4;border-color:var(--emerald);color:#166534;}
+.quiz-option.correct{background:#f3fbe0;border-color:var(--emerald);color:#3f6212;}
 .quiz-option.wrong{background:#fff1f2;border-color:var(--rose);color:#9f1239;}
 .quiz-option:disabled{cursor:default;}
 .quiz-feedback{margin-top:16px;padding:14px 18px;font-size:13px;line-height:1.6;border-radius:var(--r-lg);display:none;border-left:3px solid;}
 .quiz-feedback.show{display:block;}
-.quiz-feedback.correct-fb{border-color:var(--emerald);background:#f0fdf4;color:#166534;}
+.quiz-feedback.correct-fb{border-color:var(--emerald);background:#f3fbe0;color:#3f6212;}
 .quiz-feedback.wrong-fb{border-color:var(--rose);background:#fff1f2;color:#9f1239;}
 .quiz-next-btn{
  display:none;margin-top:16px;padding:12px 24px;font-size:14px;font-weight:600;
@@ -319,7 +365,7 @@ nav{display:flex;gap:4px;align-items:center;}
  transition:all var(--t-base) var(--ease-smooth);box-shadow:var(--shadow-accent);
 }
 .quiz-next-btn.show{display:inline-flex;}
-.quiz-next-btn:hover{transform:translateY(-2px);box-shadow:0 12px 32px rgba(26,26,46,0.35);}
+.quiz-next-btn:hover{transform:translateY(-2px);box-shadow:0 12px 32px rgba(11,77,255,0.35);}
 .quiz-result{text-align:center;padding:40px 20px;display:none;}
 .quiz-result.show{display:block;animation:fadeIn 0.3s ease;}
 .result-score{font-family:var(--font-display);font-size:72px;font-weight:800;line-height:1;background:var(--grad-accent);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:4px;}
@@ -337,13 +383,13 @@ nav{display:flex;gap:4px;align-items:center;}
  background:var(--grad-accent);color:var(--white);border:none;
  box-shadow:var(--shadow-accent);
 }
-.result-btn.primary:hover{transform:translateY(-2px);box-shadow:0 12px 32px rgba(26,26,46,0.35);}
+.result-btn.primary:hover{transform:translateY(-2px);box-shadow:0 12px 32px rgba(11,77,255,0.35);}
 .result-btn.secondary{
  background:var(--white);color:var(--text-mid);
  border:1.5px solid var(--border-md);
 }
 .result-btn.secondary:hover{color:var(--text);border-color:var(--gray-400);box-shadow:var(--shadow-sm);}
-.completion-bar{background:linear-gradient(135deg,#f0fdf4,#ecfdf5);border:1px solid rgba(16,185,129,0.2);border-radius:var(--r-xl);padding:20px 24px;display:flex;align-items:center;gap:16px;margin-bottom:28px;}
+.completion-bar{background:linear-gradient(135deg,#f3fbe0,#eef8d0);border:1px solid rgba(101,163,13,0.2);border-radius:var(--r-xl);padding:20px 24px;display:flex;align-items:center;gap:16px;margin-bottom:28px;}
 .completion-icon{font-size:32px;}
 .completion-text h3{font-family:var(--font-display);font-size:17px;font-weight:700;margin-bottom:3px;}
 .completion-text p{font-size:12px;color:var(--text-mid);}
@@ -373,11 +419,6 @@ footer {
 
 
 
-
-@media (max-width: 900px) {
-     }
-@media (max-width: 560px) {
- }
 
 /* TYPE DEF BOX */
 .type-definition{display:flex;gap:0;border:1px solid var(--border);border-radius:var(--r-xl);margin-bottom:36px;overflow:hidden;box-shadow:var(--shadow-sm);}
@@ -419,9 +460,9 @@ footer {
 .search-result-item:hover{background:var(--gray-50);}
 .search-result-item:hover .search-result-arrow{transform:translateX(3px);color:var(--accent);}
 .search-result-icon{width:34px;height:34px;border-radius:var(--r-md);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;}
-.artikel-icon{background:#eff6ff;} .lektion-icon{background:#f0fdf4;}
+.artikel-icon{background:#eff6ff;} .lektion-icon{background:#f3fbe0;}
 .search-result-title{font-family:var(--font-display);font-size:14px;font-weight:700;color:var(--text);margin-bottom:2px;line-height:1.3;}
-.search-result-title mark{background:rgba(26,26,46,0.15);color:var(--accent);border-radius:2px;padding:0 1px;font-style:normal;}
+.search-result-title mark{background:rgba(11,77,255,0.15);color:var(--accent);border-radius:2px;padding:0 1px;font-style:normal;}
 .search-result-meta{font-size:11px;color:var(--text-light);display:flex;align-items:center;gap:5px;}
 .search-result-arrow{margin-left:auto;font-size:13px;color:var(--text-light);transition:all var(--t-fast);flex-shrink:0;}
 .search-shortcuts{padding:8px 18px;border-top:1px solid var(--border);display:flex;gap:14px;align-items:center;flex-wrap:wrap;}
@@ -460,9 +501,9 @@ footer {
 }
 .search-nav-chip:hover {
  background: var(--indigo-pale);
- border-color: rgba(26,26,46,0.3);
+ border-color: rgba(11,77,255,0.3);
  transform: translateY(-2px);
- box-shadow: 0 4px 12px rgba(26,26,46,0.12);
+ box-shadow: 0 4px 12px rgba(11,77,255,0.12);
 }
 .search-nav-chip:hover .chip-label { color: var(--accent); }
 .search-nav-chip:focus {
@@ -502,7 +543,7 @@ footer {
  transition: all var(--t-fast);
 }
 .search-popular-chip:hover {
- color: var(--accent); border-color: rgba(26,26,46,0.35);
+ color: var(--accent); border-color: rgba(11,77,255,0.35);
  background: var(--indigo-pale);
 }
 .search-popular-chip-icon { font-size: 13px; }
@@ -512,18 +553,6 @@ footer {
 @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
 @keyframes slideDown{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
 
-/* RESPONSIVE */
-@media(max-width:960px){
- .page-main{grid-template-columns:1fr;padding:32px 20px;}
- .hero-strip-inner{grid-template-columns:1fr;padding:48px 0;gap:36px;}
- .hero-badges{width:100%;flex-direction:row;flex-wrap:wrap;}
- .hero-badge{flex:1;min-width:140px;}
- header{padding:0 20px;} .hero-strip{padding:0 20px;} .cat-bar{padding:0 20px;}  }
-@media(max-width:700px){
- nav{display:none !important;} .hamburger-btn{display:flex;} .type-switcher{display:none;}
- .modal-inner{padding:32px 20px 80px;}
-}
-
 /* ══ FOOTER ══ */
 footer {
   display: block;
@@ -532,24 +561,21 @@ footer {
   color: var(--white);
   margin-top: 0;
 }
-.footer-newsletter {
-  background: var(--accent);
-  padding: 48px 32px;
-  text-align: center;
-  width: 100%;
-}
-.footer-newsletter-inner { max-width: 560px; margin: 0 auto; }
-.footer-newsletter h3 { font-family: var(--font-display); font-size: 22px; font-weight: 800; color: #fff; margin-bottom: 8px; }
-.footer-newsletter p { font-size: 14px; color: rgba(255,255,255,0.8); margin-bottom: 20px; line-height: 1.6; }
-.footer-newsletter-form { display: flex; gap: 8px; max-width: 420px; margin: 0 auto; }
-.footer-newsletter-input { flex: 1; padding: 12px 18px; border: none; border-radius: var(--r-md); font-size: 14px; font-family: var(--font-body); outline: none; background: rgba(255,255,255,0.15); color: #fff; border: 1.5px solid rgba(255,255,255,0.25); }
-.footer-newsletter-input::placeholder { color: rgba(255,255,255,0.55); }
-.footer-newsletter-input:focus { background: rgba(255,255,255,0.25); }
-.footer-newsletter-btn { padding: 11px 22px; background: var(--white); color: var(--accent); border: 2px solid var(--white); border-radius: var(--r-md); font-size: 13px; font-weight: 600; cursor: pointer; font-family: var(--font-body); white-space: nowrap; transition: all var(--t-base); }
-.footer-newsletter-btn:hover { background: var(--gray-100); }
-.footer-newsletter-note { font-size: 11px; color: rgba(255,255,255,0.5); margin-top: 12px; }
+.signup-cta{max-width:1160px;margin:0 auto;padding:0 32px 64px;}
+.signup-cta-inner{background:var(--lime);border-radius:var(--r-2xl);padding:52px 48px;display:flex;align-items:center;justify-content:space-between;gap:40px;flex-wrap:wrap;}
+.signup-cta-text h2{font-family:var(--font-display);font-size:36px;font-weight:800;letter-spacing:-1.5px;line-height:1.05;color:var(--indigo);margin-bottom:12px;}
+.signup-cta-text p{font-size:15px;line-height:1.55;color:rgba(11,18,32,0.7);max-width:400px;margin:0;}
+.signup-cta-form{display:flex;flex-direction:column;gap:10px;min-width:280px;}
+.signup-cta-row{display:flex;align-items:center;gap:8px;background:var(--white);border-radius:var(--r-full);padding:5px 5px 5px 18px;}
+.signup-cta-row input{flex:1;border:1.5px solid transparent;border-radius:var(--r-full);outline:none;font-size:14px;font-family:var(--font-body);color:var(--text);background:transparent;padding:8px 2px;transition:border-color var(--t-base);}
+.signup-cta-row input::placeholder{color:var(--text-light);}
+.signup-cta-btn{height:44px;padding:0 22px;border-radius:var(--r-full);background:var(--accent);color:var(--white);border:none;font-size:14px;font-weight:600;cursor:pointer;font-family:var(--font-body);white-space:nowrap;transition:all var(--t-base);flex-shrink:0;}
+.signup-cta-btn:hover{background:var(--gray-800);}
+.signup-cta-note{font-size:12.5px;color:rgba(11,18,32,0.6);padding-left:18px;}
 .footer-main { display: grid; grid-template-columns: 1.6fr 1fr 1fr 1fr; gap: 48px; max-width: 1160px; margin: 0 auto; padding: 56px 32px 40px; }
-.footer-brand-logo { font-family: var(--font-display); font-size: 22px; font-weight: 800; letter-spacing: -0.5px; color: var(--white); margin-bottom: 12px; display: inline-block; }
+.footer-brand-logo { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+.footer-logo-badge { width: 32px; height: 32px; border-radius: 9px; background: var(--lime); color: var(--indigo); display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 700; flex-shrink: 0; }
+.footer-logo-word { font-family: var(--font-display); font-size: 18px; font-weight: 800; letter-spacing: -0.5px; color: var(--white); }
 .footer-brand-tagline { font-size: 13px; color: var(--gray-400); line-height: 1.65; margin-bottom: 20px; max-width: 240px; }
 .footer-brand-author { display: flex; align-items: center; gap: 12px; padding: 14px 16px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: var(--r-lg); margin-bottom: 20px; }
 .footer-author-avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 800; color: #fff; font-family: var(--font-display); flex-shrink: 0; }
@@ -570,16 +596,6 @@ footer {
 .footer-bottom-right { display: flex; gap: 20px; }
 .footer-bottom-link { font-size: 12px; color: var(--gray-600); text-decoration: none; cursor: pointer; transition: color var(--t-fast); background: none; border: none; font-family: var(--font-body); }
 .footer-bottom-link:hover { color: var(--gray-400); }
-@media(max-width:900px) {
-  .footer-main { grid-template-columns: 1fr 1fr; gap: 32px; padding: 40px 20px; }
-  .footer-newsletter { padding: 36px 20px; }
-  .footer-newsletter-form { flex-direction: column; }
-  .footer-bottom { padding: 20px; flex-direction: column; text-align: center; }
-  .footer-bottom-right { justify-content: center; }
-}
-@media(max-width:560px) {
-  .footer-main { grid-template-columns: 1fr; }
-}
 </style>
  <!-- Supabase SDK -->
  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -601,7 +617,13 @@ footer {
 <!-- ══ HEADER ══ -->
 <header>
  <div class="header-inner">
- <a href="#" class="logo" onclick="goHome(); return false;">Invest<em>Academy</em></a>
+ <a href="#" class="logo" onclick="goHome(); return false;">
+ <span class="logo-badge">↗</span>
+ <span class="logo-text">
+ <span class="logo-word">Ung<em>Ekonom</em></span>
+ <span class="logo-tagline">EKONOMI FÖR LIVET</span>
+ </span>
+ </a>
  <nav>
  <button class="nav-link active" onclick="setView('alla', this)">Alla</button>
  <button class="nav-link" onclick="setView('aktier', this)">Aktier</button>
@@ -676,7 +698,8 @@ footer {
 <section class="hero-strip">
   <div class="hero-strip-inner">
     <div class="hero-text">
-      <h1 class="hero-h1">Lär dig investera.<br><span class="grad-text">På riktigt.</span></h1>
+      <span class="hero-eyebrow"><span class="hero-eyebrow-tag">❤️</span> Byggd i Sverige</span>
+      <h1 class="hero-h1">Lär dig. Förstå.<br><span class="hero-highlight">Ta kontroll.</span></h1>
       <p class="hero-desc">Strukturerad kunskap om aktier, fonder, krypto och privatekonomi – genom lektioner och quiz som faktiskt testar vad du lärt dig.</p>
       <div class="hero-cta-row">
         <button class="btn-primary" onclick="setTimeout(()=>document.getElementById('lektioner-section').scrollIntoView({behavior:'smooth'}),50)">Börja lära dig →</button>
@@ -685,26 +708,106 @@ footer {
         <span class="hero-note-check">✓</span>
         Kostnadsfritt · Ingen reklam · Ingen finansiell rådgivning
       </p>
+      <div class="hero-stats">
+        <div><div class="hero-stat-num">33</div><div class="hero-stat-label">lektioner</div></div>
+        <div><div class="hero-stat-num">5</div><div class="hero-stat-label">ämnesspår</div></div>
+        <div><div class="hero-stat-num">6</div><div class="hero-stat-label">artiklar</div></div>
+      </div>
     </div>
-    <div class="hero-badges">
-      <div class="hero-badge">
-        <div>
-          <div class="badge-label">Lektioner</div>
-          <div class="badge-desc">Lär dig steg för steg</div>
+    <div class="hero-phone-wrap">
+      <div class="hero-phone-blob-blue"></div>
+      <div class="hero-phone-blob-lime"></div>
+      <div class="hero-phone">
+        <div class="hero-phone-screen">
+          <div class="hero-phone-statusbar"><span>9:41</span><span style="letter-spacing:1px">▮▮▮ ⌁</span></div>
+          <div class="hero-phone-brand"><div class="hero-phone-logo">↗</div><span>Ungekonom</span></div>
+          <div class="hero-phone-progress">
+            <div class="hero-phone-progress-row"><span>Din ekonomi-resa</span><span style="color:var(--accent)">70%</span></div>
+            <div class="hero-phone-progress-track"><div class="hero-phone-progress-fill"></div></div>
+          </div>
+          <div class="hero-phone-modules">
+            <div class="hero-phone-module">
+              <div class="hero-phone-module-icon lime">✎</div>
+              <div class="hero-phone-module-text"><div class="hero-phone-module-label">Modul 1</div><div class="hero-phone-module-name">Aktier</div></div>
+              <div class="hero-phone-module-check">✓</div>
+            </div>
+            <div class="hero-phone-module">
+              <div class="hero-phone-module-icon blue">▤</div>
+              <div class="hero-phone-module-text"><div class="hero-phone-module-label">Modul 2</div><div class="hero-phone-module-name">Fonder</div></div>
+              <span class="hero-phone-module-arrow">›</span>
+            </div>
+            <div class="hero-phone-module locked">
+              <div class="hero-phone-module-icon blue">%</div>
+              <div class="hero-phone-module-text"><div class="hero-phone-module-label">Modul 3</div><div class="hero-phone-module-name">Privatekonomi</div></div>
+              <span>🔒</span>
+            </div>
+          </div>
+          <div class="hero-phone-tabbar">
+            <div class="hero-phone-tab active"><span>⌂</span>Hem</div>
+            <div class="hero-phone-tab"><span>▤</span>Kurser</div>
+            <div class="hero-phone-tab"><span>⌾</span>Verktyg</div>
+            <div class="hero-phone-tab"><span>☺</span>Profil</div>
+          </div>
         </div>
       </div>
-      <div class="hero-badge">
-        <div>
-          <div class="badge-label">Quiz</div>
-          <div class="badge-desc">Testa din förståelse</div>
-        </div>
-      </div>
-      <div class="hero-badge">
-        <div>
-          <div class="badge-label">Progress</div>
-          <div class="badge-desc">Följ din utveckling</div>
-        </div>
-      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ STATS MARQUEE ══ -->
+<section class="stats-marquee">
+  <div class="marquee-track">
+    <div class="marquee-set">
+      <span class="marquee-item"><strong>11+</strong> elever</span>
+      <span class="marquee-dot">&#9679;</span>
+      <span class="marquee-item"><strong>1</strong> gymnasieskola</span>
+      <span class="marquee-dot">&#9679;</span>
+      <span class="marquee-item"><strong>1</strong> hållet event</span>
+      <span class="marquee-dot">&#9679;</span>
+      <span class="marquee-item"><strong>11+</strong> elever</span>
+      <span class="marquee-dot">&#9679;</span>
+      <span class="marquee-item"><strong>1</strong> gymnasieskola</span>
+      <span class="marquee-dot">&#9679;</span>
+      <span class="marquee-item"><strong>1</strong> hållet event</span>
+      <span class="marquee-dot">&#9679;</span>
+      <span class="marquee-item"><strong>11+</strong> elever</span>
+      <span class="marquee-dot">&#9679;</span>
+      <span class="marquee-item"><strong>1</strong> gymnasieskola</span>
+      <span class="marquee-dot">&#9679;</span>
+      <span class="marquee-item"><strong>1</strong> hållet event</span>
+      <span class="marquee-dot">&#9679;</span>
+      <span class="marquee-item"><strong>11+</strong> elever</span>
+      <span class="marquee-dot">&#9679;</span>
+      <span class="marquee-item"><strong>1</strong> gymnasieskola</span>
+      <span class="marquee-dot">&#9679;</span>
+      <span class="marquee-item"><strong>1</strong> hållet event</span>
+      <span class="marquee-dot">&#9679;</span>
+    </div>
+    <div class="marquee-set">
+      <span class="marquee-item"><strong>11+</strong> elever</span>
+      <span class="marquee-dot">&#9679;</span>
+      <span class="marquee-item"><strong>1</strong> gymnasieskola</span>
+      <span class="marquee-dot">&#9679;</span>
+      <span class="marquee-item"><strong>1</strong> hållet event</span>
+      <span class="marquee-dot">&#9679;</span>
+      <span class="marquee-item"><strong>11+</strong> elever</span>
+      <span class="marquee-dot">&#9679;</span>
+      <span class="marquee-item"><strong>1</strong> gymnasieskola</span>
+      <span class="marquee-dot">&#9679;</span>
+      <span class="marquee-item"><strong>1</strong> hållet event</span>
+      <span class="marquee-dot">&#9679;</span>
+      <span class="marquee-item"><strong>11+</strong> elever</span>
+      <span class="marquee-dot">&#9679;</span>
+      <span class="marquee-item"><strong>1</strong> gymnasieskola</span>
+      <span class="marquee-dot">&#9679;</span>
+      <span class="marquee-item"><strong>1</strong> hållet event</span>
+      <span class="marquee-dot">&#9679;</span>
+      <span class="marquee-item"><strong>11+</strong> elever</span>
+      <span class="marquee-dot">&#9679;</span>
+      <span class="marquee-item"><strong>1</strong> gymnasieskola</span>
+      <span class="marquee-dot">&#9679;</span>
+      <span class="marquee-item"><strong>1</strong> hållet event</span>
+      <span class="marquee-dot">&#9679;</span>
     </div>
   </div>
 </section>
@@ -746,6 +849,8 @@ footer {
  <div id="artiklar-list">
 
  <div class="artikel-card" data-id="vad-ar-aktie" data-cat="aktier" onclick="openArtikel('vad-ar-aktie')">
+ <div class="artikel-banner"><span class="artikel-banner-label">[ ikon: aktie ]</span></div>
+ <div class="artikel-card-body">
  <h2>Vad är en aktie – och varför finns de?</h2>
  <p>När ett företag behöver kapital kan det dela upp sig i ägarandelar och sälja dem till allmänheten. Dessa kallas aktier och ger dig rätt till en del av bolagets vinst och värde.</p>
  <div class="card-meta">
@@ -753,8 +858,11 @@ footer {
  <span class="card-readtime">5 min läsning</span>
  </div>
  </div>
+ </div>
 
  <div class="artikel-card" data-id="utdelning" data-cat="aktier" onclick="openArtikel('utdelning')">
+ <div class="artikel-banner"><span class="artikel-banner-label">[ ikon: utdelning ]</span></div>
+ <div class="artikel-card-body">
  <h2>Utdelning – att få betalt för att äga aktier</h2>
  <p>Många bolag delar ut en del av vinsten direkt till sina ägare. Vad är utdelningsyield och hur fungerar återinvestering?</p>
  <div class="card-meta">
@@ -762,8 +870,11 @@ footer {
  <span class="card-readtime">4 min läsning</span>
  </div>
  </div>
+ </div>
 
  <div class="artikel-card" data-id="vad-ar-fond" data-cat="fonder" onclick="openArtikel('vad-ar-fond')">
+ <div class="artikel-banner"><span class="artikel-banner-label">[ ikon: fond ]</span></div>
+ <div class="artikel-card-body">
  <h2>Vad är en fond och hur skiljer den sig från en aktie?</h2>
  <p>En fond samlar ihop kapital från många sparare och sprider det i ett brett urval av tillgångar. Allt du behöver veta om grunderna.</p>
  <div class="card-meta">
@@ -771,8 +882,11 @@ footer {
  <span class="card-readtime">5 min läsning</span>
  </div>
  </div>
+ </div>
 
  <div class="artikel-card" data-id="avgifter" data-cat="fonder" onclick="openArtikel('avgifter')">
+ <div class="artikel-banner"><span class="artikel-banner-label">[ ikon: fondavgifter ]</span></div>
+ <div class="artikel-card-body">
  <h2>Fondavgifter – en liten skillnad med enorm effekt</h2>
  <p>En avgift på 1,3% istället för 0,2% kan kosta dig hundratusentals kronor över ett spararliv. Förstå TER och varför avgiften är avgörande.</p>
  <div class="card-meta">
@@ -780,8 +894,11 @@ footer {
  <span class="card-readtime">4 min läsning</span>
  </div>
  </div>
+ </div>
 
  <div class="artikel-card" data-id="risk-avkastning" data-cat="risk" onclick="openArtikel('risk-avkastning')">
+ <div class="artikel-banner"><span class="artikel-banner-label">[ ikon: risk ]</span></div>
+ <div class="artikel-card-body">
  <h2>Risk och avkastning – den oundvikliga avvägningen</h2>
  <p>Ingen investering ger hög avkastning utan risk. Men risk är inte binärt – det handlar om att förstå och hantera osäkerheten på ett smart sätt.</p>
  <div class="card-meta">
@@ -789,13 +906,17 @@ footer {
  <span class="card-readtime">5 min läsning</span>
  </div>
  </div>
+ </div>
 
  <div class="artikel-card" data-id="ranta-historia" data-cat="ranta" onclick="openArtikel('ranta-historia')">
+ <div class="artikel-banner"><span class="artikel-banner-label">[ ikon: ränta på ränta ]</span></div>
+ <div class="artikel-card-body">
  <h2>Ränta på ränta – historien bakom begreppet</h2>
  <p>Hur kom begreppet till? Från Babyloniens handelsmän till moderna börsproffs – en kort historia om exponentiell tillväxt.</p>
  <div class="card-meta">
  <span class="cat-tag tag-ranta">4. Ränta på ränta</span>
  <span class="card-readtime">3 min läsning</span>
+ </div>
  </div>
  </div>
 
@@ -1139,85 +1260,36 @@ footer {
 
  </div>
  </div>
-
- <!-- SIDEBAR -->
- <aside class="sidebar">
- <div>
- <p class="sb-title">Snabbfakta</p>
- <div class="sb-fact">
- <h4>Historisk avkastning</h4>
- <p>Börsen har historiskt gett ca 7–10% per år i reala termer – men med stora svängningar på kort sikt.</p>
- </div>
- <div class="sb-fact">
- <h4>ISK-kontot</h4>
- <p>Investeringssparkontot är skattemässigt fördelaktigt för de flesta och kräver ingen löpande deklaration av affärer.</p>
- </div>
- <div class="sb-fact">
- <h4>Indexfonder slår aktivt</h4>
- <p>Forskning visar att de flesta aktivt förvaltade fonder underpresterar mot index på 10+ år, efter avgifter.</p>
- </div>
- </div>
- <div>
- <p class="sb-title">Ordlista</p>
- <div class="sb-glossary-item">
- <div class="sb-term">Portfölj</div>
- <div class="sb-def">Samlingen av alla dina investeringar – aktier, fonder, m.m.</div>
- </div>
- <div class="sb-glossary-item">
- <div class="sb-term">P/E-tal</div>
- <div class="sb-def">Pris i förhållande till vinst. Mäter bolagets värdering relativt dess vinst.</div>
- </div>
- <div class="sb-glossary-item">
- <div class="sb-term">Volatilitet</div>
- <div class="sb-def">Hur mycket kursen svänger. Hög volatilitet = större kursrörelser.</div>
- </div>
- <div class="sb-glossary-item">
- <div class="sb-term">TER</div>
- <div class="sb-def">Total Expense Ratio. Den totala årliga avgiften för en fond.</div>
- </div>
- <div class="sb-glossary-item">
- <div class="sb-term">NAV</div>
- <div class="sb-def">Net Asset Value. Värdet per fondandel, beräknas dagligen.</div>
- </div>
- <div class="sb-glossary-item">
- <div class="sb-term">Utdelningsyield</div>
- <div class="sb-def">Utdelning per aktie delat med aktiekurs, i procent.</div>
- </div>
- </div>
- </aside>
 </div>
 
 </div>
+
+<!-- ══ SIGNUP CTA ══ -->
+<section class="signup-cta" id="signup-cta">
+ <div class="signup-cta-inner">
+ <div class="signup-cta-text">
+ <h2>Bli en bättre<br>Ungekonom – redan idag.</h2>
+ <p>Skapa ett konto, gör ditt startquiz och få ett spår som passar där du är just nu.</p>
+ </div>
+ <div class="signup-cta-form">
+ <div class="signup-cta-row">
+ <input type="email" placeholder="din@mejl.se" id="nl-email">
+ <button class="signup-cta-btn" onclick="handleNewsletter()">Kom igång</button>
+ </div>
+ <span class="signup-cta-note">Gratis. Tar 2 minuter.</span>
+ </div>
+ </div>
+</section>
 
 <footer>
-
- <!-- NEWSLETTER STRIP -->
- <div class="footer-newsletter">
- <div class="footer-newsletter-inner">
- <h3>Håll dig uppdaterad </h3>
- <p>Få nya lektioner, investeringstips och marknadsinsikter direkt i din inkorg. Ingen spam – bara värde.</p>
- <div class="footer-newsletter-form">
- <input class="footer-newsletter-input" type="email" placeholder="din@email.se" id="nl-email">
- <button class="footer-newsletter-btn" onclick="handleNewsletter()">Prenumerera</button>
- </div>
- <p class="footer-newsletter-note">Gratis · Avsluta när som helst · Inga konstigheter</p>
- </div>
- </div>
 
  <!-- MAIN FOOTER -->
  <div class="footer-main">
 
  <!-- BRAND COL -->
  <div class="footer-brand">
- <span class="footer-brand-logo">InvestAcademy</span>
+ <span class="footer-brand-logo"><span class="footer-logo-badge">↗</span><span class="footer-logo-word">UngEkonom</span></span>
  <p class="footer-brand-tagline">Fri, oberoende utbildning om aktier, fonder och privatekonomi. Byggd för att ge alla möjligheten att fatta välgrundade ekonomiska beslut.</p>
- <div class="footer-brand-author">
- <div class="footer-author-avatar">Y</div>
- <div>
- <div class="footer-author-name">Yahor</div>
- <div class="footer-author-title">Grundare · InvestAcademy</div>
- </div>
- </div>
  <div class="footer-social">
  <a class="footer-social-link" href="#" title="LinkedIn" aria-label="LinkedIn">
  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
@@ -1235,11 +1307,11 @@ footer {
  <div>
  <p class="footer-col-title">Ämnen</p>
  <div class="footer-links">
- <button class="footer-link" onclick="mobileNav('aktier')"><span class="footer-link-num">1–5</span> Privatekonomi</button>
- <button class="footer-link" onclick="mobileNav('aktier')"><span class="footer-link-num">6–20</span> Aktier</button>
- <button class="footer-link" onclick="mobileNav('fonder')"><span class="footer-link-num">21–27</span> Fonder</button>
- <button class="footer-link" onclick="mobileNav('fonder')"><span class="footer-link-num">28–34</span> Värdering</button>
- <button class="footer-link" onclick="mobileNav('fonder')"><span class="footer-link-num">35–39</span> Krypto</button>
+ <button class="footer-link" onclick="mobileNav('aktier')">Privatekonomi</button>
+ <button class="footer-link" onclick="mobileNav('aktier')">Aktier</button>
+ <button class="footer-link" onclick="mobileNav('fonder')">Fonder</button>
+ <button class="footer-link" onclick="mobileNav('fonder')">Värdering</button>
+ <button class="footer-link" onclick="mobileNav('fonder')">Krypto</button>
  </div>
  </div>
 
@@ -1260,13 +1332,12 @@ footer {
  <div>
  <p class="footer-col-title">Om oss</p>
  <div class="footer-links">
- <span class="footer-link" style="cursor:default;color:var(--gray-500)">Fri utbildning</span>
- <span class="footer-link" style="cursor:default;color:var(--gray-500)">Oberoende innehåll</span>
- <span class="footer-link" style="cursor:default;color:var(--gray-500)">Ingen finansiell rådgivning</span>
- <span class="footer-link" style="cursor:default;color:var(--gray-500)">Ingen reklam</span>
-        <span class="footer-link" style="cursor:default;color:var(--gray-500)">Ge en gåva :)</span>
+ <button class="footer-link" onclick="goHome()">Vår vision</button>
+ <button class="footer-link" onclick="document.getElementById('signup-cta').scrollIntoView({behavior:'smooth'})">För gymnasieskolor</button>
+ <button class="footer-link" onclick="document.getElementById('signup-cta').scrollIntoView({behavior:'smooth'})">Engagera dig</button>
+ <a class="footer-link" href="ge-en-gava.html">Ge en gåva :)</a>
  </div>
- <div style="margin-top:20px;padding:14px;background:rgba(26,26,46,0.1);border:1px solid rgba(26,26,46,0.2);border-radius:var(--r-lg);">
+ <div style="margin-top:20px;padding:14px;background:rgba(11,77,255,0.1);border:1px solid rgba(11,77,255,0.2);border-radius:var(--r-lg);">
  <div style="font-size:11px;font-weight:700;color:var(--indigo-light);margin-bottom:4px;font-family:var(--font-display);letter-spacing:0.5px;">DISCLAIMER</div>
  <div style="font-size:11px;color:var(--gray-500);line-height:1.55;">Innehållet är utbildning, inte finansiell rådgivning. Gör alltid din egen analys.</div>
  </div>
@@ -1279,7 +1350,7 @@ footer {
  <!-- BOTTOM BAR -->
  <div class="footer-bottom">
  <div class="footer-bottom-left">
- © 2026 <strong>InvestAcademy</strong> · Byggd med ❤️ i Sverige
+ © 2026 <strong>UngEkonom</strong> · Byggd med ❤️ i Sverige
  </div>
  <div class="footer-bottom-right">
  <button class="footer-bottom-link">Integritetspolicy</button>
@@ -1297,7 +1368,7 @@ function handleNewsletter() {
  document.getElementById('nl-email').style.borderColor = 'rgba(244,63,94,0.6)';
  return;
  }
- document.getElementById('nl-email').style.borderColor = 'rgba(16,185,129,0.6)';
+ document.getElementById('nl-email').style.borderColor = 'rgba(101,163,13,0.6)';
  document.getElementById('nl-email').value = '';
  document.getElementById('nl-email').placeholder = ' Tack! Du är anmäld.';
 }
