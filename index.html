@@ -194,9 +194,37 @@ nav{display:flex;gap:4px;align-items:center;}
 /* PROGRESS */
 .progress-section{background:linear-gradient(145deg,rgba(255,255,255,0.95),rgba(232,238,255,0.85));backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,0.9);border-radius:var(--r-xl);padding:28px 28px 24px;margin-bottom:36px;box-shadow:var(--shadow-md);position:relative;overflow:hidden;}
 .progress-section::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--accent);}
-.progress-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}
+.progress-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;}
+.progress-title-row{display:flex;align-items:center;gap:8px;}
+.progress-icon{font-size:18px;line-height:1;}
 .progress-title{font-family:var(--font-display);font-size:15px;font-weight:700;color:var(--text);}
-.progress-pct{font-family:var(--font-display);font-size:24px;font-weight:800;color:var(--accent);}
+.progress-eyebrow{font-size:10px;font-weight:700;letter-spacing:1.5px;color:var(--text-light);margin-top:3px;}
+.progress-summary-row{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:14px;gap:12px;}
+.progress-pct{font-family:var(--font-display);font-size:24px;font-weight:800;color:var(--accent);flex-shrink:0;}
+
+/* CATEGORY MINI-BARS */
+.progress-tracks-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px;margin:20px 0;}
+.progress-track-card{background:var(--white);border:1px solid var(--border);border-radius:var(--r-md);padding:10px 12px;}
+.progress-track-card-name{font-size:11.5px;font-weight:700;color:var(--text);margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.progress-track-card-pct{font-size:11px;color:var(--text-light);margin-bottom:7px;}
+.progress-track-mini-track{height:5px;background:var(--gray-200);border-radius:99px;overflow:hidden;}
+.progress-track-mini-fill{height:100%;border-radius:99px;background:var(--accent);transition:width 0.5s ease;}
+.progress-track-card.complete{border-color:rgba(101,163,13,0.3);}
+.progress-track-card.complete .progress-track-mini-fill{background:var(--lime);}
+.progress-track-card.complete .progress-track-card-pct{color:var(--emerald);font-weight:600;}
+
+/* CONTINUE CARD */
+.continue-card{display:flex;align-items:center;gap:14px;background:var(--indigo-pale);border:1px solid rgba(11,77,255,0.15);border-radius:var(--r-lg);padding:14px 16px;margin-bottom:20px;}
+.continue-card-icon{font-size:22px;flex-shrink:0;}
+.continue-card-text{flex:1;min-width:0;}
+.continue-card-title{font-size:13px;font-weight:700;color:var(--text);margin-bottom:2px;}
+.continue-card-meta{font-size:11.5px;color:var(--text-mid);}
+.continue-card-btn{flex-shrink:0;font-size:12.5px;font-weight:600;color:var(--white);background:var(--accent);padding:8px 16px;border-radius:var(--r-full);border:none;cursor:pointer;transition:all var(--t-base);font-family:var(--font-body);}
+.continue-card-btn:hover{background:var(--gray-800);}
+
+/* FOOTER ROW */
+.progress-footer-row{display:flex;justify-content:space-between;align-items:center;margin-top:4px;padding-top:14px;border-top:1px solid var(--border);}
+.progress-items-summary{font-size:12px;color:var(--text-light);}
 .progress-track-wrap{position:relative;margin-bottom:12px;}
 .progress-track{height:8px;background:var(--gray-200);border-radius:var(--r-full);overflow:hidden;}
 .progress-fill{height:100%;border-radius:var(--r-full);background:linear-gradient(90deg,var(--accent) 0%,var(--accent) 60%,var(--lime) 100%);transition:width 0.7s cubic-bezier(0.34,1.56,0.64,1);box-shadow:0 0 8px rgba(11,77,255,0.2);}
@@ -835,16 +863,15 @@ footer {
  <!-- PROGRESS BAR -->
  <div class="progress-section" id="progress-section">
  <div class="progress-header">
- <span class="progress-title">Din lärandeprogress</span>
- <div style="display:flex;align-items:center;gap:12px">
+ <div class="progress-title-row">
+ <span class="progress-icon">🚀</span>
+ <span class="progress-title">Din läranderesa</span>
+ </div>
+ <span class="progress-eyebrow">FRAMSTEG</span>
+ </div>
+ <div class="progress-summary-row">
+ <p class="progress-sub" id="progress-sub">Läs artiklar och klara lektioner med alla rätt för att fylla progressbaren.</p>
  <span class="progress-pct" id="progress-pct">0%</span>
- <button class="progress-reset-btn" onclick="showResetConfirm()" id="reset-btn">↺ Nollställ</button>
- </div>
- </div>
- <div class="progress-reset-confirm" id="reset-confirm">
- <span>Är du säker? All framgång raderas.</span>
- <span class="reset-yes" onclick="resetProgress()">Ja, nollställ</span>
- <span class="reset-no" onclick="hideResetConfirm()">Avbryt</span>
  </div>
  <div class="progress-track-wrap">
  <div class="progress-track">
@@ -856,8 +883,20 @@ footer {
  <div class="progress-milestone" data-pct="75" style="left:75%"></div>
  </div>
  </div>
- <p class="progress-sub" id="progress-sub">Läs artiklar och klara lektioner med alla rätt för att fylla progressbaren.</p>
- <div class="progress-items" id="progress-items"></div>
+
+ <div class="progress-tracks-grid" id="progress-tracks-grid"></div>
+
+ <div class="continue-card" id="continue-card" style="display:none"></div>
+
+ <div class="progress-footer-row">
+ <span class="progress-items-summary" id="progress-items-summary">0 artiklar · 0 lektioner klarade</span>
+ <button class="progress-reset-btn" onclick="showResetConfirm()" id="reset-btn">↺ Nollställ</button>
+ </div>
+ <div class="progress-reset-confirm" id="reset-confirm">
+ <span>Är du säker? All framgång raderas.</span>
+ <span class="reset-yes" onclick="resetProgress()">Ja, nollställ</span>
+ <span class="reset-no" onclick="hideResetConfirm()">Avbryt</span>
+ </div>
  </div>
 
  <!-- ARTIKLAR SECTION -->
@@ -2599,8 +2638,8 @@ function closeArtikel() {
 // ══════════════════════════════════
 let lektionState = { id: null, step: 0, quizIdx: 0, score: 0, answered: false };
 
-function openLektion(id) {
- lektionState = { id, step: 0, quizIdx: 0, score: 0, answered: false };
+function openLektion(id, startStep) {
+ lektionState = { id, step: startStep || 0, quizIdx: 0, score: 0, answered: false };
  renderLektion();
  document.getElementById('lektion-modal').classList.add('open');
  window.scrollTo(0,0);
@@ -2612,6 +2651,13 @@ function renderLektion() {
  const currentStep = lektionState.step;
  const isQuiz = currentStep >= l.steps.length;
  const progress = Math.round((currentStep / totalSteps) * 100);
+
+ if (isQuiz) {
+ clearLektionResume(lektionState.id);
+ } else {
+ saveLektionResume(lektionState.id, currentStep);
+ }
+ renderContinueCard();
 
  let html = `
  <button class="modal-back" onclick="closeLektion()">← Tillbaka</button>
@@ -2864,6 +2910,7 @@ async function saveProgressToSupabase(momentId, momentType, score, maxScore) {
 async function resetAllProgress() {
  progress.artiklar = {};
  progress.lektioner = {};
+ clearLektionResume();
  if (currentUser) {
  await sb.from('progress').delete().eq('user_id', currentUser.id);
  } else {
@@ -2924,6 +2971,7 @@ async function markArtikelDone(id) {
 async function markLektionDone(id) {
  if (progress.lektioner[id]) return;
  progress.lektioner[id] = true;
+ clearLektionResume(id);
 
  // Save to Supabase with quiz score
  const l = lektioner[id];
@@ -3028,7 +3076,11 @@ function updateProgressBar() {
  : `${total} av ${TOTAL_MOMENTS} moment slutförda.`;
  document.getElementById('progress-sub').textContent = sub;
 
- renderProgressItems();
+ const summaryEl = document.getElementById('progress-items-summary');
+ if (summaryEl) summaryEl.textContent = `${doneArtiklar} artiklar · ${doneLektioner} lektioner klarade`;
+
+ renderProgressTracks();
+ renderContinueCard();
  // Update card visual states
  ARTIKEL_IDS.forEach(id => {
  const card = document.querySelector(`.artikel-card[data-id="${id}"]`);
@@ -3040,90 +3092,75 @@ function updateProgressBar() {
  });
 }
 
-// Pinned items always shown first in progress
-const PINNED_ITEMS = [
- ['artikel', 'vad-ar-aktie'],
- ['lektion', 'aktier-kurs'],
- ['artikel', 'vad-ar-fond'],
- ['lektion', 'ranta-pa-ranta'],
- ['lektion', 'krypto-tjaena'],
- ['lektion', 'aktier-portfolj'],
- ['lektion', 'aktier-avkastning'],
- ['lektion', 'aktier-ab-aktier'],
- ['lektion', 'privatekonomi-skulder']
+// ── Ämnesspår för mini-barerna i progresskortet ──
+const TRACK_GROUPS = [
+ { key: 'aktier', label: 'Aktier', ids: ['aktier-grund','aktier-kurs','aktier-foretagsvarde','aktier-avkastning','aktier-hitta','aktier-mal','aktier-portfolj','aktier-vardering','aktier-ab-aktier','aktier-delarsrapport','aktier-fel','ranta-pa-ranta','aktier-risker'] },
+ { key: 'fonder', label: 'Fonder', ids: ['fonder-grund','fonder-typer','fonder-risk','fonder-avgifter','fonder-valja'] },
+ { key: 'privatekonomi', label: 'Privatekonomi', ids: ['privatekonomi-budget','privatekonomi-spara','privatekonomi-skulder','privatekonomi-mal','privatekonomi-trygghet'] },
+ { key: 'vardering', label: 'Värdering', ids: ['vardering-intro','vardering-nyckeltal','vardering-omsattning','vardering-kassaflode','vardering-relativ'] },
+ { key: 'krypto', label: 'Krypto', ids: ['krypto-intro','krypto-blockchain','krypto-kopa','krypto-tjaena','krypto-risker'] }
 ];
 
-function getTitle(obj) {
- if (!obj) return '';
- return obj.title || '';
-}
-
-function renderProgressItems() {
- const container = document.getElementById('progress-items');
- const pinnedSet = new Set(PINNED_ITEMS.map(p => p[1]));
-
- const allItems = [];
-
- // Pinned first
- PINNED_ITEMS.forEach(([type, id]) => {
- const isDone = type === 'artikel' ? progress.artiklar[id] : progress.lektioner[id];
- const obj = type === 'artikel' ? artiklar[id] : lektioner[id];
- const title = getTitle(obj);
- const icon = type === 'artikel' ? '' : '';
- const fn = type === 'artikel' ? `openArtikel('${id}')` : `openLektion('${id}')`;
- allItems.push({ id, type, isDone, title, icon, fn });
- });
-
- // Remaining artiklar
- ARTIKEL_IDS.forEach(id => {
- if (pinnedSet.has(id)) return;
- const isDone = progress.artiklar[id];
- const obj = artiklar[id];
- allItems.push({ id, type:'artikel', isDone, title: getTitle(obj), icon:'', fn:`openArtikel('${id}')` });
- });
-
- // Remaining lektioner
- LEKTION_IDS.forEach(id => {
- if (pinnedSet.has(id)) return;
- const isDone = progress.lektioner[id];
- const obj = lektioner[id];
- allItems.push({ id, type:'lektion', isDone, title: getTitle(obj), icon:'', fn:`openLektion('${id}')` });
- });
-
- const SHOW = 9;
- let itemsHtml = '';
- allItems.forEach((item, i) => {
- const hidden = i >= SHOW ? 'hidden-item' : '';
- itemsHtml += `<div class="progress-item ${item.isDone ? 'done' : ''} ${hidden}" onclick="${item.fn}" style="cursor:pointer" title="Öppna">
- 
- <span>${item.icon} ${item.title}</span>
+function renderProgressTracks() {
+ const container = document.getElementById('progress-tracks-grid');
+ if (!container) return;
+ container.innerHTML = TRACK_GROUPS.map(track => {
+ const done = track.ids.filter(id => progress.lektioner[id]).length;
+ const pct = Math.round((done / track.ids.length) * 100);
+ const complete = pct >= 100;
+ return `
+ <div class="progress-track-card ${complete ? 'complete' : ''}">
+ <div class="progress-track-card-name">${track.label}</div>
+ <div class="progress-track-card-pct">${pct}%${complete ? ' ✓' : ''}</div>
+ <div class="progress-track-mini-track"><div class="progress-track-mini-fill" style="width:${pct}%"></div></div>
  </div>`;
- });
-
- const remaining = allItems.length - SHOW;
- const btnHtml = remaining > 0
- ? `<button class="progress-see-more-btn" id="see-more-btn" onclick="toggleProgressItems()">
- Visa alla ${allItems.length} moment ▾
- </button>`
- : '';
-
- container.innerHTML = itemsHtml + btnHtml;
+ }).join('');
 }
 
-function toggleProgressItems() {
- const hidden = document.querySelectorAll('.progress-item.hidden-item');
- const btn = document.getElementById('see-more-btn');
- const isRevealed = hidden[0] && hidden[0].classList.contains('revealed');
- hidden.forEach((el, i) => {
- if (isRevealed) {
- el.classList.remove('revealed');
- } else {
- setTimeout(() => el.classList.add('revealed'), i * 18);
- }
- });
- if (btn) btn.textContent = isRevealed
- ? `Visa alla ${hidden.length + 9} moment ▾`
- : 'Visa färre ▴';
+// ── "Fortsätt där du slutade" – kommer ihåg senaste steget i en påbörjad lektion ──
+const LEKTION_RESUME_KEY = 'ua_lektion_resume';
+
+function saveLektionResume(id, step) {
+ try { localStorage.setItem(LEKTION_RESUME_KEY, JSON.stringify({ id, step })); } catch(e) {}
+}
+function clearLektionResume(id) {
+ try {
+ const raw = localStorage.getItem(LEKTION_RESUME_KEY);
+ if (!raw) return;
+ const saved = JSON.parse(raw);
+ if (!id || saved.id === id) localStorage.removeItem(LEKTION_RESUME_KEY);
+ } catch(e) {}
+}
+function getLektionResume() {
+ try {
+ const raw = localStorage.getItem(LEKTION_RESUME_KEY);
+ if (!raw) return null;
+ const saved = JSON.parse(raw);
+ if (!lektioner[saved.id] || progress.lektioner[saved.id]) { localStorage.removeItem(LEKTION_RESUME_KEY); return null; }
+ return saved;
+ } catch(e) { return null; }
+}
+
+function renderContinueCard() {
+ const card = document.getElementById('continue-card');
+ if (!card) return;
+ const resume = getLektionResume();
+ if (!resume) { card.style.display = 'none'; card.innerHTML = ''; return; }
+
+ const l = lektioner[resume.id];
+ const totalSteps = l.steps.length + 1; // +1 för quiz
+ const remainingUnits = totalSteps - resume.step;
+ const minsLeft = Math.max(1, Math.round(remainingUnits * 1.5));
+
+ card.style.display = 'flex';
+ card.innerHTML = `
+ <span class="continue-card-icon">📖</span>
+ <div class="continue-card-text">
+ <div class="continue-card-title">Fortsätt: ${l.title}</div>
+ <div class="continue-card-meta">Steg ${resume.step + 1} av ${totalSteps} · ~${minsLeft} min kvar</div>
+ </div>
+ <button class="continue-card-btn" onclick="openLektion('${resume.id}', ${resume.step})">Fortsätt →</button>
+ `;
 }
 
 
