@@ -2549,8 +2549,11 @@ const lektioner = {
 // ══════════════════════════════════
 // ARTIKEL MODAL
 // ══════════════════════════════════
+let artikelReturnScrollY = 0;
+
 function openArtikel(id) {
  const a = artiklar[id]; if (!a) return;
+ artikelReturnScrollY = window.scrollY;
  const isDone = progress.artiklar[id];
  document.getElementById('artikel-modal-content').innerHTML = `
  <button class="modal-back" onclick="closeArtikel()">← Tillbaka</button>
@@ -2565,7 +2568,9 @@ function openArtikel(id) {
  ${isDone ? 'Artikel slutförd' : 'Klar med läsningen'}
  </button>
  `;
- document.getElementById('artikel-modal').classList.add('open');
+ const artikelModal = document.getElementById('artikel-modal');
+ artikelModal.classList.add('open');
+ artikelModal.scrollTop = 0;
  window.scrollTo(0,0);
 }
 
@@ -2586,6 +2591,7 @@ function toggleLektionGroup(groupId) {
 
 function closeArtikel() {
  document.getElementById('artikel-modal').classList.remove('open');
+ window.scrollTo(0, artikelReturnScrollY);
 }
 
 // ══════════════════════════════════
@@ -2903,20 +2909,16 @@ async function markArtikelDone(id) {
  if (btn) {
  btn.classList.add('completed');
  btn.disabled = true;
- btn.innerHTML = ' Artikel slutförd';
- // Show recommendation box
- const existing = document.getElementById('artikel-rec-box');
- if (!existing) {
- const recDiv = document.createElement('div');
- recDiv.id = 'artikel-rec-box';
- recDiv.innerHTML = buildNextRecBox(id, 'closeArtikel(); scrollToProgress();');
- btn.parentNode.insertBefore(recDiv, btn.nextSibling);
- recDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
- }
+ btn.innerHTML = '✓ Artikel slutförd';
  }
 
  updateProgressBar();
- setTimeout(() => showToast(artikelMessages), 500);
+
+ // Show the "slutförd" state briefly, then return to where the reader was before opening the article.
+ setTimeout(() => {
+ closeArtikel();
+ setTimeout(() => showToast(artikelMessages), 200);
+ }, 1000);
 }
 
 async function markLektionDone(id) {
@@ -2935,6 +2937,29 @@ async function markLektionDone(id) {
  }, 600);
 }
 
+
+const artikelMessages = [
+ { icon: '🎉', title: 'Bra jobbat!', msg: 'Du har läst klart en artikel.' },
+ { icon: '📚', title: 'Snyggt!', msg: 'En artikel till i bagaget.' },
+ { icon: '💡', title: 'Fortsätt så!', msg: 'Du bygger din ekonomiska kunskap.' }
+];
+const lektionMessages = [
+ { icon: '🏆', title: 'Lektion klar!', msg: 'Alla rätt på quizet.' },
+ { icon: '🔥', title: 'Grymt jobbat!', msg: 'Du klarade lektionen med toppresultat.' },
+ { icon: '🚀', title: 'Fortsätt så!', msg: 'Ditt kunnande växer för varje lektion.' }
+];
+let toastTimer = null;
+
+function showToast(messages) {
+ const pick = messages[Math.floor(Math.random() * messages.length)];
+ document.getElementById('congrats-icon').textContent = pick.icon;
+ document.getElementById('congrats-title').textContent = pick.title;
+ document.getElementById('congrats-msg').textContent = pick.msg;
+ const toast = document.getElementById('congrats-toast');
+ toast.classList.add('show');
+ clearTimeout(toastTimer);
+ toastTimer = setTimeout(() => toast.classList.remove('show'), 3200);
+}
 
 let prevProgressPct = null;
 
@@ -3449,7 +3474,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 <!-- CONGRATS TOAST -->
 <div class="congrats-toast" id="congrats-toast">
- 
+ <span class="congrats-toast-icon" id="congrats-icon">🎉</span>
  <div class="congrats-toast-text">
  <strong id="congrats-title">Bra jobbat!</strong>
  <span id="congrats-msg">Du har slutfört ett moment.</span>
