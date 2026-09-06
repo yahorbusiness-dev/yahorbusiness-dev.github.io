@@ -1420,11 +1420,10 @@ footer {
 
 </footer>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script>
-const SUPABASE_URL = 'https://psvjlxqdqcuhmafqorlv.supabase.co';
-const SUPABASE_ANON_KEY = 'sb_publishable_yuBvIFJ1sU3sfLpC0P3rmA_lNdgxITd';
-const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const SUBSCRIBE_SUPABASE_URL = 'https://psvjlxqdqcuhmafqorlv.supabase.co';
+const SUBSCRIBE_SUPABASE_ANON_KEY = 'sb_publishable_yuBvIFJ1sU3sfLpC0P3rmA_lNdgxITd';
+const supabaseClient = supabase.createClient(SUBSCRIBE_SUPABASE_URL, SUBSCRIBE_SUPABASE_ANON_KEY);
 
 async function handleNewsletter() {
  const input = document.getElementById('nl-email');
