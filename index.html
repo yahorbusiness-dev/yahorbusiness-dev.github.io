@@ -1420,16 +1420,31 @@ footer {
 
 </footer>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script>
-function handleNewsletter() {
- const email = document.getElementById('nl-email').value.trim();
+const SUPABASE_URL = 'https://psvjlxqdqcuhmafqorlv.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_yuBvIFJ1sU3sfLpC0P3rmA_lNdgxITd';
+const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+async function handleNewsletter() {
+ const input = document.getElementById('nl-email');
+ const email = input.value.trim();
  if (!email || !email.includes('@')) {
- document.getElementById('nl-email').style.borderColor = 'rgba(244,63,94,0.6)';
+ input.style.borderColor = 'rgba(244,63,94,0.6)';
  return;
  }
- document.getElementById('nl-email').style.borderColor = 'rgba(101,163,13,0.6)';
- document.getElementById('nl-email').value = '';
- document.getElementById('nl-email').placeholder = ' Tack! Du är anmäld.';
+
+ const { error } = await supabaseClient.from('subscribers').insert({ email });
+
+ if (error && error.code !== '23505') {
+ input.style.borderColor = 'rgba(244,63,94,0.6)';
+ input.placeholder = 'Något gick fel, försök igen.';
+ return;
+ }
+
+ input.style.borderColor = 'rgba(101,163,13,0.6)';
+ input.value = '';
+ input.placeholder = 'Tack! Du är anmäld.';
 }
 </script>
 
