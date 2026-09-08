@@ -1548,17 +1548,29 @@ function applyFilters() {
  c.style.display = show ? '' : 'none';
  if (show) lCount++;
  });
- // Show/hide learning-path-headers based on visible cards
+ // While filtering to a specific category, expand every group so a match
+ // further down isn't hidden by the "collapsed" nth-child(n+4) CSS rule.
+ document.querySelectorAll('.lektion-group').forEach(g => {
+ if (currentCat !== 'alla') g.classList.remove('collapsed');
+ });
+
+ // Show/hide learning-path-headers (and their "Se mer lektioner" button)
+ // based on whether their group actually has a visible card.
  document.querySelectorAll('.learning-path-header').forEach(h => {
- if (currentCat === 'alla') { h.style.display = ''; return; }
- // Show header only if at least one card below it is visible
- let next = h.nextElementSibling;
- let hasVisible = false;
- while (next && next.classList.contains('lektion-card')) {
- if (next.style.display !== 'none') { hasVisible = true; break; }
- next = next.nextElementSibling;
+ const group = h.nextElementSibling; // .lektion-group
+ const seeMore = group ? group.nextElementSibling : null; // .see-more-container
+ const seeMoreEl = (seeMore && seeMore.classList.contains('see-more-container')) ? seeMore : null;
+ if (currentCat === 'alla') {
+ h.style.display = '';
+ if (seeMoreEl) seeMoreEl.style.display = '';
+ return;
  }
+ const hasVisible = !!group && Array.from(group.children).some(
+ c => c.classList.contains('lektion-card') && c.style.display !== 'none'
+ );
  h.style.display = hasVisible ? '' : 'none';
+ // Nothing to "see more" of while filtered — groups are already expanded above.
+ if (seeMoreEl) seeMoreEl.style.display = 'none';
  });
  document.getElementById('artikel-count').textContent = aCount + ' artikel' + (aCount!==1?'ar':'');
  document.getElementById('lektion-count').textContent = lCount + ' lektion' + (lCount!==1?'er':'');
