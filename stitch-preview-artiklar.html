@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+
+<html lang="sv"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><link href="stitch-assets/tailwind.css" rel="stylesheet"/></head><body class="bg-bg-root font-body-regular text-on-surface antialiased"><aside class="fixed left-0 top-0 h-full w-72 bg-surface-card z-50 flex flex-col justify-between shadow-[0_1px_8px_rgba(0,0,0,0.04)] select-none"><div class="flex flex-col"><div class="p-space-lg pb-space-md flex items-center gap-space-sm"><img alt="UngEkonom Logo" class="h-8 w-auto object-contain" src="stitch-assets/logo.svg"/><div class="flex flex-col"><span class="font-headline-3 text-headline-3 text-text-primary tracking-tight">UngEkonom</span><span class="font-caption-micro text-caption-micro text-text-secondary">Ekonomi för livet</span></div></div><div class="px-space-lg mb-space-md"><div class="flex items-center justify-between bg-surface-subdued rounded-xl px-space-md py-space-sm transition-all"><div class="flex items-center gap-space-xs text-text-tertiary"><span class="material-symbols-outlined text-[18px]">search</span><span class="font-body-regular text-[13px] text-text-secondary">Sök lektioner...</span></div><kbd class="bg-surface-card text-text-tertiary px-1.5 py-0.5 rounded text-[11px] font-medium shadow-sm">⌘K</kbd></div></div><nav class="flex flex-col px-space-sm gap-1" data-active-classes="bg-primary-tint text-primary-deep font-medium"><a class="flex items-center gap-space-md px-space-md py-2.5 rounded-xl font-body-medium text-body-medium text-text-secondary hover:bg-surface-subdued hover:text-text-primary transition-all" data-path="hem" href="index-stitch-preview.html"><span class="material-symbols-outlined text-[20px]">grid_view</span><span>Hem</span></a><a class="flex items-center gap-space-md px-space-md py-2.5 rounded-xl font-body-medium text-body-medium text-text-secondary hover:bg-surface-subdued hover:text-text-primary transition-all" data-path="kurser" href="stitch-preview-kurser.html"><span class="material-symbols-outlined text-[20px]">menu_book</span><span>Kurser</span></a><a aria-current="page" class="flex items-center gap-space-md px-space-md py-2.5 rounded-xl transition-all bg-primary-tint text-primary-deep font-medium" data-path="artiklar" href="stitch-preview-artiklar.html"><span class="material-symbols-outlined text-[20px]">newspaper</span><span>Artiklar</span></a><a class="flex items-center gap-space-md px-space-md py-2.5 rounded-xl font-body-medium text-body-medium text-text-secondary hover:bg-surface-subdued hover:text-text-primary transition-all" data-path="verktyg" href="stitch-preview-verktyg.html"><span class="material-symbols-outlined text-[20px]">calculate</span><span>Verktyg</span></a><a class="flex items-center gap-space-md px-space-md py-2.5 rounded-xl font-body-medium text-body-medium text-text-secondary hover:bg-surface-subdued hover:text-text-primary transition-all" data-path="min-resa" href="stitch-preview-min-resa.html"><span class="material-symbols-outlined text-[20px]">explore</span><span>Min resa</span></a><a class="flex items-center gap-space-md px-space-md py-2.5 rounded-xl font-body-medium text-body-medium text-text-secondary hover:bg-surface-subdued hover:text-text-primary transition-all" data-path="profil" href="stitch-preview-profil.html"><span class="material-symbols-outlined text-[20px]">person</span><span>Profil</span></a></nav></div><div class="flex flex-col gap-space-sm p-space-sm"><div class="bg-surface-subdued rounded-xl p-space-md"><div class="flex items-center justify-between mb-space-xs"><div class="flex items-center gap-1.5 bg-[#FEF3C7] text-[#D97706] px-2 py-0.5 rounded-full font-caption-micro text-caption-micro"><span>🔥</span><span>7 dagars streak</span></div><span class="font-caption-micro text-caption-micro text-text-tertiary">60%</span></div><div class="flex items-center justify-between text-text-secondary font-caption-micro text-caption-micro mb-1.5"><span>Lär-mål</span><span class="font-medium text-text-primary">9 / 15 min idag</span></div><div class="w-full h-1.5 bg-border-subtle rounded-full overflow-hidden"><div class="h-full bg-positive-spruce rounded-full w-[60%]"></div></div></div><div class="flex items-center justify-between p-space-sm bg-surface-card rounded-xl hover:bg-surface-subdued transition-colors"><div class="flex items-center gap-space-sm"><div class="w-8 h-8 rounded-full bg-surface-subdued flex items-center justify-center font-headline-3 text-[13px] text-text-primary font-semibold">EL</div><div class="flex flex-col"><span class="font-label-md text-label-md text-text-primary leading-tight">Elsa Lindqvist</span><span class="font-caption-micro text-caption-micro text-text-secondary">Nivå 4 • 2 450 XP</span></div></div><a class="text-text-tertiary hover:text-text-primary transition-colors p-1 flex items-center justify-center" data-path="installningar" href="stitch-preview-profil.html"><span class="material-symbols-outlined text-[20px]">settings</span></a></div></div></aside><div class="pl-72"><header class="fixed top-0 left-72 right-0 h-16 bg-surface-card/85 backdrop-blur-xl z-40 flex items-center justify-between px-space-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="flex items-center gap-space-xs font-body-medium text-[14px] text-text-tertiary"><span class="hover:text-text-primary transition-colors cursor-pointer">UngEkonom</span><span class="material-symbols-outlined text-[16px]">chevron_right</span><span class="text-text-primary font-medium">Översikt</span></div><div class="flex items-center gap-space-md"><div class="flex items-center gap-1.5 bg-primary-tint text-primary-deep font-label-md text-label-md px-3 py-1.5 rounded-full"><span>⚡</span><span>2 450 XP</span></div><button class="w-9 h-9 rounded-xl flex items-center justify-center text-text-secondary hover:bg-surface-subdued hover:text-text-primary transition-all relative" type="button"><span class="material-symbols-outlined text-[20px]">notifications</span><span class="absolute top-2 right-2 w-2 h-2 bg-critical-danger rounded-full"></span></button><div class="flex items-center gap-space-xs pl-space-xs"><img alt="Profile" class="w-8 h-8 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDljkDlchTG_N09bx1rV9UwQ03VOO8wlM-J445j0y7OFGpm3H80gAVxm16CtvR-XtjNbCfeFW9QtRyodxixiWAwYFFX_-vrg-9TcXtwUtCrbeJcAFpcnF3hr0IbaBzW-BBXma2EY7tX4awQm2TQqRZU29x2s51AtQoAsafg-6ZEK3uelE9rEBJVNmZqi7YzWpwpg_pCLUbRUYb0esxvlaMHtTr0aGLL8_C8HcrHkpmwMxzipf1w7Ko"/></div></div></header><main class="w-full pt-16 min-h-screen bg-bg-root"><div class="max-w-7xl mx-auto px-space-xl py-space-xl"><div class="flex flex-col w-full">
+<div class="flex flex-col gap-space-xl">
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-space-md pt-2">
+<div class="flex flex-col max-w-2xl">
+<div class="flex items-center gap-space-xs text-primary font-label-md text-label-md uppercase tracking-wider mb-2">
+<span class="material-symbols-outlined text-[16px]">menu_book</span>
+<span>Redaktionellt • UngEkonom Insikt</span>
+</div>
+<h1 class="font-display-xl text-display-xl text-text-primary tracking-tight mb-2">Artiklar</h1>
+<p class="font-body-medium text-body-medium text-text-secondary">
+          Förstå ekonomi, investeringar och pengar – utan onödigt krångel. Välunderbyggda guider anpassade för nästa generations sparare.
+        </p>
+</div>
+<div class="flex items-center gap-space-sm self-start md:self-auto">
+<div class="flex items-center gap-2 bg-surface-card px-space-md py-2 rounded-xl shadow-sm">
+<span class="material-symbols-outlined text-text-tertiary text-[18px]">sort</span>
+<span class="font-caption-micro text-caption-micro text-text-secondary">Sortera:</span>
+<select class="bg-transparent font-label-md text-label-md text-text-primary focus:outline-none cursor-pointer" id="sort-select">
+<option value="latest">Senast publicerat</option>
+<option value="time-asc">Kortast lästid</option>
+<option value="time-desc">Längst lästid</option>
+<option value="popular">Mest lästa</option>
+</select>
+</div>
+<button class="flex items-center gap-1.5 bg-surface-card px-space-md py-2 rounded-xl text-text-secondary hover:text-text-primary hover:bg-surface-subdued shadow-sm transition-all" id="reading-mode-toggle">
+<span class="material-symbols-outlined text-[18px]">bookmark</span>
+<span class="font-label-md text-label-md">Sparade (3)</span>
+</button>
+</div>
+</div>
+<div class="flex items-center justify-between gap-space-md overflow-x-auto pb-1 scrollbar-none">
+<div class="flex items-center gap-2" id="filter-container">
+<button class="filter-pill active px-4 py-2 rounded-full font-label-md text-label-md bg-primary text-on-primary shadow-sm transition-all" data-filter="all">
+          Alla artiklar
+        </button>
+<button class="filter-pill px-4 py-2 rounded-full font-label-md text-label-md bg-surface-card text-text-secondary hover:text-text-primary hover:bg-surface-subdued shadow-sm transition-all" data-filter="Aktier">
+          Aktier
+        </button>
+<button class="filter-pill px-4 py-2 rounded-full font-label-md text-label-md bg-surface-card text-text-secondary hover:text-text-primary hover:bg-surface-subdued shadow-sm transition-all" data-filter="Fonder">
+          Fonder
+        </button>
+<button class="filter-pill px-4 py-2 rounded-full font-label-md text-label-md bg-surface-card text-text-secondary hover:text-text-primary hover:bg-surface-subdued shadow-sm transition-all" data-filter="Privatekonomi">
+          Privatekonomi
+        </button>
+<button class="filter-pill px-4 py-2 rounded-full font-label-md text-label-md bg-surface-card text-text-secondary hover:text-text-primary hover:bg-surface-subdued shadow-sm transition-all" data-filter="Risker">
+          Risker
+        </button>
+<button class="filter-pill px-4 py-2 rounded-full font-label-md text-label-md bg-surface-card text-text-secondary hover:text-text-primary hover:bg-surface-subdued shadow-sm transition-all" data-filter="Ränta på ränta">
+          Ränta på ränta
+        </button>
+<button class="filter-pill px-4 py-2 rounded-full font-label-md text-label-md bg-surface-card text-text-secondary hover:text-text-primary hover:bg-surface-subdued shadow-sm transition-all" data-filter="Värdering">
+          Värdering
+        </button>
+<button class="filter-pill px-4 py-2 rounded-full font-label-md text-label-md bg-surface-card text-text-secondary hover:text-text-primary hover:bg-surface-subdued shadow-sm transition-all" data-filter="Krypto">
+          Krypto
+        </button>
+</div>
+<div class="hidden lg:flex items-center text-text-tertiary gap-1.5 font-caption-micro text-caption-micro shrink-0 pl-4">
+<span>Visar</span>
+<span class="font-semibold text-text-primary" id="article-count">7</span>
+<span>guider</span>
+</div>
+</div>
+<article class="relative w-full bg-surface-card rounded-2xl shadow-md overflow-hidden group hover:shadow-xl transition-all duration-300">
+<div class="grid grid-cols-1 lg:grid-cols-12">
+<div class="lg:col-span-7 p-space-xl flex flex-col justify-between order-2 lg:order-1 bg-surface-card">
+<div class="flex flex-col gap-space-md">
+<div class="flex flex-wrap items-center gap-space-sm">
+<span class="bg-primary-tint text-primary-deep font-label-md text-label-md px-3 py-1 rounded-full">
+                Aktier • Fördjupning
+              </span>
+<span class="font-caption-micro text-caption-micro text-text-tertiary flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">schedule</span>
+                7 min läsning • Publicerad idag
+              </span>
+<span class="bg-positive-wash text-secondary font-label-md text-caption-micro px-2 py-0.5 rounded-md flex items-center gap-1">
+<span class="material-symbols-outlined text-[12px]">verified</span>
+                Faktagranskad
+              </span>
+</div>
+<div class="flex flex-col gap-2">
+<h2 class="font-display-xl text-display-xl-mobile lg:text-display-xl text-text-primary tracking-tight group-hover:text-primary transition-colors">
+                Risk och avkastning – den oundvikliga avvägningen på börsen
+              </h2>
+<p class="font-body-medium text-body-medium text-text-secondary leading-relaxed max-w-2xl">
+                Varför finns det inga gratisluncher i finansvärlden? Vi går igenom hur risk fungerar i praktiken, vad volatilitet egentligen betyder för en 20-åring, och hur du skyddar din framtid utan att gå miste om tillväxt.
+              </p>
+</div>
+<div class="bg-surface-subdued rounded-xl p-space-md my-1 flex items-center gap-space-md">
+<div class="w-10 h-10 rounded-full bg-surface-card flex items-center justify-center text-primary shrink-0 shadow-sm">
+<span class="material-symbols-outlined text-[20px]">show_chart</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-text-primary">Nyckelinsikt</span>
+<span class="font-caption-micro text-caption-micro text-text-secondary">Tid i marknaden slår alltid tajmning av marknaden – historisk data över 100 år.</span>
+</div>
+</div>
+</div>
+<div class="pt-space-lg mt-space-md flex flex-wrap items-center justify-between gap-space-md">
+<div class="flex items-center gap-space-sm">
+<div class="w-10 h-10 rounded-full bg-primary-tint text-primary-deep font-semibold flex items-center justify-center font-headline-3 text-[14px]">
+                FE
+              </div>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-text-primary">Filip Ek</span>
+<span class="font-caption-micro text-caption-micro text-text-tertiary">Senior Finansiell Analytiker</span>
+</div>
+</div>
+<a class="inline-flex items-center gap-space-xs bg-primary hover:bg-primary-deep text-on-primary px-space-lg py-3 rounded-xl font-label-md text-label-md transition-all shadow-sm group/btn" href="#">
+<span>Läs hela artikeln</span>
+<span class="material-symbols-outlined text-[18px] group-hover/btn:translate-x-1 transition-transform">arrow_forward</span>
+</a>
+</div>
+</div>
+<div class="lg:col-span-5 relative min-h-[300px] lg:min-h-[440px] order-1 lg:order-2 overflow-hidden bg-surface-container">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out" data-alt="A modern, high-contrast Scandinavian editorial photograph of young professional analysts working in a serene Stockholm architectural studio, bright ambient natural daylight streaming through tall pane windows, clean wood tables, digital tablet displaying elegant upward financial graphs in cobalt blue, minimalist Nordic interior design with subtle green foliage" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDm-SEFGPWTsmW5UQS5mBrX5NyicG0aH4JuGrQXsuAYypv9u61Oyw9C3pjtGnO4-g9nF99rP5UxoTQrAJdKztMvaYmvbq7la-SRNdMfk7jPU8-FYy9Sj3Aw-OpDgsTydEICJO2F7-1WEsVTu0sVJ-7357f8vC_2T-yaACMmyYvHUBVC0zdhh27hbkKdzo8bNd9EiI7IpiiCgFZgLABRVev6M_UY-VQNbjGz7kgEKjSSAv7szs2T4KY"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent lg:hidden"></div>
+<div class="absolute top-4 right-4 bg-surface-card/90 backdrop-blur-md px-3 py-1.5 rounded-xl shadow-md flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-positive-spruce animate-ping"></span>
+<span class="font-caption-micro text-caption-micro text-text-primary font-medium">Veckans djupdykning</span>
+</div>
+</div>
+</div>
+</article>
+<div class="flex items-center justify-between pt-space-md">
+<div class="flex items-center gap-2">
+<h3 class="font-headline-2 text-headline-2 text-text-primary">Senaste lektionerna &amp; artiklarna</h3>
+<span class="bg-surface-subdued text-text-secondary text-caption-micro font-caption-micro px-2.5 py-0.5 rounded-full">6 nya</span>
+</div>
+<div class="flex items-center gap-1">
+<span class="font-caption-micro text-caption-micro text-text-tertiary hidden sm:inline">Klicka på ett kort för att påbörja läsningen</span>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-space-lg" id="article-grid">
+<article class="article-card group bg-surface-card rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 flex flex-col justify-between overflow-hidden" data-category="Aktier" data-time="4">
+<div class="flex flex-col">
+<div class="relative h-48 w-full overflow-hidden bg-surface-subdued">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="A crisp, stylized editorial photo showing Swedish physical stock certificates laid next to a sleek modern smartphone with stock market charts, soft warm light, calm minimalist aesthetic with slate and cobalt hues, Scandinavian office context" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB1GSAlOPO11ais1NixFWVS0IAEo88ksX62XBiOqVTtI3TTnghxrWnez41iGZ8ngXuia2cQT5bRTb9I_6GWCJtKAOxdH6_MfEwokPfaHVLkg7mclCduAwiuo08QnL2qJLvry_UvdID4ij6HA5ADO9-9kM7uQ2X7VJKkuGpBy8nVIC7wjJmTttdb5MpfOA9auh0U5yNunu2Gd-ZE0EFTV5t-OIeGAsd8K0sYfZnT76LQ_dPRiS_G-uU"/>
+<div class="absolute top-3 left-3">
+<span class="bg-primary-tint text-primary-deep font-label-md text-caption-micro px-2.5 py-1 rounded-full shadow-sm">
+                Aktier
+              </span>
+</div>
+<div class="absolute bottom-3 right-3 bg-surface-card/90 backdrop-blur-sm px-2 py-0.5 rounded-md font-caption-micro text-caption-micro text-text-secondary flex items-center gap-1">
+<span class="material-symbols-outlined text-[13px]">timer</span>
+<span>4 min</span>
+</div>
+</div>
+<div class="p-space-lg flex flex-col gap-space-xs">
+<div class="flex items-center justify-between text-text-tertiary font-caption-micro text-caption-micro">
+<span>Nybörjare • Modul 1</span>
+<span>24 Okt</span>
+</div>
+<h4 class="font-headline-3 text-headline-3 text-text-primary group-hover:text-primary transition-colors leading-snug">
+              Vad är en aktie – och varför finns de?
+            </h4>
+<p class="font-body-regular text-body-regular text-text-secondary leading-relaxed line-clamp-2">
+              En grundläggande genomgång av ägande och bolag på Stockholmsbörsen. Lär dig skillnaden mellan A- och B-aktier.
+            </p>
+</div>
+</div>
+<div class="px-space-lg pb-space-lg pt-2 flex items-center justify-between">
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 rounded-full bg-surface-subdued flex items-center justify-center font-caption-micro text-text-secondary font-semibold">
+              EL
+            </div>
+<span class="font-caption-micro text-caption-micro text-text-secondary">Emma Lundgren</span>
+</div>
+<span class="text-primary font-label-md text-label-md flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+            Läs <span class="material-symbols-outlined text-[16px]">chevron_right</span>
+</span>
+</div>
+</article>
+<article class="article-card group bg-surface-card rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 flex flex-col justify-between overflow-hidden" data-category="Aktier" data-time="5">
+<div class="flex flex-col">
+<div class="relative h-48 w-full overflow-hidden bg-surface-subdued">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="A refined minimalist composition featuring green potted sprout plants alongside clean glass coin jars and digital transaction displays, daylight interior, clean lines, representing passive stock dividends in a soft Scandinavian color palette" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCa9fySceuKF0bQl9nMPoT25jchWrGqXjpg1wHGBwxlEGsOCl_D_GDwkTTAPGsbD6K5L-RD_l9HB3zqOD4VPTF231S69j_Z8d4j2mN0uZYaxYnPWeckvKpp52sC43OHkaueQ0qtlnSj_MppCmPilarGq6KuPdVdw1CvO0FDzwbPKe44rhnWPqOz69yIcdsLN0_pIl9beHEpUsoIQKx3w2CNS0yr0q0DwAV55cn3iu-83LCjr32Wkqg"/>
+<div class="absolute top-3 left-3">
+<span class="bg-primary-tint text-primary-deep font-label-md text-caption-micro px-2.5 py-1 rounded-full shadow-sm">
+                Aktier
+              </span>
+</div>
+<div class="absolute bottom-3 right-3 bg-surface-card/90 backdrop-blur-sm px-2 py-0.5 rounded-md font-caption-micro text-caption-micro text-text-secondary flex items-center gap-1">
+<span class="material-symbols-outlined text-[13px]">timer</span>
+<span>5 min</span>
+</div>
+</div>
+<div class="p-space-lg flex flex-col gap-space-xs">
+<div class="flex items-center justify-between text-text-tertiary font-caption-micro text-caption-micro">
+<span>Mellannivå • Strategi</span>
+<span>22 Okt</span>
+</div>
+<h4 class="font-headline-3 text-headline-3 text-text-primary group-hover:text-primary transition-colors leading-snug">
+              Utdelning – att få betalt för att äga aktier
+            </h4>
+<p class="font-body-regular text-body-regular text-text-secondary leading-relaxed line-clamp-2">
+              Hur passiv direktavkastning fungerar och varför återinvestering är nyckeln till den verkliga snöbollseffekten.
+            </p>
+</div>
+</div>
+<div class="px-space-lg pb-space-lg pt-2 flex items-center justify-between">
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 rounded-full bg-surface-subdued flex items-center justify-center font-caption-micro text-text-secondary font-semibold">
+              FE
+            </div>
+<span class="font-caption-micro text-caption-micro text-text-secondary">Filip Ek</span>
+</div>
+<span class="text-primary font-label-md text-label-md flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+            Läs <span class="material-symbols-outlined text-[16px]">chevron_right</span>
+</span>
+</div>
+</article>
+<article class="article-card group bg-surface-card rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 flex flex-col justify-between overflow-hidden" data-category="Fonder" data-time="6">
+<div class="flex flex-col">
+<div class="relative h-48 w-full overflow-hidden bg-surface-subdued">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="An artistic high-angle view of structured folders and colorful organized index binders neatly laid on a modern light-oak desk, symbolizing index fund diversification, bright Nordic minimalism, soft shadows" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBv0jJrGSswmu5wIDUTJl0Bfx1eF-TGyV8-yKfw4iFlTyyE-hsFzhzC1DsqkOq50JV_pBNMDa8ykvy2rRHo6TJBi2ET0Ltj-6HhgbKUGv3OKe6-8qZpv1CIyOkEsG_QZgCURc3U89GHKpC_kHpzks72tkQLKs6n2Vf24HeNVXEs_k5sTmXs46_GEV6Fx46-8bmW55cOMOn43V2iTRNeRmb_FSX6Tnp21noD5xH0A9Gp1NF4UJpNqf4"/>
+<div class="absolute top-3 left-3">
+<span class="bg-[#EEF2FF] text-[#4338CA] font-label-md text-caption-micro px-2.5 py-1 rounded-full shadow-sm">
+                Fonder
+              </span>
+</div>
+<div class="absolute bottom-3 right-3 bg-surface-card/90 backdrop-blur-sm px-2 py-0.5 rounded-md font-caption-micro text-caption-micro text-text-secondary flex items-center gap-1">
+<span class="material-symbols-outlined text-[13px]">timer</span>
+<span>6 min</span>
+</div>
+</div>
+<div class="p-space-lg flex flex-col gap-space-xs">
+<div class="flex items-center justify-between text-text-tertiary font-caption-micro text-caption-micro">
+<span>Grundkurs • Fondskolan</span>
+<span>19 Okt</span>
+</div>
+<h4 class="font-headline-3 text-headline-3 text-text-primary group-hover:text-primary transition-colors leading-snug">
+              Vad är en fond och hur skiljer den sig från en aktie?
+            </h4>
+<p class="font-body-regular text-body-regular text-text-secondary leading-relaxed line-clamp-2">
+              Skillnaden mellan globala indexfonder och aktiv förvaltning samt hur låga fondavgifter räddar hundratusentals kronor.
+            </p>
+</div>
+</div>
+<div class="px-space-lg pb-space-lg pt-2 flex items-center justify-between">
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 rounded-full bg-surface-subdued flex items-center justify-center font-caption-micro text-text-secondary font-semibold">
+              AJ
+            </div>
+<span class="font-caption-micro text-caption-micro text-text-secondary">Astrid Johansson</span>
+</div>
+<span class="text-primary font-label-md text-label-md flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+            Läs <span class="material-symbols-outlined text-[16px]">chevron_right</span>
+</span>
+</div>
+</article>
+<article class="article-card group bg-surface-card rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 flex flex-col justify-between overflow-hidden" data-category="Privatekonomi" data-time="5">
+<div class="flex flex-col">
+<div class="relative h-48 w-full overflow-hidden bg-surface-subdued">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="A warm and inviting cozy student coffee setup with a laptop showing a neat budget spreadsheet, ceramic mug, notebook with handwritten Swedish budget categories, daylight from window, authentic Nordic student apartment" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA6cC1c9AEHrm156_s4VLwbi9UnZ3NX6LmlBmOr2wN_alaHHuSRK0SsbwCqvXycp00BFHdqw_waTvYY7y8_XHClNOer8YwgKdZAVuEuv8XlP4cnaXbYzVB5t0sEMt7YCQdaisdGzoJBZEDn_QmHnzSU8BylV1AYSlP37Yy_HREZXLyWKLH64vWpGFiEGFh4uPwcZ8TVJuTHAYaag2H1zJw9RRQWgUyKrL1BulSQ1oVeP5nPj4_5bnQ"/>
+<div class="absolute top-3 left-3">
+<span class="bg-[#FEF3C7] text-[#B45309] font-label-md text-caption-micro px-2.5 py-1 rounded-full shadow-sm">
+                Privatekonomi
+              </span>
+</div>
+<div class="absolute bottom-3 right-3 bg-surface-card/90 backdrop-blur-sm px-2 py-0.5 rounded-md font-caption-micro text-caption-micro text-text-secondary flex items-center gap-1">
+<span class="material-symbols-outlined text-[13px]">timer</span>
+<span>5 min</span>
+</div>
+</div>
+<div class="p-space-lg flex flex-col gap-space-xs">
+<div class="flex items-center justify-between text-text-tertiary font-caption-micro text-caption-micro">
+<span>Vardagsekonomi • Guide</span>
+<span>17 Okt</span>
+</div>
+<h4 class="font-headline-3 text-headline-3 text-text-primary group-hover:text-primary transition-colors leading-snug">
+              Så bygger du din första studentbudget utan att leva på nudlar
+            </h4>
+<p class="font-body-regular text-body-regular text-text-secondary leading-relaxed line-clamp-2">
+              50/30/20-regeln anpassad för CSN-bidrag och extrajobb. Praktiska mallar och spartrick som faktiskt fungerar.
+            </p>
+</div>
+</div>
+<div class="px-space-lg pb-space-lg pt-2 flex items-center justify-between">
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 rounded-full bg-surface-subdued flex items-center justify-center font-caption-micro text-text-secondary font-semibold">
+              EL
+            </div>
+<span class="font-caption-micro text-caption-micro text-text-secondary">Emma Lundgren</span>
+</div>
+<span class="text-primary font-label-md text-label-md flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+            Läs <span class="material-symbols-outlined text-[16px]">chevron_right</span>
+</span>
+</div>
+</article>
+<article class="article-card group bg-surface-card rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 flex flex-col justify-between overflow-hidden" data-category="Ränta på ränta" data-time="4">
+<div class="flex flex-col">
+<div class="relative h-48 w-full overflow-hidden bg-surface-subdued">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="An abstract cinematic architectural sculpture representing exponential curved growth, pure white concrete against serene clear blue sky, geometric elegance, minimal Scandinavian fine-art style" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBmoJO1SPSTHmdXRMmCsQty1PfwVNehWdRDrPU13xsN-lVpArucsESSGst1H1zZOwFrgmWKrM8a7S8jQkzhRj-Jkx5lK5HupOeiXLitp01_B4odLZOtBjMGm107Q90qWkM9hadWMqDmu_P-6KsaKRaB5XKdjqNQtl5ptCtCJoBKNfFKeoDl3U2D8a_lK9WRfpW5FLbodAAA5sbcfu8wkclrHNdet5A8dJAvT09LLvuq7tNE5uVm9-Y"/>
+<div class="absolute top-3 left-3">
+<span class="bg-positive-wash text-positive-spruce font-label-md text-caption-micro px-2.5 py-1 rounded-full shadow-sm">
+                Ränta på ränta
+              </span>
+</div>
+<div class="absolute bottom-3 right-3 bg-surface-card/90 backdrop-blur-sm px-2 py-0.5 rounded-md font-caption-micro text-caption-micro text-text-secondary flex items-center gap-1">
+<span class="material-symbols-outlined text-[13px]">timer</span>
+<span>4 min</span>
+</div>
+</div>
+<div class="p-space-lg flex flex-col gap-space-xs">
+<div class="flex items-center justify-between text-text-tertiary font-caption-micro text-caption-micro">
+<span>Matematik • Insikt</span>
+<span>15 Okt</span>
+</div>
+<h4 class="font-headline-3 text-headline-3 text-text-primary group-hover:text-primary transition-colors leading-snug">
+              Ränta-på-ränta: Kalkylen som gör unga sparare till miljonärer
+            </h4>
+<p class="font-body-regular text-body-regular text-text-secondary leading-relaxed line-clamp-2">
+              Se vad en hundralapp extra per månad ger över 30 år. Albert Einsteins 'åttonde underverk' förklarat i enkla siffror.
+            </p>
+</div>
+</div>
+<div class="px-space-lg pb-space-lg pt-2 flex items-center justify-between">
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 rounded-full bg-surface-subdued flex items-center justify-center font-caption-micro text-text-secondary font-semibold">
+              FE
+            </div>
+<span class="font-caption-micro text-caption-micro text-text-secondary">Filip Ek</span>
+</div>
+<span class="text-primary font-label-md text-label-md flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+            Läs <span class="material-symbols-outlined text-[16px]">chevron_right</span>
+</span>
+</div>
+</article>
+<article class="article-card group bg-surface-card rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 flex flex-col justify-between overflow-hidden" data-category="Värdering" data-time="6">
+<div class="flex flex-col">
+<div class="relative h-48 w-full overflow-hidden bg-surface-subdued">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="A balanced brass scale sitting on a pale ash wood designer table, one side carrying a small polished stone and the other a geometric metallic block, symbolizing equity valuation metrics and fundamental analysis, soft editorial light" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCIUDXZy1GaodKzKCTVxFzE0W17cXlm1wuMOJxheYUNwVfEwKD_Fe6DajN1CEYflVHhiaWI11npziSoxqhUyCQF5XmmpaVkCXReCptq6B4SaYwU62qH5QwmvAXrClud9a7yzqkG4XQS62duR93SninRpQryGiBNEIortiaxTJZvU6BmhfNFbbIAgeELLpjT4dgu_3uhY-6f3DTG1c8an8AJRlK5fzqkVtb-g96l_rgKdsRAd9anzLg"/>
+<div class="absolute top-3 left-3">
+<span class="bg-[#F3E8FF] text-[#7E22CE] font-label-md text-caption-micro px-2.5 py-1 rounded-full shadow-sm">
+                Värdering
+              </span>
+</div>
+<div class="absolute bottom-3 right-3 bg-surface-card/90 backdrop-blur-sm px-2 py-0.5 rounded-md font-caption-micro text-caption-micro text-text-secondary flex items-center gap-1">
+<span class="material-symbols-outlined text-[13px]">timer</span>
+<span>6 min</span>
+</div>
+</div>
+<div class="p-space-lg flex flex-col gap-space-xs">
+<div class="flex items-center justify-between text-text-tertiary font-caption-micro text-caption-micro">
+<span>Nyckeltal • Avancerat</span>
+<span>12 Okt</span>
+</div>
+<h4 class="font-headline-3 text-headline-3 text-text-primary group-hover:text-primary transition-colors leading-snug">
+              Vad är ett P/E-tal och hur använder man det?
+            </h4>
+<p class="font-body-regular text-body-regular text-text-secondary leading-relaxed line-clamp-2">
+              Lär dig avgöra om en aktie handlas till överpris eller fyndkurs. Så skiljer sig P/E-tal mellan tillväxt- och värdebolag.
+            </p>
+</div>
+</div>
+<div class="px-space-lg pb-space-lg pt-2 flex items-center justify-between">
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 rounded-full bg-surface-subdued flex items-center justify-center font-caption-micro text-text-secondary font-semibold">
+              AJ
+            </div>
+<span class="font-caption-micro text-caption-micro text-text-secondary">Astrid Johansson</span>
+</div>
+<span class="text-primary font-label-md text-label-md flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+            Läs <span class="material-symbols-outlined text-[16px]">chevron_right</span>
+</span>
+</div>
+</article>
+</div>
+<div class="w-full bg-surface-card rounded-2xl p-space-xl shadow-sm mt-space-md flex flex-col md:flex-row items-center justify-between gap-space-lg">
+<div class="flex items-center gap-space-md">
+<div class="w-12 h-12 rounded-2xl bg-primary-tint text-primary flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[24px]">mark_email_read</span>
+</div>
+<div class="flex flex-col">
+<h4 class="font-headline-3 text-headline-3 text-text-primary">Få veckans bästa analyser i inkorgen</h4>
+<p class="font-body-regular text-body-regular text-text-secondary">Varje söndag skickar vi en 3-minuters sammanfattning av börsveckan.</p>
+</div>
+</div>
+<div class="flex items-center w-full md:w-auto gap-2">
+<input class="px-4 py-2.5 bg-surface-subdued rounded-xl text-text-primary placeholder:text-text-tertiary font-body-regular text-body-regular focus:outline-none focus:bg-white focus:shadow-sm w-full md:w-64" placeholder="Din e-postadress..." type="email"/>
+<button class="bg-primary hover:bg-primary-deep text-on-primary px-5 py-2.5 rounded-xl font-label-md text-label-md shrink-0 shadow-sm transition-all">
+          Prenumerera
+        </button>
+</div>
+</div>
+</div>
+</div>
+<script>
+  (function() {
+    const filterButtons = document.querySelectorAll('.filter-pill');
+    const articleCards = document.querySelectorAll('.article-card');
+    const articleCount = document.getElementById('article-count');
+    const sortSelect = document.getElementById('sort-select');
+    const gridContainer = document.getElementById('article-grid');
+
+    let currentFilter = 'all';
+
+    function applyFilter() {
+      let visible = 1; // Count includes Hero article
+      articleCards.forEach(card => {
+        const cat = card.getAttribute('data-category');
+        if (currentFilter === 'all' || cat === currentFilter) {
+          card.style.display = 'flex';
+          visible++;
+        } else {
+          card.style.display = 'none';
+        }
+      });
+      if (articleCount) {
+        articleCount.textContent = visible;
+      }
+    }
+
+    filterButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        filterButtons.forEach(b => {
+          b.classList.remove('active', 'bg-primary', 'text-on-primary');
+          b.classList.add('bg-surface-card', 'text-text-secondary');
+        });
+        btn.classList.remove('bg-surface-card', 'text-text-secondary');
+        btn.classList.add('active', 'bg-primary', 'text-on-primary');
+        currentFilter = btn.getAttribute('data-filter');
+        applyFilter();
+      });
+    });
+
+    if (sortSelect && gridContainer) {
+      sortSelect.addEventListener('change', (e) => {
+        const val = e.target.value;
+        const cardsArray = Array.from(articleCards);
+
+        if (val === 'time-asc') {
+          cardsArray.sort((a, b) => {
+            return parseInt(a.getAttribute('data-time'), 10) - parseInt(b.getAttribute('data-time'), 10);
+          });
+        } else if (val === 'time-desc') {
+          cardsArray.sort((a, b) => {
+            return parseInt(b.getAttribute('data-time'), 10) - parseInt(a.getAttribute('data-time'), 10);
+          });
+        }
+
+        cardsArray.forEach(c => gridContainer.appendChild(c));
+      });
+    }
+
+    const bookmarkBtn = document.getElementById('reading-mode-toggle');
+    if (bookmarkBtn) {
+      bookmarkBtn.addEventListener('click', () => {
+        alert('Dina sparade artiklar: \n1. Vad är en fond och hur skiljer den sig från en aktie?\n2. Ränta-på-ränta: Kalkylen som gör unga sparare till miljonärer\n3. Risk och avkastning');
+      });
+    }
+  })();
+</script></div></main></div></body></html>
