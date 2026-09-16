@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+
+<html class="h-full bg-bg-root" lang="sv"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><title>UngEkonom – Ny landningssida (förhandsvisning)</title><link href="stitch-assets/fonts.css" rel="stylesheet"/><link href="stitch-assets/tailwind.css" rel="stylesheet"/><style>@layer base { html, body { margin: 0; padding: 0; } body { overscroll-behavior: none; } main > :first-child { margin-top: 0 !important; } main > :last-child { margin-bottom: 0 !important; } } ::-webkit-scrollbar { display: none; }</style></head><body class="bg-bg-root font-body-regular text-text-primary antialiased min-h-full flex flex-col"><header class="fixed top-0 left-0 w-full z-50 bg-surface-card/90 backdrop-blur-xl shadow-[0_1px_8px_rgba(15,23,42,0.04)]"><div class="h-20 max-w-[1140px] mx-auto px-margin flex items-center justify-between"><div class="flex items-center gap-space-md"><img alt="UngEkonom Logo" class="h-8 w-auto object-contain" src="stitch-assets/logo.svg"/></div><nav class="hidden lg:flex items-center gap-space-lg" data-active-classes="text-primary-deep font-label-md"><a class="text-on-surface-variant hover:text-on-surface font-label-md text-label-md transition-colors" data-path="amnen-kurser" href="#amnen">Ämnen &amp; Kurser</a><a class="text-on-surface-variant hover:text-on-surface font-label-md text-label-md transition-colors" data-path="hur-det-fungerar" href="#hur-det-fungerar">Hur det fungerar</a><a class="text-on-surface-variant hover:text-on-surface font-label-md text-label-md transition-colors" data-path="artiklar" href="#artiklar">Artiklar</a><a class="text-on-surface-variant hover:text-on-surface font-label-md text-label-md transition-colors" data-path="for-gymnasieskolor" href="for-gymnasieskolor.html">För Gymnasieskolor</a><a class="text-on-surface-variant hover:text-on-surface font-label-md text-label-md transition-colors" data-path="om-oss" href="var-vision.html">Om oss</a></nav><div class="flex items-center gap-space-md"><a class="hidden sm:inline-flex items-center font-label-md text-label-md text-text-secondary hover:text-on-surface px-space-md py-space-sm transition-colors" data-path="login" href="#">Logga in</a><a class="inline-flex items-center justify-center bg-primary-container hover:bg-primary-deep text-on-primary font-label-md text-label-md px-space-lg py-space-sm rounded-xl transition-all shadow-[0_1px_2px_0_rgba(15,23,42,0.04)]" data-path="register" href="#">Skapa gratis konto</a><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div></header><main class="w-full pt-20 bg-bg-root flex-1"><div class="flex flex-col w-full">
+<!-- Top Ambient Glow Field -->
+<div class="relative overflow-hidden w-full">
+<div class="absolute top-[-160px] left-1/2 -translate-x-1/2 w-[980px] h-[360px] bg-gradient-to-b from-primary-tint via-surface-container to-transparent rounded-full blur-3xl pointer-events-none opacity-80"></div>
+<!-- 1. HERO SECTION -->
+<section class="relative max-w-[1140px] mx-auto px-margin pt-12 md:pt-16 pb-16 md:pb-24">
+<div class="flex flex-col items-center text-center max-w-3xl mx-auto">
+<!-- Version Badge -->
+<div class="inline-flex items-center gap-space-xs px-space-md py-1 rounded-full bg-surface-card shadow-sm text-label-md font-label-md text-primary mb-6">
+<span class="inline-flex items-center justify-center w-2 h-2 rounded-full bg-positive-spruce animate-pulse"></span>
+<span class="text-text-primary">Ny version 2.0 ute nu</span>
+<span class="text-text-tertiary">·</span>
+<span class="text-text-secondary">Fri utbildning för unga sparare</span>
+</div>
+<!-- Headline -->
+<h1 class="font-display-xl text-display-xl text-text-primary tracking-tight md:text-5xl md:leading-[1.15] mb-6">
+          Lär dig. Förstå. <br class="hidden sm:inline"/>
+<span class="bg-gradient-to-r from-primary via-primary-container to-secondary bg-clip-text text-transparent">Ta kontroll över din ekonomi.</span>
+</h1>
+<!-- Subheading -->
+<p class="font-body-regular text-body-regular text-text-secondary max-w-2xl text-base md:text-lg mb-8 leading-relaxed">
+          Strukturerad och engagerande kunskap om aktier, fonder, privatekonomi och ränta-på-ränta – genom interaktiva mikrolektioner och quiz som faktiskt testar vad du lärt dig.
+        </p>
+<!-- CTA Cluster -->
+<div class="flex flex-col sm:flex-row items-center gap-space-md w-full sm:w-auto justify-center mb-6">
+<a class="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-primary-container hover:bg-primary-deep text-on-primary font-label-md text-label-md px-7 py-3.5 rounded-xl shadow-md transition-all hover:scale-[1.01] active:scale-[0.99]" data-path="register" href="#">
+<span>Börja lära dig gratis</span>
+<span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</a>
+<a class="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-surface-card hover:bg-surface-subdued text-text-primary font-label-md text-label-md px-6 py-3.5 rounded-xl shadow-sm transition-all" href="#amnen">
+<span class="material-symbols-outlined text-text-secondary text-[18px]">grid_view</span>
+<span>Utforska kurser</span>
+</a>
+</div>
+<!-- Trust Badges -->
+<div class="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-caption-micro font-caption-micro text-text-secondary pt-1">
+<span class="inline-flex items-center gap-1.5"><span class="text-secondary font-bold">✓</span> 100% Kostnadsfritt</span>
+<span class="text-text-tertiary hidden sm:inline">·</span>
+<span class="inline-flex items-center gap-1.5"><span class="text-secondary font-bold">✓</span> Ingen reklam</span>
+<span class="text-text-tertiary hidden sm:inline">·</span>
+<span class="inline-flex items-center gap-1.5"><span class="text-secondary font-bold">✓</span> Ingen finansiell rådgivning</span>
+<span class="text-text-tertiary hidden sm:inline">·</span>
+<span class="inline-flex items-center gap-1.5"><span class="text-secondary font-bold">✓</span> Byggd för unga 16–25 år</span>
+</div>
+</div>
+<!-- Hero Visual Hub Mockup -->
+<div class="relative mt-12 md:mt-16 w-full max-w-4xl mx-auto">
+<!-- Floating Pill: XP Earned -->
+<div class="absolute -top-4 -left-2 sm:left-4 z-20 bg-surface-card/95 backdrop-blur-md px-3.5 py-2 rounded-xl shadow-lg flex items-center gap-2 animate-bounce [animation-duration:4s]">
+<div class="w-7 h-7 rounded-lg bg-primary-tint flex items-center justify-center text-primary font-bold text-xs">⚡</div>
+<div class="text-left">
+<p class="font-caption-micro text-caption-micro text-text-secondary">Quiz slutfört</p>
+<p class="font-label-md text-label-md text-text-primary">+45 XP tjänade</p>
+</div>
+</div>
+<!-- Floating Pill: Streak Badge -->
+<div class="absolute -top-6 right-2 sm:right-8 z-20 bg-[#FEF3C7] px-3.5 py-2 rounded-xl shadow-lg flex items-center gap-2">
+<span class="text-lg">🔥</span>
+<div class="text-left">
+<p class="font-caption-micro text-caption-micro text-[#92400E]">Aktiv svit</p>
+<p class="font-label-md text-label-md text-[#B45309]">7 dagars streak</p>
+</div>
+</div>
+<!-- Floating Pill: Bottom Right Tool -->
+<div class="hidden sm:flex absolute -bottom-4 -right-4 z-20 bg-surface-card/95 backdrop-blur-md px-4 py-2.5 rounded-xl shadow-lg items-center gap-3">
+<div class="w-8 h-8 rounded-lg bg-positive-wash flex items-center justify-center text-positive-spruce">
+<span class="material-symbols-outlined text-[20px]">trending_up</span>
+</div>
+<div>
+<p class="font-label-md text-label-md text-text-primary">Ränta-på-ränta simulator</p>
+<p class="font-caption-micro text-caption-micro text-text-secondary">Se kapitaltillväxt i realtid</p>
+</div>
+</div>
+<!-- Main Display Frame with DataStore Hero Asset -->
+<div class="relative bg-surface-card rounded-2xl shadow-xl overflow-hidden p-2 sm:p-3 bg-gradient-to-b from-surface-card to-surface-container-low">
+<div class="rounded-xl overflow-hidden shadow-sm relative">
+<img alt="UngEkonom modern lärandeplattform gränssnitt och verktyg på laptop, surfplatta och mobil" class="w-full h-auto object-cover max-h-[500px]" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCYyOSwcuLrbhLGkW9TJvAbB8Ql4ap8B-00P37xL_zimdSoNaDZePFNbHnfgaeClfhh1xU2Tz3ZRUtGUq9kmZ40Fdb38_4KT4FiMOg5f9d5WmfVMEdBk0yWFYIcuYpQXT_7h1HYlErvmxNCJG-0lVPNA22ME-FnWhvc1mp41qp-rtduShnmf1Ark5J52sqQ9Mfw__bBmJs9GORc1-P7YAHEXcPkaqRaMyeJr1jmx_S_BXLUqg-vKnc"/>
+</div>
+</div>
+</div>
+</section>
+</div>
+<!-- 2. SOCIAL PROOF / STATS TICKER -->
+<section class="w-full bg-surface-subdued py-6">
+<div class="max-w-[1140px] mx-auto px-margin">
+<div class="grid grid-cols-2 md:grid-cols-4 gap-6 text-center divide-x-0">
+<div class="flex flex-col items-center">
+<div class="flex items-baseline gap-1">
+<span class="font-display-xl text-display-xl text-text-primary font-bold">11+</span>
+<span class="font-label-md text-label-md text-primary">elever</span>
+</div>
+<p class="font-caption-micro text-caption-micro text-text-secondary mt-0.5">påbörjat läranderesan</p>
+</div>
+<div class="flex flex-col items-center">
+<div class="flex items-baseline gap-1">
+<span class="font-display-xl text-display-xl text-text-primary font-bold">1</span>
+<span class="font-label-md text-label-md text-secondary">partnerskola</span>
+</div>
+<p class="font-caption-micro text-caption-micro text-text-secondary mt-0.5">gymnasium med i pilot</p>
+</div>
+<div class="flex flex-col items-center">
+<div class="flex items-baseline gap-1">
+<span class="font-display-xl text-display-xl text-text-primary font-bold">33+</span>
+<span class="font-label-md text-label-md text-primary">lektioner</span>
+</div>
+<p class="font-caption-micro text-caption-micro text-text-secondary mt-0.5">interaktiva &amp; moduler</p>
+</div>
+<div class="flex flex-col items-center">
+<div class="flex items-baseline gap-1">
+<span class="font-display-xl text-display-xl text-text-primary font-bold">100%</span>
+</div>
+<p class="font-caption-micro text-caption-micro text-text-secondary mt-0.5">oberoende och transparent</p>
+</div>
+</div>
+</div>
+</section>
+<!-- 3. KUNSKAPSSPÅR / ÄMNEN -->
+<section class="max-w-[1140px] mx-auto px-margin py-16 md:py-24 w-full" id="amnen">
+<div class="flex flex-col md:flex-row md:items-end justify-between mb-12">
+<div class="max-w-xl">
+<div class="inline-flex items-center gap-2 text-primary font-label-md text-label-md mb-2">
+<span class="material-symbols-outlined text-[18px]">school</span>
+<span>CURRICULUM</span>
+</div>
+<h2 class="font-headline-1 text-headline-1 text-text-primary tracking-tight">
+          Allt du behöver veta för att bemästra dina pengar
+        </h2>
+</div>
+<p class="font-body-regular text-body-regular text-text-secondary max-w-md mt-3 md:mt-0">
+        Varje spår är uppdelat i 3-5 minuters mikrolektioner som avslutas med interaktiva quiz för garanterad förståelse.
+      </p>
+</div>
+<!-- 6 Topic Bento Cards -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+<!-- Card 1: Aktier -->
+<div class="bg-surface-card p-6 rounded-2xl shadow-sm hover:shadow-md transition-all flex flex-col justify-between group">
+<div>
+<div class="flex items-center justify-between mb-4">
+<span class="px-2.5 py-1 rounded-full bg-primary-tint text-primary font-label-md text-caption-micro">
+              13 lektioner
+            </span>
+<span class="material-symbols-outlined text-text-tertiary group-hover:text-primary transition-colors text-[24px]">query_stats</span>
+</div>
+<h3 class="font-headline-3 text-headline-3 text-text-primary mb-2">1. Aktier</h3>
+<p class="font-body-regular text-body-regular text-text-secondary mb-6">
+            Från noll till ditt första aktieköp. Förstå bolagsvärdering, direktavkastning och vad som faktiskt driver aktiekursen.
+          </p>
+</div>
+<div class="pt-4 flex items-center justify-between bg-surface-subdued -mx-6 -mb-6 px-6 py-3.5 rounded-b-2xl">
+<span class="font-caption-micro text-caption-micro text-text-secondary">4 quiz · Certifiering</span>
+<span class="text-primary font-label-md text-label-md inline-flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">
+            Starta spår <span class="material-symbols-outlined text-[16px]">chevron_right</span>
+</span>
+</div>
+</div>
+<!-- Card 2: Fonder & Indexfonder -->
+<div class="bg-surface-card p-6 rounded-2xl shadow-sm hover:shadow-md transition-all flex flex-col justify-between group">
+<div>
+<div class="flex items-center justify-between mb-4">
+<span class="px-2.5 py-1 rounded-full bg-positive-wash text-secondary font-label-md text-caption-micro">
+              5 lektioner
+            </span>
+<span class="material-symbols-outlined text-text-tertiary group-hover:text-secondary transition-colors text-[24px]">pie_chart</span>
+</div>
+<h3 class="font-headline-3 text-headline-3 text-text-primary mb-2">2. Fonder &amp; Indexfonder</h3>
+<p class="font-body-regular text-body-regular text-text-secondary mb-6">
+            Bygg en automatisk pengamaskin med låga avgifter, bred riskspridning och förstå skillnaden på aktiv och passiv förvaltning.
+          </p>
+</div>
+<div class="pt-4 flex items-center justify-between bg-surface-subdued -mx-6 -mb-6 px-6 py-3.5 rounded-b-2xl">
+<span class="font-caption-micro text-caption-micro text-text-secondary">Avgiftskalkylator ingår</span>
+<span class="text-primary font-label-md text-label-md inline-flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">
+            Starta spår <span class="material-symbols-outlined text-[16px]">chevron_right</span>
+</span>
+</div>
+</div>
+<!-- Card 3: Privatekonomi & Budget -->
+<div class="bg-surface-card p-6 rounded-2xl shadow-sm hover:shadow-md transition-all flex flex-col justify-between group">
+<div>
+<div class="flex items-center justify-between mb-4">
+<span class="px-2.5 py-1 rounded-full bg-[#FEF3C7] text-[#B45309] font-label-md text-caption-micro">
+              5 lektioner
+            </span>
+<span class="material-symbols-outlined text-text-tertiary group-hover:text-[#B45309] transition-colors text-[24px]">account_balance_wallet</span>
+</div>
+<h3 class="font-headline-3 text-headline-3 text-text-primary mb-2">3. Privatekonomi &amp; Budget</h3>
+<p class="font-body-regular text-body-regular text-text-secondary mb-6">
+            Få full koll på CSN, studentbudget 50/30/20 och bygg en trygg buffert utan att ge avkall på det roliga i livet.
+          </p>
+</div>
+<div class="pt-4 flex items-center justify-between bg-surface-subdued -mx-6 -mb-6 px-6 py-3.5 rounded-b-2xl">
+<span class="font-caption-micro text-caption-micro text-text-secondary">Mallar för budget ingår</span>
+<span class="text-primary font-label-md text-label-md inline-flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">
+            Starta spår <span class="material-symbols-outlined text-[16px]">chevron_right</span>
+</span>
+</div>
+</div>
+<!-- Card 4: Värdering & Analys -->
+<div class="bg-surface-card p-6 rounded-2xl shadow-sm hover:shadow-md transition-all flex flex-col justify-between group">
+<div>
+<div class="flex items-center justify-between mb-4">
+<span class="px-2.5 py-1 rounded-full bg-primary-tint text-primary font-label-md text-caption-micro">
+              5 lektioner
+            </span>
+<span class="material-symbols-outlined text-text-tertiary group-hover:text-primary transition-colors text-[24px]">analytics</span>
+</div>
+<h3 class="font-headline-3 text-headline-3 text-text-primary mb-2">4. Värdering &amp; Analys</h3>
+<p class="font-body-regular text-body-regular text-text-secondary mb-6">
+            Lär dig P/E-tal, fritt kassaflöde och hur du avgör om en aktie är billig eller dyr innan du investerar dina surt förvärvade pengar.
+          </p>
+</div>
+<div class="pt-4 flex items-center justify-between bg-surface-subdued -mx-6 -mb-6 px-6 py-3.5 rounded-b-2xl">
+<span class="font-caption-micro text-caption-micro text-text-secondary">Praktiska case-studier</span>
+<span class="text-primary font-label-md text-label-md inline-flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">
+            Starta spår <span class="material-symbols-outlined text-[16px]">chevron_right</span>
+</span>
+</div>
+</div>
+<!-- Card 5: Ränta-på-ränta (Featured special) -->
+<div class="bg-surface-card p-6 rounded-2xl shadow-sm hover:shadow-md transition-all flex flex-col justify-between group relative overflow-hidden">
+<div class="absolute top-0 right-0 w-24 h-24 bg-positive-spruce/10 rounded-bl-full pointer-events-none"></div>
+<div>
+<div class="flex items-center justify-between mb-4">
+<span class="px-2.5 py-1 rounded-full bg-positive-wash text-secondary font-label-md text-caption-micro">
+              Specialmodul
+            </span>
+<span class="material-symbols-outlined text-secondary text-[24px]">auto_graph</span>
+</div>
+<h3 class="font-headline-3 text-headline-3 text-text-primary mb-2">5. Ränta-på-ränta</h3>
+<p class="font-body-regular text-body-regular text-text-secondary mb-6">
+            Världens 8:e underverk: förstå och räkna själv på hur blygsamma summor som sparas tidigt i livet exploderar över tid.
+          </p>
+</div>
+<div class="pt-4 flex items-center justify-between bg-surface-subdued -mx-6 -mb-6 px-6 py-3.5 rounded-b-2xl">
+<span class="font-caption-micro text-caption-micro text-text-secondary">Interaktiv simulator</span>
+<span class="text-primary font-label-md text-label-md inline-flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">
+            Testa kalkylator <span class="material-symbols-outlined text-[16px]">chevron_right</span>
+</span>
+</div>
+</div>
+<!-- Card 6: Krypto & Web3 -->
+<div class="bg-surface-card p-6 rounded-2xl shadow-sm hover:shadow-md transition-all flex flex-col justify-between group">
+<div>
+<div class="flex items-center justify-between mb-4">
+<span class="px-2.5 py-1 rounded-full bg-surface-container text-on-surface-variant font-label-md text-caption-micro">
+              5 lektioner
+            </span>
+<span class="material-symbols-outlined text-text-tertiary group-hover:text-primary transition-colors text-[24px]">token</span>
+</div>
+<h3 class="font-headline-3 text-headline-3 text-text-primary mb-2">6. Krypto &amp; Web3</h3>
+<p class="font-body-regular text-body-regular text-text-secondary mb-6">
+            Tekniken bakom Bitcoin, blockchain-infrastruktur, säker plånbokshantering samt Skatteverkets regler för deklaration.
+          </p>
+</div>
+<div class="pt-4 flex items-center justify-between bg-surface-subdued -mx-6 -mb-6 px-6 py-3.5 rounded-b-2xl">
+<span class="font-caption-micro text-caption-micro text-text-secondary">Säkerhetsguide &amp; skatt</span>
+<span class="text-primary font-label-md text-label-md inline-flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">
+            Starta spår <span class="material-symbols-outlined text-[16px]">chevron_right</span>
+</span>
+</div>
+</div>
+</div>
+</section>
+<!-- 4. HOW IT WORKS / LÄRUPPLEVELSEN -->
+<section class="w-full bg-surface-subdued py-16 md:py-24" id="hur-det-fungerar">
+<div class="max-w-[1140px] mx-auto px-margin">
+<div class="text-center max-w-2xl mx-auto mb-16">
+<div class="inline-flex items-center gap-1.5 text-primary font-label-md text-label-md mb-2">
+<span class="material-symbols-outlined text-[18px]">verified</span>
+<span>PEDAGOGIK SOM FUNGERAR</span>
+</div>
+<h2 class="font-headline-1 text-headline-1 text-text-primary tracking-tight">
+          Byggd för ungas vanor – inte mossiga läroböcker
+        </h2>
+<p class="font-body-regular text-body-regular text-text-secondary mt-3">
+          Ingen torr jargong. Vi bryter ner finansiella koncept till korta, praktiska steg som du minns och har nytta av direkt.
+        </p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-8 relative">
+<!-- Step 1 -->
+<div class="bg-surface-card p-8 rounded-2xl shadow-sm flex flex-col relative">
+<div class="w-12 h-12 rounded-xl bg-primary-tint text-primary font-headline-2 flex items-center justify-center mb-6">
+            1
+          </div>
+<h3 class="font-headline-3 text-headline-3 text-text-primary mb-3">Välj ditt spår &amp; sätt mål</h3>
+<p class="font-body-regular text-body-regular text-text-secondary leading-relaxed">
+            Gör vårt korta introduktionsquiz för att hitta rätt kunskapsnivå. Oavsett om du vill starta ditt första ISK eller lära dig värdera aktier.
+          </p>
+<div class="mt-6 pt-4 flex items-center gap-2 text-caption-micro font-caption-micro text-text-tertiary">
+<span class="material-symbols-outlined text-positive-spruce text-[16px]">check_circle</span>
+<span>Personlig studieplan</span>
+</div>
+</div>
+<!-- Step 2 -->
+<div class="bg-surface-card p-8 rounded-2xl shadow-sm flex flex-col relative">
+<div class="w-12 h-12 rounded-xl bg-positive-wash text-secondary font-headline-2 flex items-center justify-center mb-6">
+            2
+          </div>
+<h3 class="font-headline-3 text-headline-3 text-text-primary mb-3">Korta 5-minuters mikrolektioner</h3>
+<p class="font-body-regular text-body-regular text-text-secondary leading-relaxed">
+            Lär dig på bussen eller mellan lektioner. Varje moment innehåller visuella grafer och begripliga exempel från verkligheten.
+          </p>
+<div class="mt-6 pt-4 flex items-center gap-2 text-caption-micro font-caption-micro text-text-tertiary">
+<span class="material-symbols-outlined text-positive-spruce text-[16px]">check_circle</span>
+<span>Mobilt &amp; responsivt format</span>
+</div>
+</div>
+<!-- Step 3 -->
+<div class="bg-surface-card p-8 rounded-2xl shadow-sm flex flex-col relative">
+<div class="w-12 h-12 rounded-xl bg-[#FEF3C7] text-[#B45309] font-headline-2 flex items-center justify-center mb-6">
+            3
+          </div>
+<h3 class="font-headline-3 text-headline-3 text-text-primary mb-3">Testa kunskapen &amp; tjäna XP</h3>
+<p class="font-body-regular text-body-regular text-text-secondary leading-relaxed">
+            Inga lektioner markeras som klara utan quiz. Svara rätt, samla erfarenhetspoäng, behåll din dags-streak och lås upp diplom.
+          </p>
+<div class="mt-6 pt-4 flex items-center gap-2 text-caption-micro font-caption-micro text-text-tertiary">
+<span class="material-symbols-outlined text-positive-spruce text-[16px]">check_circle</span>
+<span>Direkt feedback på svaren</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- 5. LIVE INTERACTIVE TEASER: RÄNTA-PÅ-RÄNTA -->
+<section class="max-w-[1140px] mx-auto px-margin py-16 md:py-20 w-full">
+<div class="bg-surface-card rounded-2xl shadow-lg p-6 sm:p-10 md:p-12">
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+<!-- Left explanation -->
+<div class="lg:col-span-6">
+<div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-positive-wash text-secondary font-label-md text-caption-micro mb-4">
+<span class="material-symbols-outlined text-[16px]">savings</span>
+<span>LIVE VERKTYG</span>
+</div>
+<h2 class="font-headline-1 text-headline-1 text-text-primary tracking-tight mb-4">
+            Se ränta-på-ränta effekten med egna ögon
+          </h2>
+<p class="font-body-regular text-body-regular text-text-secondary mb-6 leading-relaxed">
+            När din avkastning i sin tur börjar ge avkastning accelererar tillväxten kraftigt. Ju tidigare du sätter igång, desto mindre behöver du spara varje månad för att nå dina drömmar.
+          </p>
+<!-- Input Slider Simulation -->
+<div class="space-y-4 bg-surface-subdued p-5 rounded-xl">
+<div>
+<div class="flex justify-between text-body-medium font-body-medium text-text-primary mb-1">
+<span>Månadssparande</span>
+<span class="font-bold text-primary" id="savings-display">1 500 kr/mån</span>
+</div>
+<input class="w-full h-2 bg-border-subtle rounded-lg appearance-none cursor-pointer accent-primary-container" id="savings-slider" max="5000" min="500" step="250" type="range" value="1500"/>
+<div class="flex justify-between text-caption-micro text-text-tertiary mt-1">
+<span>500 kr</span>
+<span>5 000 kr</span>
+</div>
+</div>
+<div>
+<div class="flex justify-between text-body-medium font-body-medium text-text-primary mb-1">
+<span>Sparhorisont</span>
+<span class="font-bold text-primary" id="years-display">15 år</span>
+</div>
+<input class="w-full h-2 bg-border-subtle rounded-lg appearance-none cursor-pointer accent-primary-container" id="years-slider" max="35" min="5" step="5" type="range" value="15"/>
+<div class="flex justify-between text-caption-micro text-text-tertiary mt-1">
+<span>5 år</span>
+<span>35 år</span>
+</div>
+</div>
+</div>
+<div class="mt-6">
+<a class="inline-flex items-center gap-2 text-primary font-label-md text-label-md hover:underline" href="#">
+<span>Testa hela kalkylatorn gratis</span>
+<span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</a>
+</div>
+</div>
+<!-- Right Result & Graph Card -->
+<div class="lg:col-span-6 bg-surface-subdued p-6 sm:p-8 rounded-xl flex flex-col justify-between">
+<div class="flex items-center justify-between pb-4">
+<div>
+<p class="font-caption-micro text-caption-micro text-text-secondary uppercase tracking-wider">Uppskattat slutvärde (7% snitt)</p>
+<h3 class="font-display-xl text-display-xl text-text-primary font-bold mt-1" id="result-display">503 933 kr</h3>
+</div>
+<div class="w-12 h-12 rounded-xl bg-positive-wash flex items-center justify-center text-positive-spruce">
+<span class="material-symbols-outlined text-[28px]">trending_up</span>
+</div>
+</div>
+<!-- Mini SVG Compound Chart -->
+<div class="py-6">
+<svg class="w-full h-36 overflow-visible" fill="none" viewbox="0 0 320 100" xmlns="http://www.w3.org/2000/svg">
+<!-- Grid line -->
+<line stroke="#E2E8F0" stroke-width="1" x1="0" x2="320" y1="99" y2="99"></line>
+<line stroke="#E2E8F0" stroke-dasharray="3 3" stroke-width="1" x1="0" x2="320" y1="50" y2="50"></line>
+<!-- Deposited baseline fill -->
+<path d="M0 99 L 80 88 L 160 76 L 240 64 L 320 52 L 320 99 Z" fill="#E2E8F0" opacity="0.6"></path>
+<!-- Compound interest curve -->
+<path d="M0 99 C 80 94, 160 75, 240 45 C 280 30, 300 15, 320 5" stroke="#2563EB" stroke-linecap="round" stroke-width="3.5"></path>
+<path d="M0 99 C 80 94, 160 75, 240 45 C 280 30, 300 15, 320 5 L 320 99 Z" fill="url(#blue-grad)" opacity="0.15"></path>
+<defs>
+<lineargradient id="blue-grad" x1="0%" x2="0%" y1="0%" y2="100%">
+<stop offset="0%" stop-color="#2563EB"></stop>
+<stop offset="100%" stop-color="#2563EB" stop-opacity="0"></stop>
+</lineargradient>
+</defs>
+<circle cx="320" cy="5" fill="#2563EB" r="5"></circle>
+</svg>
+</div>
+<div class="grid grid-cols-2 gap-4 pt-4 text-center">
+<div class="bg-surface-card p-3 rounded-lg shadow-sm">
+<p class="font-caption-micro text-caption-micro text-text-tertiary">Ditt insatta sparande</p>
+<p class="font-label-md text-label-md text-text-secondary font-semibold" id="deposit-display">270 000 kr</p>
+</div>
+<div class="bg-surface-card p-3 rounded-lg shadow-sm">
+<p class="font-caption-micro text-caption-micro text-text-tertiary">Varav ränta-på-ränta</p>
+<p class="font-label-md text-label-md text-positive-spruce font-semibold" id="interest-display">+233 933 kr</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- 6. POPULAR GUIDES / SENASTE ARTIKLAR -->
+<section class="max-w-[1140px] mx-auto px-margin py-12 md:py-16 w-full" id="artiklar">
+<div class="flex items-center justify-between mb-8">
+<div>
+<span class="font-label-md text-label-md text-primary tracking-wide uppercase">Kunskapsbank</span>
+<h2 class="font-headline-1 text-headline-1 text-text-primary tracking-tight mt-1">Populära guider &amp; artiklar</h2>
+</div>
+<a class="hidden sm:inline-flex items-center gap-1 font-label-md text-label-md text-primary hover:underline" href="#">
+<span>Se alla 6 artiklar</span>
+<span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</a>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<!-- Article 1 -->
+<article class="bg-surface-card rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all flex flex-col group">
+<div class="h-44 bg-surface-subdued overflow-hidden relative">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" data-alt="Close up of a Scandinavian wooden desk with a crisp smartphone displaying financial growth charts next to an open notebook and clean ceramic coffee mug in bright morning light" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCjJwbbdoRCAkuoosbmAzvpy0VzmdUUaxWUymNyqZX1xsj3nd5V6K9C2OjcvK5uaV1PdPir_uyPz_SLg_8GZofK43-NjElNpc1V9dbXDP0EGYChMsejCB6MxVwsoyGahI5xxkooyN_yg0EEjX40JbzTIJG2hNoANCvx57wXNCbDYfqpqifFs-22kuUgPFPWPjvNXkRVL58pXwU_no6lJ29yn2Ddac3DnwC8gi3IVBs0e1zFiaTFAkY"/>
+<div class="absolute top-3 left-3 bg-surface-card/90 backdrop-blur-sm px-2.5 py-1 rounded-full text-caption-micro font-label-md text-primary">
+            1. Aktier
+          </div>
+</div>
+<div class="p-6 flex flex-col flex-1 justify-between">
+<div>
+<h3 class="font-headline-3 text-headline-3 text-text-primary group-hover:text-primary transition-colors mb-2">
+              Vad är en aktie – och varför finns de?
+            </h3>
+<p class="font-body-regular text-body-regular text-text-secondary text-sm line-clamp-3 mb-4">
+              När ett företag behöver kapital kan det dela upp sig i ägarandelar och sälja dem till allmänheten. Dessa ger dig rätt till bolagets vinst.
+            </p>
+</div>
+<div class="flex items-center justify-between text-caption-micro font-caption-micro text-text-tertiary pt-4">
+<span class="inline-flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">schedule</span> 5 min läsning
+            </span>
+<span class="font-label-md text-label-md text-primary">Läs guide →</span>
+</div>
+</div>
+</article>
+<!-- Article 2 -->
+<article class="bg-surface-card rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all flex flex-col group">
+<div class="h-44 bg-surface-subdued overflow-hidden relative">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" data-alt="Modern Nordic digital banking screen interface showing monthly dividend payouts and green yield percentages with minimalist layout aesthetic" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAz8ZdtK0XbuFC7nLYlbe2z7VS2jeFBGZyWMK3wLsbbkckUTreOiiYzk3NQI82jkERoepWda4TdeE7tTRwtXih0pptMyq7LzfP-7yqQq33dWLyuT6sP-mIom2ZiTAu26UKsWKZaRGLidQrrWa7qQXlO7v7EFuEWkCe91NW50KJMEbLTZ-NDyuvS9jYGfO8rdA6M_RfXLnWoFKFswIToqt3P27dH8NQjAltqZ6trNa9ZoTgZ3_Ziqto"/>
+<div class="absolute top-3 left-3 bg-surface-card/90 backdrop-blur-sm px-2.5 py-1 rounded-full text-caption-micro font-label-md text-primary">
+            1. Aktier
+          </div>
+</div>
+<div class="p-6 flex flex-col flex-1 justify-between">
+<div>
+<h3 class="font-headline-3 text-headline-3 text-text-primary group-hover:text-primary transition-colors mb-2">
+              Utdelning – att få betalt för att äga aktier
+            </h3>
+<p class="font-body-regular text-body-regular text-text-secondary text-sm line-clamp-3 mb-4">
+              Många bolag delar ut en del av sin årsvinst direkt till sina aktieägare. Lär dig om direktavkastning och magin med återinvestering.
+            </p>
+</div>
+<div class="flex items-center justify-between text-caption-micro font-caption-micro text-text-tertiary pt-4">
+<span class="inline-flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">schedule</span> 4 min läsning
+            </span>
+<span class="font-label-md text-label-md text-primary">Läs guide →</span>
+</div>
+</div>
+</article>
+<!-- Article 3 -->
+<article class="bg-surface-card rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all flex flex-col group">
+<div class="h-44 bg-surface-subdued overflow-hidden relative">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" data-alt="Two young Scandinavian university students studying financial data on a MacBook screen in a light-filled minimalist architectural library space" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAnFYKGjWykMA1Gs0kyEZCt8uiJVh-dox-_ykXWNTji6lQHvOxHZvszp6K0UiZ9JZgvRKxUgteyZePCqx6SLh4PNKs_DZJRuJTTFZyTNyrlolsiUTC8TdyoW7sQkxcDDm1ZJAjQAb8obRto5oR6inYw6eXUoYNuvQQfNMGK9RgtVANyAkL458c_sfFpoNGE4AsgyE_dh2OLUiez2iMHLkzIvxNJIQ-wrN7EJ_kTwCuhWRoMYvteeAE"/>
+<div class="absolute top-3 left-3 bg-surface-card/90 backdrop-blur-sm px-2.5 py-1 rounded-full text-caption-micro font-label-md text-secondary">
+            3. Risker
+          </div>
+</div>
+<div class="p-6 flex flex-col flex-1 justify-between">
+<div>
+<h3 class="font-headline-3 text-headline-3 text-text-primary group-hover:text-primary transition-colors mb-2">
+              Risk och avkastning – den oundvikliga balansen
+            </h3>
+<p class="font-body-regular text-body-regular text-text-secondary text-sm line-clamp-3 mb-4">
+              Ingen investering ger hög avkastning utan risk. Men risk är inte farligt så länge du förstår hur du hanterar osäkerheten på ett smart sätt.
+            </p>
+</div>
+<div class="flex items-center justify-between text-caption-micro font-caption-micro text-text-tertiary pt-4">
+<span class="inline-flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">schedule</span> 7 min läsning
+            </span>
+<span class="font-label-md text-label-md text-primary">Läs guide →</span>
+</div>
+</div>
+</article>
+</div>
+</section>
+<!-- 7. SKOLOR & ENGAGEMANG (School Partner Spotlight) -->
+<section class="max-w-[1140px] mx-auto px-margin py-12 w-full">
+<div class="bg-primary-tint rounded-2xl p-8 md:p-12 flex flex-col md:flex-row items-center justify-between gap-8">
+<div class="max-w-xl">
+<span class="font-label-md text-label-md text-primary font-bold uppercase tracking-wider">För Lärare &amp; Skolor</span>
+<h2 class="font-headline-1 text-headline-1 text-text-primary tracking-tight mt-2 mb-3">
+          Tar du studenten eller är du lärare?
+        </h2>
+<p class="font-body-regular text-body-regular text-text-secondary leading-relaxed">
+          Vi samarbetar med gymnasieskolor över hela Sverige och erbjuder kostnadsfria gästföreläsningar, anpassade läromoduler och interaktiva workshops i privatekonomi.
+        </p>
+<div class="flex flex-wrap gap-4 mt-4 font-caption-micro text-caption-micro text-text-secondary">
+<span class="inline-flex items-center gap-1">✓ Anpassat efter Skolverkets kursplan</span>
+<span class="inline-flex items-center gap-1">✓ Helt kostnadsfritt för skolan</span>
+</div>
+</div>
+<div class="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+<a class="inline-flex items-center justify-center gap-2 bg-primary-container hover:bg-primary-deep text-on-primary font-label-md text-label-md px-6 py-3.5 rounded-xl transition-all text-center" data-path="for-gymnasieskolor" href="for-gymnasieskolor.html">
+<span>Boka gästföreläsning</span>
+<span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</a>
+</div>
+</div>
+</section>
+<!-- 8. FINAL CALL TO ACTION (Onboarding Banner) -->
+<section class="max-w-[1140px] mx-auto px-margin py-16 md:py-24 w-full">
+<div class="bg-gradient-to-br from-primary-deep via-primary to-primary-container text-on-primary rounded-3xl p-8 sm:p-12 md:p-16 text-center relative overflow-hidden shadow-xl">
+<!-- Ambient background element -->
+<div class="absolute -right-16 -top-16 w-64 h-64 bg-white/10 rounded-full blur-2xl pointer-events-none"></div>
+<div class="absolute -left-16 -bottom-16 w-64 h-64 bg-secondary/20 rounded-full blur-2xl pointer-events-none"></div>
+<div class="relative z-10 max-w-2xl mx-auto">
+<span class="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-white/10 backdrop-blur-sm text-caption-micro font-label-md text-on-primary mb-6">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary-fixed"></span>
+          Ingen bindningstid · 100% fritt
+        </span>
+<h2 class="font-display-xl text-display-xl text-on-primary tracking-tight mb-4 text-3xl sm:text-4xl">
+          Bli en bättre Ungekonom – redan idag.
+        </h2>
+<p class="font-body-regular text-body-regular text-primary-tint/90 max-w-xl mx-auto mb-8 text-base sm:text-lg">
+          Skapa ett gratis konto, gör ditt startquiz och få direkt tillgång till alla 33+ lektioner, kalkylatorer och verktyg.
+        </p>
+<div class="flex flex-col sm:flex-row items-center justify-center gap-4 max-w-md mx-auto">
+<a class="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-surface-card text-text-primary hover:bg-surface-container-low font-label-md text-label-md px-8 py-4 rounded-xl shadow-lg transition-all hover:scale-105" data-path="register" href="#">
+<span>Skapa gratis konto nu</span>
+<span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</a>
+</div>
+<p class="font-caption-micro text-caption-micro text-primary-tint/70 mt-4">
+          Tar under 1 minut · Inget BankID krävs · Inga betalkort
+        </p>
+</div>
+</div>
+</section>
+<!-- Interactive Simulator Vanilla JS -->
+<script>
+    (function() {
+      const savingsSlider = document.getElementById('savings-slider');
+      const yearsSlider = document.getElementById('years-slider');
+      const savingsDisplay = document.getElementById('savings-display');
+      const yearsDisplay = document.getElementById('years-display');
+      const resultDisplay = document.getElementById('result-display');
+      const depositDisplay = document.getElementById('deposit-display');
+      const interestDisplay = document.getElementById('interest-display');
+
+      if (!savingsSlider || !yearsSlider) return;
+
+      function calculate() {
+        const monthly = parseFloat(savingsSlider.value);
+        const years = parseFloat(yearsSlider.value);
+        const annualRate = 0.07;
+        const monthlyRate = annualRate / 12;
+        const totalMonths = years * 12;
+
+        savingsDisplay.textContent = monthly.toLocaleString('sv-SE') + ' kr/mån';
+        yearsDisplay.textContent = years + ' år';
+
+        // Future Value formula for monthly contributions
+        const futureValue = monthly * ((Math.pow(1 + monthlyRate, totalMonths) - 1) / monthlyRate);
+        const totalDeposited = monthly * totalMonths;
+        const totalInterest = futureValue - totalDeposited;
+
+        resultDisplay.textContent = Math.round(futureValue).toLocaleString('sv-SE') + ' kr';
+        depositDisplay.textContent = Math.round(totalDeposited).toLocaleString('sv-SE') + ' kr';
+        interestDisplay.textContent = '+' + Math.round(totalInterest).toLocaleString('sv-SE') + ' kr';
+      }
+
+      savingsSlider.addEventListener('input', calculate);
+      yearsSlider.addEventListener('input', calculate);
+    })();
+  </script>
+</div></main><footer class="w-full bg-surface-card border-t border-border-subtle mt-auto"><div class="max-w-[1140px] mx-auto px-margin py-space-xl"><div class="grid grid-cols-1 md:grid-cols-12 gap-space-xl pb-space-xl border-b border-border-subtle"><div class="md:col-span-5 flex flex-col items-start gap-space-sm"><div class="flex items-center gap-space-sm"><img alt="UngEkonom Logo" class="h-7 w-auto object-contain" src="stitch-assets/logo.svg"/></div><p class="font-body-regular text-body-regular text-text-secondary max-w-sm">Ekonomi för livet. En modern utbildningsplattform som ger unga vuxna och gymnasieelever självförtroende att bemästra sin privatekonomi.</p></div><div class="md:col-span-2 flex flex-col gap-space-sm"><span class="font-label-md text-label-md text-text-primary uppercase tracking-wider">Ämnen</span><ul class="flex flex-col gap-space-xs font-body-regular text-body-regular text-text-secondary"><li class="hover:text-on-surface transition-colors"><a data-path="privatekonomi" href="#amnen">Privatekonomi</a></li><li class="hover:text-on-surface transition-colors"><a data-path="aktier" href="#amnen">Aktier</a></li><li class="hover:text-on-surface transition-colors"><a data-path="fonder" href="#amnen">Fonder</a></li><li class="hover:text-on-surface transition-colors"><a data-path="vardering" href="#amnen">Värdering</a></li><li class="hover:text-on-surface transition-colors"><a data-path="krypto" href="#amnen">Krypto</a></li></ul></div><div class="md:col-span-2 flex flex-col gap-space-sm"><span class="font-label-md text-label-md text-text-primary uppercase tracking-wider">Resurser</span><ul class="flex flex-col gap-space-xs font-body-regular text-body-regular text-text-secondary"><li class="hover:text-on-surface transition-colors"><a data-path="kalkylatorer" href="#">Kalkylatorer</a></li><li class="hover:text-on-surface transition-colors"><a data-path="ordlista" href="#">Ekonomiordlista</a></li><li class="hover:text-on-surface transition-colors"><a data-path="artiklar" href="#artiklar">Artiklar &amp; Guider</a></li><li class="hover:text-on-surface transition-colors"><a data-path="fragor-och-svar" href="#">Frågor &amp; Svar</a></li></ul></div><div class="md:col-span-3 flex flex-col gap-space-sm"><span class="font-label-md text-label-md text-text-primary uppercase tracking-wider">Om oss</span><ul class="flex flex-col gap-space-xs font-body-regular text-body-regular text-text-secondary"><li class="hover:text-on-surface transition-colors"><a data-path="vision" href="var-vision.html">Vision</a></li><li class="hover:text-on-surface transition-colors"><a data-path="for-gymnasieskolor" href="for-gymnasieskolor.html">För Gymnasieskolor</a></li><li class="hover:text-on-surface transition-colors"><a data-path="engagera-dig" href="engagera-dig.html">Engagera dig</a></li><li class="hover:text-on-surface transition-colors"><a data-path="kontakt" href="#">Kontakt</a></li></ul></div></div><div class="pt-space-lg flex flex-col md:flex-row items-center justify-between gap-space-md font-caption-micro text-caption-micro text-text-tertiary"><p>Innehållet är utbildning, inte finansiell rådgivning.</p><p>© 2026 UngEkonom · Byggd med ♥ i Sverige</p></div></div></footer></body></html>
