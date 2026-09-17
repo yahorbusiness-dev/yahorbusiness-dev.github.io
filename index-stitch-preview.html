@@ -26,7 +26,7 @@
 <!-- Split Hero Bento: Progress Wheel & Continue Learning Action Card -->
 <section class="grid grid-cols-1 lg:grid-cols-12 gap-space-lg items-stretch">
 <!-- Journey Overview Card (5 cols) -->
-<div class="lg:col-span-5 bg-surface-card rounded-2xl p-space-xl shadow-sm flex flex-col justify-between relative overflow-hidden">
+<div class="lg:col-span-5 bg-surface-card rounded-2xl p-space-xl shadow-sm flex flex-col justify-between relative overflow-hidden group cursor-pointer transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
 <div class="absolute -right-12 -top-12 w-44 h-44 bg-surface-container-low rounded-full pointer-events-none opacity-60"></div>
 <div class="flex items-start justify-between relative z-10">
 <div class="flex flex-col">
@@ -39,12 +39,12 @@
 </div>
 <!-- Donut Chart & Primary Metrics -->
 <div class="flex items-center gap-space-lg my-6 relative z-10">
-<div class="relative w-28 h-28 shrink-0 flex items-center justify-center">
-<svg class="w-full h-full -rotate-90" viewbox="0 0 100 100">
+<div class="relative w-28 h-28 shrink-0 flex items-center justify-center transition-transform duration-300 ease-out group-hover:scale-110">
+<svg class="w-full h-full -rotate-90 transition-all duration-300 group-hover:drop-shadow-[0_0_10px_rgba(37,99,235,0.45)]" viewbox="0 0 100 100">
 <circle class="text-surface-subdued fill-none" cx="50" cy="50" r="40" stroke="currentColor" stroke-width="9"></circle>
-<circle class="text-primary-container fill-none transition-all duration-1000 ease-out" cx="50" cy="50" r="40" stroke="currentColor" stroke-dasharray="251.2" stroke-dashoffset="75.36" stroke-linecap="round" stroke-width="9"></circle>
+<circle class="text-primary-container fill-none transition-all duration-1000 ease-out group-hover:stroke-[11]" cx="50" cy="50" r="40" stroke="currentColor" stroke-dasharray="251.2" stroke-dashoffset="75.36" stroke-linecap="round" stroke-width="9"></circle>
 </svg>
-<div class="absolute flex flex-col items-center justify-center text-center">
+<div class="absolute flex flex-col items-center justify-center text-center transition-transform duration-300 group-hover:scale-105">
 <span class="font-display-xl text-[24px] leading-tight text-text-primary">70%</span>
 <span class="font-caption-micro text-[10px] text-text-tertiary uppercase">Färdigt</span>
 </div>
