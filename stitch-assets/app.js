@@ -19,16 +19,16 @@ function initialsFromName(name) {
 }
 
 const XP_LEVELS = [
-  { level: 1, xp: 0, title: 'Ekonomi Rookie', emoji: '🌱' },
-  { level: 2, xp: 100, title: 'Pengakollare', emoji: '💳' },
-  { level: 3, xp: 250, title: 'Spararen', emoji: '🪙' },
-  { level: 4, xp: 500, title: 'Budget Boss', emoji: '📊' },
-  { level: 5, xp: 850, title: 'Pengamästare', emoji: '💰' },
-  { level: 6, xp: 1250, title: 'Investeraren', emoji: '📈' },
-  { level: 7, xp: 1750, title: 'Ekonomisk Strateg', emoji: '🧠' },
-  { level: 8, xp: 2500, title: 'Ekonomisk Ninja', emoji: '🥷' },
-  { level: 9, xp: 3500, title: 'Money Master', emoji: '👑' },
-  { level: 10, xp: 5000, title: 'Ekonomisk Legend', emoji: '🚀' },
+  { level: 1, xp: 0, title: 'Ekonomi Rookie' },
+  { level: 2, xp: 100, title: 'Pengakollare' },
+  { level: 3, xp: 250, title: 'Spararen' },
+  { level: 4, xp: 500, title: 'Budget Boss' },
+  { level: 5, xp: 850, title: 'Pengamästare' },
+  { level: 6, xp: 1250, title: 'Investeraren' },
+  { level: 7, xp: 1750, title: 'Ekonomisk Strateg' },
+  { level: 8, xp: 2500, title: 'Ekonomisk Ninja' },
+  { level: 9, xp: 3500, title: 'Money Master' },
+  { level: 10, xp: 5000, title: 'Ekonomisk Legend' },
 ];
 
 function levelFromXp(xp) {
@@ -41,7 +41,7 @@ function levelFromXp(xp) {
   const xpToNext = next ? next.xp - xp : 0;
   const levelSpan = next ? next.xp - current.xp : 1;
   const levelProgressPct = next ? Math.round(((xp - current.xp) / levelSpan) * 100) : 100;
-  return { level: current.level, title: current.title, emoji: current.emoji, next, xpToNext, levelProgressPct };
+  return { level: current.level, title: current.title, next, xpToNext, levelProgressPct };
 }
 
 async function signOut() {
@@ -65,9 +65,9 @@ function renderSidebarChrome(profile) {
   if (sbName) sbName.textContent = profile.display_name;
   const sbInitials = document.getElementById('sb-initials');
   if (sbInitials) sbInitials.textContent = initialsFromName(profile.display_name);
-  const { level, title, emoji } = levelFromXp(profile.xp);
+  const { level, title } = levelFromXp(profile.xp);
   const sbLevelXp = document.getElementById('sb-level-xp');
-  if (sbLevelXp) sbLevelXp.textContent = `${emoji} ${title} • Nivå ${level}`;
+  if (sbLevelXp) sbLevelXp.textContent = `Nivå ${level} • ${title}`;
   const hdrXp = document.getElementById('hdr-xp');
   if (hdrXp) hdrXp.textContent = `${profile.xp.toLocaleString('sv-SE')} XP`;
   const sbStreak = document.getElementById('sb-streak-days');
@@ -114,8 +114,8 @@ async function renderDashboard(data) {
   if (journeyCount) journeyCount.textContent = `${completedLessons} av ${totalLessons}`;
   const journeyXpNext = document.getElementById('journey-xp-next');
   if (journeyXpNext) journeyXpNext.innerHTML = nextLevel
-    ? `${xpToNext} XP kvar till <strong>${nextLevel.emoji} ${nextLevel.title}</strong>`
-    : `<strong>Högsta nivån uppnådd 🎉</strong>`;
+    ? `Nivå ${level} · ${xpToNext} XP kvar till <strong>Nivå ${nextLevel.level}: ${nextLevel.title}</strong>`
+    : `Nivå ${level} · <strong>Högsta nivån uppnådd</strong>`;
   const journeyQuizScore = document.getElementById('journey-quiz-score');
   const journeyQuizLabel = document.getElementById('journey-quiz-label');
   if (journeyQuizScore) journeyQuizScore.textContent = avgQuizScore === null ? '–' : `${avgQuizScore}%`;
@@ -619,7 +619,7 @@ async function initProfilePage(ctx) {
   const { user, profile, lessons, progress } = ctx;
   const root = document.getElementById('profile-root');
   if (!root) return;
-  const { level, title, emoji, next, xpToNext, levelProgressPct } = levelFromXp(profile.xp);
+  const { level, title, next, xpToNext, levelProgressPct } = levelFromXp(profile.xp);
   const completedList = progress
     .filter(p => p.status === 'completed')
     .map(p => ({ ...p, lesson: lessons.find(l => l.id === p.lesson_id) }))
@@ -756,7 +756,7 @@ async function initProfilePage(ctx) {
             <p class="font-body-regular text-body-regular text-text-secondary mb-3 truncate">${user.email} • Medlem sedan ${swedishMonthYear(profile.created_at)}</p>
             <div class="flex flex-col sm:flex-row sm:items-center gap-space-sm">
               <div class="inline-flex items-center gap-1.5 bg-surface-subdued text-text-primary px-3 py-1 rounded-xl">
-                <span>${emoji}</span>
+                <span class="material-symbols-outlined text-primary-container text-[18px]">verified</span>
                 <span class="font-label-md text-label-md">Nivå ${level}: ${title}</span>
               </div>
               <div class="flex items-center gap-space-sm min-w-[220px]">
@@ -919,7 +919,7 @@ async function initProfilePage(ctx) {
     document.getElementById('settings-display-name')?.focus();
   });
   document.getElementById('share-profile-btn').addEventListener('click', async (e) => {
-    const text = `Jag är ${title} (Nivå ${level}) på UngEkonom med ${profile.xp.toLocaleString('sv-SE')} XP och ${completed} avklarade lektioner! 🚀`;
+    const text = `Jag är ${title} (Nivå ${level}) på UngEkonom med ${profile.xp.toLocaleString('sv-SE')} XP och ${completed} avklarade lektioner!`;
     try { await navigator.clipboard.writeText(text); } catch (err) { /* clipboard unavailable */ }
     const btn = e.currentTarget;
     const original = btn.innerHTML;
