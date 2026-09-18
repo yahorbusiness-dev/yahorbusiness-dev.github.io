@@ -327,10 +327,10 @@ async function initLessonPage(ctx) {
     document.getElementById('lesson-next').addEventListener('click', async () => {
       if (stepIndex < steps.length - 1) {
         stepIndex++;
-        await saveProgress('in_progress', stepIndex);
+        if (!alreadyCompleted) await saveProgress('in_progress', stepIndex);
         renderStep();
       } else {
-        await saveProgress('in_progress', steps.length);
+        if (!alreadyCompleted) await saveProgress('in_progress', steps.length);
         renderQuiz();
       }
     });
