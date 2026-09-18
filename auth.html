@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>UngEkonom – Logga in</title>
+<link href="stitch-assets/fonts.css" rel="stylesheet"/>
+<link href="stitch-assets/tailwind.css" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="bg-bg-root font-body-regular text-text-primary antialiased min-h-screen flex items-center justify-center p-space-lg">
+<div class="w-full max-w-md">
+<div class="flex flex-col items-center gap-2 mb-8">
+<img alt="UngEkonom Logo" class="h-10 w-auto object-contain" src="stitch-assets/logo.svg"/>
+</div>
+<div class="bg-surface-card rounded-2xl shadow-lg p-space-xl">
+<div class="flex bg-surface-subdued rounded-xl p-1 mb-space-lg">
+<button class="flex-1 py-2.5 rounded-lg font-label-md text-label-md transition-all" id="tab-login" type="button">Logga in</button>
+<button class="flex-1 py-2.5 rounded-lg font-label-md text-label-md transition-all" id="tab-register" type="button">Skapa konto</button>
+</div>
+
+<form id="auth-form" class="flex flex-col gap-space-md">
+<div id="name-field" class="hidden flex-col gap-1.5">
+<label class="font-label-md text-label-md text-text-secondary" for="display-name">Namn</label>
+<input class="w-full px-4 py-3 rounded-xl border border-border-subtle bg-surface-subdued/50 font-body-regular text-body-regular focus:outline-none focus:ring-2 focus:ring-primary-container transition-all" id="display-name" placeholder="Ditt namn" type="text"/>
+</div>
+<div class="flex flex-col gap-1.5">
+<label class="font-label-md text-label-md text-text-secondary" for="email">E-post</label>
+<input autocomplete="email" class="w-full px-4 py-3 rounded-xl border border-border-subtle bg-surface-subdued/50 font-body-regular text-body-regular focus:outline-none focus:ring-2 focus:ring-primary-container transition-all" id="email" placeholder="din@mejl.se" required type="email"/>
+</div>
+<div class="flex flex-col gap-1.5">
+<label class="font-label-md text-label-md text-text-secondary" for="password">Lösenord</label>
+<input autocomplete="current-password" class="w-full px-4 py-3 rounded-xl border border-border-subtle bg-surface-subdued/50 font-body-regular text-body-regular focus:outline-none focus:ring-2 focus:ring-primary-container transition-all" id="password" minlength="6" placeholder="Minst 6 tecken" required type="password"/>
+</div>
+
+<p id="auth-error" class="hidden text-[13px] text-critical-danger font-body-medium"></p>
+<p id="auth-info" class="hidden text-[13px] text-secondary font-body-medium"></p>
+
+<button class="w-full mt-2 px-6 py-3.5 rounded-xl bg-primary-container hover:bg-primary-deep text-on-primary font-label-md text-label-md transition-all shadow-sm disabled:opacity-60 disabled:cursor-not-allowed" id="submit-btn" type="submit">Logga in</button>
+</form>
+
+<p class="text-center font-caption-micro text-caption-micro text-text-tertiary mt-space-lg">
+Genom att fortsätta godkänner du att UngEkonom är en utbildningstjänst och inte ger finansiell rådgivning.
+</p>
+</div>
+
+<p class="text-center mt-space-lg">
+<a class="font-label-md text-label-md text-text-secondary hover:text-text-primary transition-colors" href="index.html">← Tillbaka till startsidan</a>
+</p>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://psvjlxqdqcuhmafqorlv.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_yuBvIFJ1sU3sfLpC0P3rmA_lNdgxITd';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+let mode = 'login'; // 'login' | 'register'
+
+const tabLogin = document.getElementById('tab-login');
+const tabRegister = document.getElementById('tab-register');
+const nameField = document.getElementById('name-field');
+const nameInput = document.getElementById('display-name');
+const submitBtn = document.getElementById('submit-btn');
+const form = document.getElementById('auth-form');
+const errorEl = document.getElementById('auth-error');
+const infoEl = document.getElementById('auth-info');
+
+function setMode(next) {
+  mode = next;
+  const activeClasses = ['bg-surface-card', 'shadow-sm', 'text-text-primary'];
+  const inactiveClasses = ['text-text-secondary'];
+  tabLogin.classList.remove(...activeClasses, ...inactiveClasses);
+  tabRegister.classList.remove(...activeClasses, ...inactiveClasses);
+  if (mode === 'login') {
+    tabLogin.classList.add(...activeClasses);
+    tabRegister.classList.add(...inactiveClasses);
+    nameField.classList.add('hidden');
+    nameField.classList.remove('flex');
+    submitBtn.textContent = 'Logga in';
+  } else {
+    tabRegister.classList.add(...activeClasses);
+    tabLogin.classList.add(...inactiveClasses);
+    nameField.classList.remove('hidden');
+    nameField.classList.add('flex');
+    submitBtn.textContent = 'Skapa konto';
+  }
+  errorEl.classList.add('hidden');
+  infoEl.classList.add('hidden');
+}
+
+tabLogin.addEventListener('click', () => setMode('login'));
+tabRegister.addEventListener('click', () => setMode('register'));
+
+// Default to register mode if arriving from a "Skapa gratis konto" CTA
+if (new URLSearchParams(location.search).get('mode') === 'register') {
+  setMode('register');
+} else {
+  setMode('login');
+}
+
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  errorEl.classList.add('hidden');
+  infoEl.classList.add('hidden');
+  submitBtn.disabled = true;
+  const email = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value;
+
+  try {
+    if (mode === 'login') {
+      const { error } = await sb.auth.signInWithPassword({ email, password });
+      if (error) throw error;
+      location.href = 'index-stitch-preview.html';
+    } else {
+      const displayName = nameInput.value.trim() || email.split('@')[0];
+      const { data, error } = await sb.auth.signUp({
+        email,
+        password,
+        options: { data: { display_name: displayName } },
+      });
+      if (error) throw error;
+      if (data.session) {
+        location.href = 'index-stitch-preview.html';
+      } else {
+        infoEl.textContent = 'Konto skapat! Kolla din e-post för att bekräfta kontot innan du loggar in.';
+        infoEl.classList.remove('hidden');
+      }
+    }
+  } catch (err) {
+    const messages = {
+      'Invalid login credentials': 'Fel e-post eller lösenord.',
+      'User already registered': 'Det finns redan ett konto med den e-postadressen.',
+    };
+    errorEl.textContent = messages[err.message] || err.message || 'Något gick fel, försök igen.';
+    errorEl.classList.remove('hidden');
+  } finally {
+    submitBtn.disabled = false;
+  }
+});
+
+// Already logged in? Skip straight to the dashboard.
+sb.auth.getSession().then(({ data }) => {
+  if (data.session) location.href = 'index-stitch-preview.html';
+});
+</script>
+</body>
+</html>
