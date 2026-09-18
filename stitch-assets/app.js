@@ -25,34 +25,6 @@ function levelFromXp(xp) {
   return { level, xpToNext };
 }
 
-// Redirects to /auth.html if there's no active session. Resolves with
-// { user, profile, lessons, progress } once everything is loaded.
-async function requireAuthAndData() {
-  const { data: { session } } = await sb.auth.getSession();
-  if (!session) {
-    location.href = 'auth.html';
-    return null;
-  }
-  const user = session.user;
-
-  const [{ data: profile, error: profileError }, { data: lessons }, { data: progress }] = await Promise.all([
-    sb.from('profiles').select('*').eq('id', user.id).single(),
-    sb.from('lessons').select('id, category, order_index, title, description, estimated_minutes, xp_reward').order('order_index'),
-    sb.from('user_lesson_progress').select('lesson_id, status, current_step, quiz_score, updated_at').eq('user_id', user.id),
-  ]);
-
-  if (profileError) {
-    console.error('Could not load profile', profileError);
-  }
-
-  return {
-    user,
-    profile: profile || { display_name: user.email?.split('@')[0] || 'Medlem', xp: 0, streak_days: 0, daily_goal_minutes: 15, minutes_today: 0 },
-    lessons: lessons || [],
-    progress: progress || [],
-  };
-}
-
 async function signOut() {
   await sb.auth.signOut();
   location.href = 'index.html';
@@ -62,6 +34,11 @@ async function signOut() {
 // jump straight to another lesson id.
 window.openLektion = function (id) {
   location.href = 'stitch-preview-lektion.html?id=' + encodeURIComponent(id);
+};
+
+// Legacy lesson content ("Du har klarat allt!") calls this to return home.
+window.goHome = function () {
+  location.href = 'index-stitch-preview.html';
 };
 
 function renderSidebarChrome(profile) {
@@ -83,6 +60,8 @@ function renderSidebarChrome(profile) {
   if (sbGoalText) sbGoalText.textContent = `${profile.minutes_today} / ${profile.daily_goal_minutes} min idag`;
   const sbGoalBar = document.getElementById('sb-goal-bar');
   if (sbGoalBar) sbGoalBar.style.width = `${goalPct}%`;
+  const hdrAvatar = document.getElementById('hdr-avatar');
+  if (hdrAvatar) hdrAvatar.textContent = initialsFromName(profile.display_name);
 }
 
 // ---------------------------------------------------------------------
@@ -102,26 +81,6 @@ async function renderDashboard(data) {
 
   const greetingName = document.getElementById('greeting-name');
   if (greetingName) greetingName.textContent = `God morgon, ${profile.display_name} 👋`;
-
-  const sbName = document.getElementById('sb-name');
-  if (sbName) sbName.textContent = profile.display_name;
-  const sbInitials = document.getElementById('sb-initials');
-  if (sbInitials) sbInitials.textContent = initialsFromName(profile.display_name);
-  const sbLevelXp = document.getElementById('sb-level-xp');
-  if (sbLevelXp) sbLevelXp.textContent = `Nivå ${level} • ${profile.xp.toLocaleString('sv-SE')} XP`;
-
-  const hdrXp = document.getElementById('hdr-xp');
-  if (hdrXp) hdrXp.textContent = `${profile.xp.toLocaleString('sv-SE')} XP`;
-
-  const sbStreak = document.getElementById('sb-streak-days');
-  if (sbStreak) sbStreak.textContent = `${profile.streak_days} dagars streak`;
-  const goalPct = profile.daily_goal_minutes ? Math.min(100, Math.round((profile.minutes_today / profile.daily_goal_minutes) * 100)) : 0;
-  const sbGoalPct = document.getElementById('sb-goal-pct');
-  if (sbGoalPct) sbGoalPct.textContent = `${goalPct}%`;
-  const sbGoalText = document.getElementById('sb-goal-text');
-  if (sbGoalText) sbGoalText.textContent = `${profile.minutes_today} / ${profile.daily_goal_minutes} min idag`;
-  const sbGoalBar = document.getElementById('sb-goal-bar');
-  if (sbGoalBar) sbGoalBar.style.width = `${goalPct}%`;
 
   const journeyBadge = document.getElementById('journey-pct-badge');
   if (journeyBadge) journeyBadge.textContent = `${pct}% klart`;
@@ -222,6 +181,23 @@ async function renderDashboard(data) {
         </a>`;
     }).join('');
   }
+
+  const articlesGrid = document.getElementById('dashboard-articles-grid');
+  if (articlesGrid) {
+    sb.from('articles').select('id, category, title, intro, read_minutes').order('order_index').limit(3).then(({ data: articles }) => {
+      if (!articles || !articles.length) return;
+      articlesGrid.innerHTML = articles.map(a => `
+        <a href="stitch-preview-artikel.html?id=${encodeURIComponent(a.id)}" class="bg-surface-card rounded-2xl p-space-lg shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 flex flex-col gap-2 group">
+          <span class="self-start px-2.5 py-1 rounded-full bg-primary-tint text-primary-deep font-label-md text-label-md">${ARTICLE_CATEGORY_LABELS[a.category] || a.category}</span>
+          <h3 class="font-headline-3 text-headline-3 text-text-primary group-hover:text-primary-deep transition-colors leading-snug mt-2">${a.title}</h3>
+          <p class="font-body-regular text-[14px] leading-relaxed text-text-secondary line-clamp-2">${a.intro}</p>
+          <div class="flex items-center text-primary-deep font-label-md text-label-md gap-1 pt-2">
+            <span>Läs artikel</span>
+            <span class="material-symbols-outlined text-[16px] group-hover:translate-x-1 transition-transform">arrow_forward</span>
+          </div>
+        </a>`).join('');
+    });
+  }
 }
 
 // ---------------------------------------------------------------------
@@ -234,13 +210,8 @@ function isYesterday(dateStr) {
   return dateStr === y.toISOString().slice(0, 10);
 }
 
-async function initLessonPage() {
-  const { data: { session } } = await sb.auth.getSession();
-  if (!session) {
-    location.href = 'auth.html';
-    return;
-  }
-  const user = session.user;
+async function initLessonPage(ctx) {
+  const { user, profile, lessons } = ctx;
   const root = document.getElementById('lesson-root');
   const lessonId = new URLSearchParams(location.search).get('id');
   if (!lessonId) {
@@ -248,10 +219,9 @@ async function initLessonPage() {
     return;
   }
 
-  const [{ data: lesson, error: lessonError }, { data: existingProgress }, { data: profile }] = await Promise.all([
+  const [{ data: lesson, error: lessonError }, { data: existingProgress }] = await Promise.all([
     sb.from('lessons').select('*').eq('id', lessonId).single(),
     sb.from('user_lesson_progress').select('*').eq('user_id', user.id).eq('lesson_id', lessonId).maybeSingle(),
-    sb.from('profiles').select('*').eq('id', user.id).single(),
   ]);
 
   if (lessonError || !lesson) {
@@ -259,9 +229,26 @@ async function initLessonPage() {
     return;
   }
 
-  renderSidebarChrome(profile);
+  // Previous/next lesson within the same category, ordered by order_index
+  const sameCategory = lessons.filter(l => l.category === lesson.category).sort((a, b) => a.order_index - b.order_index);
+  const posInCat = sameCategory.findIndex(l => l.id === lessonId);
+  const prevLesson = posInCat > 0 ? sameCategory[posInCat - 1] : null;
+  const nextLesson = posInCat >= 0 && posInCat < sameCategory.length - 1 ? sameCategory[posInCat + 1] : null;
+
   const crumb = document.getElementById('lesson-crumb');
   if (crumb) crumb.textContent = `${(CATEGORY_META[lesson.category] || {}).label || lesson.category} • ${lesson.title}`;
+
+  const navEl = document.getElementById('lesson-nav');
+  if (navEl) {
+    navEl.innerHTML = `
+      ${prevLesson
+        ? `<a href="stitch-preview-lektion.html?id=${encodeURIComponent(prevLesson.id)}" class="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-surface-card hover:bg-surface-subdued shadow-sm font-label-md text-label-md text-text-secondary transition-all"><span class="material-symbols-outlined text-[16px]">arrow_back</span><span>${prevLesson.title}</span></a>`
+        : '<span></span>'}
+      ${nextLesson
+        ? `<a href="stitch-preview-lektion.html?id=${encodeURIComponent(nextLesson.id)}" class="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-surface-card hover:bg-surface-subdued shadow-sm font-label-md text-label-md text-text-secondary transition-all"><span>${nextLesson.title}</span><span class="material-symbols-outlined text-[16px]">arrow_forward</span></a>`
+        : '<a href="stitch-preview-kurser.html" class="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-surface-card hover:bg-surface-subdued shadow-sm font-label-md text-label-md text-text-secondary transition-all"><span>Till kurser</span><span class="material-symbols-outlined text-[16px]">arrow_forward</span></a>'}
+    `;
+  }
 
   const steps = lesson.content.steps;
   const quiz = lesson.content.quiz;
@@ -391,7 +378,9 @@ async function initLessonPage() {
         <h2 class="font-headline-1 text-headline-1 text-text-primary mb-2">Lektion slutförd!</h2>
         <p class="font-body-regular text-body-regular text-text-secondary mb-6">Du fick ${correctCount} av ${quiz.length} rätt (${score}%)${alreadyCompleted ? '' : ` och tjänade <strong>+${lesson.xp_reward} XP</strong>`}.</p>
         <div class="flex items-center justify-center gap-3">
-          <a href="index-stitch-preview.html" class="px-6 py-3 rounded-xl bg-primary-container hover:bg-primary-deep text-on-primary font-label-md text-label-md transition-all shadow-sm">Till Hem</a>
+          ${nextLesson
+            ? `<a href="stitch-preview-lektion.html?id=${encodeURIComponent(nextLesson.id)}" class="px-6 py-3 rounded-xl bg-primary-container hover:bg-primary-deep text-on-primary font-label-md text-label-md transition-all shadow-sm flex items-center gap-2"><span>Nästa: ${nextLesson.title}</span><span class="material-symbols-outlined text-[18px]">arrow_forward</span></a>`
+            : `<a href="index-stitch-preview.html" class="px-6 py-3 rounded-xl bg-primary-container hover:bg-primary-deep text-on-primary font-label-md text-label-md transition-all shadow-sm">Till Hem</a>`}
           <a href="stitch-preview-kurser.html" class="px-6 py-3 rounded-xl bg-surface-subdued hover:bg-surface-container text-text-primary font-label-md text-label-md transition-all">Fler lektioner</a>
         </div>
       </div>`;
@@ -404,12 +393,257 @@ async function initLessonPage() {
   }
 }
 
-document.addEventListener('DOMContentLoaded', async () => {
-  if (document.getElementById('subjects-grid')) {
-    const data = await requireAuthAndData();
-    if (!data) return;
-    renderDashboard(data);
-  } else if (document.getElementById('lesson-root')) {
-    initLessonPage();
+// ---------------------------------------------------------------------
+// Kurser page: every lesson, grouped by category, with real progress
+// ---------------------------------------------------------------------
+function lessonStatusBadge(status) {
+  if (status === 'completed') return { icon: 'check_circle', label: 'Klar', cls: 'text-positive-spruce' };
+  if (status === 'in_progress') return { icon: 'radio_button_unchecked', label: 'Pågår', cls: 'text-primary' };
+  return { icon: 'radio_button_unchecked', label: '', cls: 'text-text-tertiary' };
+}
+
+function initCoursesPage(ctx) {
+  const { lessons, progress } = ctx;
+  const progressByLesson = new Map(progress.map(p => [p.lesson_id, p]));
+  const root = document.getElementById('courses-root');
+
+  const byCategory = {};
+  for (const l of lessons) (byCategory[l.category] ||= []).push(l);
+  for (const cat in byCategory) byCategory[cat].sort((a, b) => a.order_index - b.order_index);
+
+  const totalLessons = lessons.length;
+  const totalCompleted = progress.filter(p => p.status === 'completed').length;
+
+  const filterBar = `
+    <div class="flex flex-wrap gap-2 mb-space-lg" id="courses-filter">
+      <button data-filter="alla" class="filter-chip px-3.5 py-1.5 rounded-full bg-primary-deep text-on-primary font-label-md text-label-md transition-all shadow-sm">Alla ämnen</button>
+      ${Object.entries(CATEGORY_META).map(([key, meta]) => `<button data-filter="${key}" class="filter-chip px-3.5 py-1.5 rounded-full bg-surface-card text-text-secondary hover:bg-surface-subdued font-label-md text-label-md transition-all shadow-sm">${meta.label} (${(byCategory[key] || []).length})</button>`).join('')}
+    </div>`;
+
+  const sections = Object.entries(CATEGORY_META).map(([key, meta]) => {
+    const catLessons = byCategory[key] || [];
+    if (!catLessons.length) return '';
+    return `
+      <section class="course-section mb-space-xl" data-category="${key}">
+        <div class="flex items-center gap-3 mb-space-md">
+          <div class="w-10 h-10 rounded-xl ${meta.iconBg} ${meta.iconColor} flex items-center justify-center">
+            <span class="material-symbols-outlined text-[22px]">${meta.icon}</span>
+          </div>
+          <h2 class="font-headline-2 text-headline-2 text-text-primary">${meta.label}</h2>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+          ${catLessons.map(l => {
+            const p = progressByLesson.get(l.id);
+            const badge = lessonStatusBadge(p?.status);
+            return `
+            <a href="stitch-preview-lektion.html?id=${encodeURIComponent(l.id)}" class="flex items-center justify-between gap-3 bg-surface-card rounded-xl p-space-md shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all">
+              <div class="flex items-center gap-3 min-w-0">
+                <span class="material-symbols-outlined text-[22px] ${badge.cls}">${badge.icon}</span>
+                <div class="flex flex-col min-w-0">
+                  <span class="font-label-md text-label-md text-text-primary truncate">${l.title}</span>
+                  <span class="font-caption-micro text-caption-micro text-text-tertiary">${l.estimated_minutes} min · ${l.xp_reward} XP</span>
+                </div>
+              </div>
+              <span class="material-symbols-outlined text-[18px] text-text-tertiary shrink-0">chevron_right</span>
+            </a>`;
+          }).join('')}
+        </div>
+      </section>`;
+  }).join('');
+
+  root.innerHTML = `
+    <div class="flex flex-col md:flex-row md:items-end justify-between gap-space-md mb-space-lg">
+      <div>
+        <span class="font-label-md text-label-md text-primary uppercase tracking-wide">Kurskatalog</span>
+        <h1 class="font-headline-1 text-headline-1 text-text-primary tracking-tight mt-1">Lär dig ekonomi</h1>
+      </div>
+      <div class="flex items-center gap-2 bg-surface-card px-4 py-2.5 rounded-xl shadow-sm">
+        <span class="material-symbols-outlined text-positive-spruce text-[20px]">task_alt</span>
+        <span class="font-label-md text-label-md text-text-primary">${totalCompleted} av ${totalLessons} lektioner klara</span>
+      </div>
+    </div>
+    ${filterBar}
+    <div id="courses-sections">${sections}</div>`;
+
+  document.querySelectorAll('#courses-filter .filter-chip').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const filter = btn.dataset.filter;
+      document.querySelectorAll('#courses-filter .filter-chip').forEach(b => {
+        b.className = 'filter-chip px-3.5 py-1.5 rounded-full bg-surface-card text-text-secondary hover:bg-surface-subdued font-label-md text-label-md transition-all shadow-sm';
+      });
+      btn.className = 'filter-chip px-3.5 py-1.5 rounded-full bg-primary-deep text-on-primary font-label-md text-label-md transition-all shadow-sm';
+      document.querySelectorAll('.course-section').forEach(sec => {
+        sec.style.display = (filter === 'alla' || sec.dataset.category === filter) ? '' : 'none';
+      });
+    });
+  });
+}
+
+// ---------------------------------------------------------------------
+// Min resa: progress summary per category + full completed-lesson log
+// ---------------------------------------------------------------------
+function initJourneyPage(ctx) {
+  const { lessons, progress, profile } = ctx;
+  const root = document.getElementById('journey-root');
+  if (!root) return;
+  const progressByLesson = new Map(progress.map(p => [p.lesson_id, p]));
+  const byCategory = {};
+  for (const l of lessons) (byCategory[l.category] ||= []).push(l);
+
+  const completedList = progress
+    .filter(p => p.status === 'completed')
+    .map(p => ({ p, lesson: lessons.find(l => l.id === p.lesson_id) }))
+    .filter(x => x.lesson)
+    .sort((a, b) => new Date(b.p.completed_at || b.p.updated_at) - new Date(a.p.completed_at || a.p.updated_at));
+
+  const catCards = Object.entries(CATEGORY_META).map(([key, meta]) => {
+    const catLessons = byCategory[key] || [];
+    const done = catLessons.filter(l => progressByLesson.get(l.id)?.status === 'completed').length;
+    const pct = catLessons.length ? Math.round((done / catLessons.length) * 100) : 0;
+    return `
+      <div class="bg-surface-card rounded-2xl p-space-lg shadow-sm">
+        <div class="flex items-center gap-3 mb-3">
+          <div class="w-10 h-10 rounded-xl ${meta.iconBg} ${meta.iconColor} flex items-center justify-center"><span class="material-symbols-outlined text-[20px]">${meta.icon}</span></div>
+          <h3 class="font-headline-3 text-headline-3 text-text-primary">${meta.label}</h3>
+        </div>
+        <div class="flex justify-between text-caption-micro font-caption-micro text-text-tertiary mb-1.5">
+          <span>${done} av ${catLessons.length}</span><span class="font-medium text-text-primary">${pct}%</span>
+        </div>
+        <div class="w-full h-1.5 bg-surface-subdued rounded-full overflow-hidden"><div class="h-full bg-primary-container rounded-full" style="width:${pct}%"></div></div>
+      </div>`;
+  }).join('');
+
+  root.innerHTML = `
+    <h1 class="font-headline-1 text-headline-1 text-text-primary tracking-tight mb-2">Min resa</h1>
+    <p class="font-body-regular text-body-regular text-text-secondary mb-space-lg">${profile.xp.toLocaleString('sv-SE')} XP samlat · ${profile.streak_days} dagars streak</p>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-space-md mb-space-xl">${catCards}</div>
+    <h2 class="font-headline-2 text-headline-2 text-text-primary mb-space-md">Avklarade lektioner</h2>
+    ${completedList.length ? `<div class="flex flex-col gap-2">${completedList.map(({ p, lesson }) => `
+      <a href="stitch-preview-lektion.html?id=${encodeURIComponent(lesson.id)}" class="flex items-center justify-between gap-3 bg-surface-card rounded-xl p-space-md shadow-sm hover:shadow-md transition-all">
+        <div class="flex items-center gap-3">
+          <span class="material-symbols-outlined text-[20px] text-positive-spruce">check_circle</span>
+          <span class="font-label-md text-label-md text-text-primary">${lesson.title}</span>
+        </div>
+        <span class="font-caption-micro text-caption-micro text-text-tertiary">Quiz: ${p.quiz_score ?? '–'}%</span>
+      </a>`).join('')}</div>` : `<p class="font-body-regular text-body-regular text-text-secondary">Du har inte slutfört någon lektion än. <a class="text-primary underline" href="stitch-preview-kurser.html">Börja här →</a></p>`}
+  `;
+}
+
+// ---------------------------------------------------------------------
+// Profil page: real account info + sign out
+// ---------------------------------------------------------------------
+function initProfilePage(ctx) {
+  const { user, profile, lessons, progress } = ctx;
+  const root = document.getElementById('profile-root');
+  if (!root) return;
+  const { level } = levelFromXp(profile.xp);
+  const completed = progress.filter(p => p.status === 'completed').length;
+
+  root.innerHTML = `
+    <div class="bg-surface-card rounded-2xl p-space-xl shadow-sm">
+      <div class="flex items-center gap-4 mb-space-lg">
+        <div class="w-16 h-16 rounded-full bg-primary-tint text-primary-deep flex items-center justify-center font-headline-1 text-headline-1">${initialsFromName(profile.display_name)}</div>
+        <div>
+          <h1 class="font-headline-1 text-headline-1 text-text-primary">${profile.display_name}</h1>
+          <p class="font-body-regular text-body-regular text-text-secondary">${user.email}</p>
+        </div>
+      </div>
+      <div class="grid grid-cols-3 gap-3 mb-space-lg">
+        <div class="bg-surface-subdued rounded-xl p-space-md text-center">
+          <div class="font-headline-2 text-headline-2 text-text-primary">${profile.xp.toLocaleString('sv-SE')}</div>
+          <div class="font-caption-micro text-caption-micro text-text-tertiary">XP · Nivå ${level}</div>
+        </div>
+        <div class="bg-surface-subdued rounded-xl p-space-md text-center">
+          <div class="font-headline-2 text-headline-2 text-text-primary">${completed}</div>
+          <div class="font-caption-micro text-caption-micro text-text-tertiary">Lektioner klara</div>
+        </div>
+        <div class="bg-surface-subdued rounded-xl p-space-md text-center">
+          <div class="font-headline-2 text-headline-2 text-text-primary">${profile.streak_days}</div>
+          <div class="font-caption-micro text-caption-micro text-text-tertiary">Dagars streak</div>
+        </div>
+      </div>
+      <button id="signout-btn" class="w-full px-6 py-3 rounded-xl bg-surface-subdued hover:bg-surface-container text-text-primary font-label-md text-label-md transition-all flex items-center justify-center gap-2">
+        <span class="material-symbols-outlined text-[18px]">logout</span>
+        <span>Logga ut</span>
+      </button>
+    </div>`;
+  document.getElementById('signout-btn').addEventListener('click', signOut);
+}
+
+// ---------------------------------------------------------------------
+// Artiklar: listing + single-article reader
+// ---------------------------------------------------------------------
+const ARTICLE_CATEGORY_LABELS = { aktier: 'Aktier', fonder: 'Fonder', privatekonomi: 'Privatekonomi', vardering: 'Värdering', krypto: 'Krypto', ranta: 'Ränta på ränta', risker: 'Risker' };
+
+async function initArticlesPage() {
+  const root = document.getElementById('articles-root');
+  const { data: articles, error } = await sb.from('articles').select('id, category, order_index, title, intro, read_minutes').order('order_index');
+  if (error || !articles) {
+    root.innerHTML = '<p class="font-body-regular text-body-regular text-text-secondary">Kunde inte ladda artiklarna.</p>';
+    return;
   }
+  root.innerHTML = `
+    <h1 class="font-headline-1 text-headline-1 text-text-primary tracking-tight mb-1">Artiklar</h1>
+    <p class="font-body-regular text-body-regular text-text-secondary mb-space-lg">Fördjupning kring aktier, fonder och sparande.</p>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-space-md">
+      ${articles.map(a => `
+        <a href="stitch-preview-artikel.html?id=${encodeURIComponent(a.id)}" class="bg-surface-card rounded-2xl p-space-lg shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 flex flex-col gap-2">
+          <span class="self-start px-2.5 py-0.5 rounded-full bg-primary-tint text-primary-deep font-caption-micro text-caption-micro">${ARTICLE_CATEGORY_LABELS[a.category] || a.category}</span>
+          <h3 class="font-headline-3 text-headline-3 text-text-primary">${a.title}</h3>
+          <p class="font-body-regular text-[14px] text-text-secondary leading-relaxed line-clamp-3">${a.intro}</p>
+          <span class="font-caption-micro text-caption-micro text-text-tertiary mt-2">${a.read_minutes} min läsning</span>
+        </a>`).join('')}
+    </div>`;
+}
+
+async function initArticleReaderPage() {
+  const root = document.getElementById('article-root');
+  const articleId = new URLSearchParams(location.search).get('id');
+  if (!articleId) {
+    root.innerHTML = '<p class="font-body-regular text-body-regular text-text-secondary">Ingen artikel vald. <a class="text-primary underline" href="stitch-preview-artiklar.html">Till artiklar →</a></p>';
+    return;
+  }
+  const { data: article, error } = await sb.from('articles').select('*').eq('id', articleId).single();
+  if (error || !article) {
+    root.innerHTML = '<p class="font-body-regular text-body-regular text-text-secondary">Kunde inte hitta artikeln.</p>';
+    return;
+  }
+  const crumb = document.getElementById('article-crumb');
+  if (crumb) crumb.textContent = article.title;
+  root.innerHTML = `
+    <span class="px-2.5 py-0.5 rounded-full bg-primary-tint text-primary-deep font-caption-micro text-caption-micro">${ARTICLE_CATEGORY_LABELS[article.category] || article.category}</span>
+    <h1 class="font-headline-1 text-headline-1 text-text-primary mt-3 mb-2">${article.title}</h1>
+    <p class="font-body-medium text-body-medium text-text-secondary mb-space-lg">${article.intro}</p>
+    <div class="prose-lesson">${article.body}</div>
+    <div class="mt-space-xl pt-space-lg border-t border-border-subtle">
+      <a href="stitch-preview-artiklar.html" class="px-6 py-3 rounded-xl bg-surface-subdued hover:bg-surface-container text-text-primary font-label-md text-label-md transition-all inline-flex items-center gap-2"><span class="material-symbols-outlined text-[18px]">arrow_back</span><span>Fler artiklar</span></a>
+    </div>`;
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session) {
+    location.href = 'auth.html';
+    return;
+  }
+  const user = session.user;
+
+  const [{ data: profile }, { data: lessons }, { data: progress }] = await Promise.all([
+    sb.from('profiles').select('*').eq('id', user.id).single(),
+    sb.from('lessons').select('id, category, order_index, title, description, estimated_minutes, xp_reward').order('order_index'),
+    sb.from('user_lesson_progress').select('lesson_id, status, current_step, quiz_score, updated_at, completed_at').eq('user_id', user.id),
+  ]);
+
+  const safeProfile = profile || { display_name: user.email?.split('@')[0] || 'Medlem', xp: 0, streak_days: 0, daily_goal_minutes: 15, minutes_today: 0, last_active_date: null };
+  renderSidebarChrome(safeProfile);
+
+  const ctx = { user, profile: safeProfile, lessons: lessons || [], progress: progress || [] };
+
+  if (document.getElementById('subjects-grid')) renderDashboard(ctx);
+  else if (document.getElementById('lesson-root')) initLessonPage(ctx);
+  else if (document.getElementById('courses-root')) initCoursesPage(ctx);
+  else if (document.getElementById('journey-root')) initJourneyPage(ctx);
+  else if (document.getElementById('profile-root')) initProfilePage(ctx);
+  else if (document.getElementById('articles-root')) initArticlesPage();
+  else if (document.getElementById('article-root')) initArticleReaderPage();
 });
