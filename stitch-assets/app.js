@@ -440,6 +440,7 @@ function initCoursesPage(ctx) {
     <div class="flex flex-wrap gap-2 mb-space-lg" id="courses-filter">
       <button data-filter="alla" class="filter-chip px-3.5 py-1.5 rounded-full bg-primary-deep text-on-primary font-label-md text-label-md transition-all shadow-sm">Alla ämnen</button>
       ${Object.entries(CATEGORY_META).map(([key, meta]) => `<button data-filter="${key}" class="filter-chip px-3.5 py-1.5 rounded-full bg-surface-card text-text-secondary hover:bg-surface-subdued font-label-md text-label-md transition-all shadow-sm">${meta.label} (${(byCategory[key] || []).length})</button>`).join('')}
+      <button data-filter="video" class="filter-chip px-3.5 py-1.5 rounded-full bg-surface-card text-text-secondary hover:bg-surface-subdued font-label-md text-label-md transition-all shadow-sm">Video (1)</button>
     </div>`;
 
   const sections = Object.entries(CATEGORY_META).map(([key, meta]) => {
@@ -473,6 +474,28 @@ function initCoursesPage(ctx) {
       </section>`;
   }).join('');
 
+  const videoSection = `
+    <section class="course-section mb-space-xl" data-category="video">
+      <div class="flex items-center gap-3 mb-space-md">
+        <div class="w-10 h-10 rounded-xl bg-surface-subdued text-text-primary flex items-center justify-center">
+          <span class="material-symbols-outlined text-[22px]">play_circle</span>
+        </div>
+        <h2 class="font-headline-2 text-headline-2 text-text-primary">Video</h2>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <a href="stitch-preview-video.html" class="flex items-center justify-between gap-3 bg-surface-card rounded-xl p-space-md shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all">
+          <div class="flex items-center gap-3 min-w-0">
+            <span class="material-symbols-outlined text-[22px] text-text-tertiary">play_circle</span>
+            <div class="flex flex-col min-w-0">
+              <span class="font-label-md text-label-md text-text-primary truncate">Video-lektioner</span>
+              <span class="font-caption-micro text-caption-micro text-text-tertiary">Kommer snart</span>
+            </div>
+          </div>
+          <span class="material-symbols-outlined text-[18px] text-text-tertiary shrink-0">chevron_right</span>
+        </a>
+      </div>
+    </section>`;
+
   root.innerHTML = `
     <div class="flex flex-col md:flex-row md:items-end justify-between gap-space-md mb-space-lg">
       <div>
@@ -485,7 +508,7 @@ function initCoursesPage(ctx) {
       </div>
     </div>
     ${filterBar}
-    <div id="courses-sections">${sections}</div>`;
+    <div id="courses-sections">${sections}${videoSection}</div>`;
 
   document.querySelectorAll('#courses-filter .filter-chip').forEach(btn => {
     btn.addEventListener('click', () => {
