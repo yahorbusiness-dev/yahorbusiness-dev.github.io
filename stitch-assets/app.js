@@ -18,11 +18,30 @@ function initialsFromName(name) {
   return ((parts[0]?.[0] || '') + (parts[1]?.[0] || '')).toUpperCase() || name[0].toUpperCase();
 }
 
+const XP_LEVELS = [
+  { level: 1, xp: 0, title: 'Ekonomi Rookie', emoji: '🌱' },
+  { level: 2, xp: 100, title: 'Pengakollare', emoji: '💳' },
+  { level: 3, xp: 250, title: 'Spararen', emoji: '🪙' },
+  { level: 4, xp: 500, title: 'Budget Boss', emoji: '📊' },
+  { level: 5, xp: 850, title: 'Pengamästare', emoji: '💰' },
+  { level: 6, xp: 1250, title: 'Investeraren', emoji: '📈' },
+  { level: 7, xp: 1750, title: 'Ekonomisk Strateg', emoji: '🧠' },
+  { level: 8, xp: 2500, title: 'Ekonomisk Ninja', emoji: '🥷' },
+  { level: 9, xp: 3500, title: 'Money Master', emoji: '👑' },
+  { level: 10, xp: 5000, title: 'Ekonomisk Legend', emoji: '🚀' },
+];
+
 function levelFromXp(xp) {
-  const level = Math.floor(xp / 500) + 1;
-  const xpIntoLevel = xp % 500;
-  const xpToNext = 500 - xpIntoLevel;
-  return { level, xpToNext };
+  let current = XP_LEVELS[0];
+  let next = null;
+  for (const entry of XP_LEVELS) {
+    if (xp >= entry.xp) current = entry;
+    else { next = entry; break; }
+  }
+  const xpToNext = next ? next.xp - xp : 0;
+  const levelSpan = next ? next.xp - current.xp : 1;
+  const levelProgressPct = next ? Math.round(((xp - current.xp) / levelSpan) * 100) : 100;
+  return { level: current.level, title: current.title, emoji: current.emoji, next, xpToNext, levelProgressPct };
 }
 
 async function signOut() {
@@ -46,9 +65,9 @@ function renderSidebarChrome(profile) {
   if (sbName) sbName.textContent = profile.display_name;
   const sbInitials = document.getElementById('sb-initials');
   if (sbInitials) sbInitials.textContent = initialsFromName(profile.display_name);
-  const { level } = levelFromXp(profile.xp);
+  const { level, title, emoji } = levelFromXp(profile.xp);
   const sbLevelXp = document.getElementById('sb-level-xp');
-  if (sbLevelXp) sbLevelXp.textContent = `Nivå ${level} • ${profile.xp.toLocaleString('sv-SE')} XP`;
+  if (sbLevelXp) sbLevelXp.textContent = `${emoji} ${title} • Nivå ${level}`;
   const hdrXp = document.getElementById('hdr-xp');
   if (hdrXp) hdrXp.textContent = `${profile.xp.toLocaleString('sv-SE')} XP`;
   const sbStreak = document.getElementById('sb-streak-days');
@@ -74,7 +93,7 @@ async function renderDashboard(data) {
   const totalLessons = lessons.length;
   const completedLessons = progress.filter(p => p.status === 'completed').length;
   const pct = totalLessons ? Math.round((completedLessons / totalLessons) * 100) : 0;
-  const { level, xpToNext } = levelFromXp(profile.xp);
+  const { level, xpToNext, next: nextLevel } = levelFromXp(profile.xp);
 
   const scored = progress.filter(p => p.quiz_score !== null && p.quiz_score !== undefined);
   const avgQuizScore = scored.length ? Math.round(scored.reduce((s, p) => s + p.quiz_score, 0) / scored.length) : null;
@@ -94,7 +113,9 @@ async function renderDashboard(data) {
   const journeyCount = document.getElementById('journey-count');
   if (journeyCount) journeyCount.textContent = `${completedLessons} av ${totalLessons}`;
   const journeyXpNext = document.getElementById('journey-xp-next');
-  if (journeyXpNext) journeyXpNext.innerHTML = `${xpToNext} XP kvar till <strong>Nivå ${level + 1}</strong>`;
+  if (journeyXpNext) journeyXpNext.innerHTML = nextLevel
+    ? `${xpToNext} XP kvar till <strong>${nextLevel.emoji} ${nextLevel.title}</strong>`
+    : `<strong>Högsta nivån uppnådd 🎉</strong>`;
   const journeyQuizScore = document.getElementById('journey-quiz-score');
   const journeyQuizLabel = document.getElementById('journey-quiz-label');
   if (journeyQuizScore) journeyQuizScore.textContent = avgQuizScore === null ? '–' : `${avgQuizScore}%`;
@@ -532,41 +553,117 @@ function initJourneyPage(ctx) {
 // ---------------------------------------------------------------------
 // Profil page: real account info + sign out
 // ---------------------------------------------------------------------
-function initProfilePage(ctx) {
+async function initProfilePage(ctx) {
   const { user, profile, lessons, progress } = ctx;
   const root = document.getElementById('profile-root');
   if (!root) return;
-  const { level } = levelFromXp(profile.xp);
-  const completed = progress.filter(p => p.status === 'completed').length;
+  const { level, title, emoji, next, xpToNext, levelProgressPct } = levelFromXp(profile.xp);
+  const completedList = progress
+    .filter(p => p.status === 'completed')
+    .map(p => ({ ...p, lesson: lessons.find(l => l.id === p.lesson_id) }))
+    .filter(x => x.lesson);
+  const completed = completedList.length;
+
+  const [{ data: articleReads }, { data: allArticles }] = await Promise.all([
+    sb.from('user_article_reads').select('article_id, read_at').eq('user_id', user.id),
+    sb.from('articles').select('id, title, category, read_minutes').order('order_index'),
+  ]);
+  const readArticles = (articleReads || [])
+    .map(r => ({ ...r, article: (allArticles || []).find(a => a.id === r.article_id) }))
+    .filter(x => x.article);
+
+  const byCategory = {};
+  for (const l of lessons) (byCategory[l.category] ||= []).push(l);
+  const progressByLesson = new Map(progress.map(p => [p.lesson_id, p]));
+  const categoryCards = Object.entries(CATEGORY_META).map(([key, meta]) => {
+    const catLessons = byCategory[key] || [];
+    if (!catLessons.length) return '';
+    const done = catLessons.filter(l => progressByLesson.get(l.id)?.status === 'completed').length;
+    const pct = Math.round((done / catLessons.length) * 100);
+    return `
+      <div class="bg-surface-subdued rounded-xl p-space-md">
+        <div class="flex items-center gap-2 mb-2">
+          <div class="w-8 h-8 rounded-lg ${meta.iconBg} ${meta.iconColor} flex items-center justify-center"><span class="material-symbols-outlined text-[16px]">${meta.icon}</span></div>
+          <span class="font-label-md text-label-md text-text-primary">${meta.label}</span>
+        </div>
+        <div class="flex justify-between text-caption-micro font-caption-micro text-text-tertiary mb-1">
+          <span>${done} av ${catLessons.length}</span><span class="font-medium text-text-primary">${pct}%</span>
+        </div>
+        <div class="w-full h-1.5 bg-border-subtle rounded-full overflow-hidden"><div class="h-full bg-primary-container rounded-full" style="width:${pct}%"></div></div>
+      </div>`;
+  }).join('');
+
+  const activity = [
+    ...completedList.map(x => ({ type: 'lesson', date: x.completed_at || x.updated_at, title: x.lesson.title, meta: `Quiz: ${x.quiz_score ?? '–'}%`, href: `stitch-preview-lektion.html?id=${encodeURIComponent(x.lesson.id)}` })),
+    ...readArticles.map(x => ({ type: 'article', date: x.read_at, title: x.article.title, meta: `${x.article.read_minutes} min läsning`, href: `stitch-preview-artikel.html?id=${encodeURIComponent(x.article.id)}` })),
+  ].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 8);
 
   root.innerHTML = `
-    <div class="bg-surface-card rounded-2xl p-space-xl shadow-sm">
+    <div class="bg-surface-card rounded-2xl p-space-xl shadow-sm mb-space-md">
       <div class="flex items-center gap-4 mb-space-lg">
         <div class="w-16 h-16 rounded-full bg-primary-tint text-primary-deep flex items-center justify-center font-headline-1 text-headline-1">${initialsFromName(profile.display_name)}</div>
-        <div>
-          <h1 class="font-headline-1 text-headline-1 text-text-primary">${profile.display_name}</h1>
-          <p class="font-body-regular text-body-regular text-text-secondary">${user.email}</p>
+        <div class="flex-1 min-w-0">
+          <h1 class="font-headline-1 text-headline-1 text-text-primary truncate">${profile.display_name}</h1>
+          <p class="font-body-regular text-body-regular text-text-secondary truncate">${user.email}</p>
+        </div>
+        <div class="text-center shrink-0">
+          <div class="text-[32px] leading-none mb-1">${emoji}</div>
+          <span class="font-label-md text-label-md text-primary-deep">Nivå ${level}</span>
         </div>
       </div>
-      <div class="grid grid-cols-3 gap-3 mb-space-lg">
-        <div class="bg-surface-subdued rounded-xl p-space-md text-center">
-          <div class="font-headline-2 text-headline-2 text-text-primary">${profile.xp.toLocaleString('sv-SE')}</div>
-          <div class="font-caption-micro text-caption-micro text-text-tertiary">XP · Nivå ${level}</div>
+      <div class="bg-surface-subdued rounded-xl p-space-md">
+        <div class="flex items-center justify-between mb-1.5 gap-2">
+          <span class="font-label-md text-label-md text-text-primary">${emoji} ${title}</span>
+          <span class="font-caption-micro text-caption-micro text-text-tertiary shrink-0">${next ? `${xpToNext} XP till nästa nivå` : 'Högsta nivå uppnådd'}</span>
         </div>
-        <div class="bg-surface-subdued rounded-xl p-space-md text-center">
-          <div class="font-headline-2 text-headline-2 text-text-primary">${completed}</div>
-          <div class="font-caption-micro text-caption-micro text-text-tertiary">Lektioner klara</div>
+        <div class="w-full h-2 bg-border-subtle rounded-full overflow-hidden mb-1.5">
+          <div class="h-full bg-primary-container rounded-full" style="width:${levelProgressPct}%"></div>
         </div>
-        <div class="bg-surface-subdued rounded-xl p-space-md text-center">
-          <div class="font-headline-2 text-headline-2 text-text-primary">${profile.streak_days}</div>
-          <div class="font-caption-micro text-caption-micro text-text-tertiary">Dagars streak</div>
-        </div>
+        ${next ? `<span class="font-caption-micro text-caption-micro text-text-tertiary">Nästa: ${next.emoji} ${next.title} vid ${next.xp.toLocaleString('sv-SE')} XP</span>` : ''}
       </div>
-      <button id="signout-btn" class="w-full px-6 py-3 rounded-xl bg-surface-subdued hover:bg-surface-container text-text-primary font-label-md text-label-md transition-all flex items-center justify-center gap-2">
-        <span class="material-symbols-outlined text-[18px]">logout</span>
-        <span>Logga ut</span>
-      </button>
-    </div>`;
+    </div>
+
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-space-md">
+      <div class="bg-surface-card rounded-xl p-space-md text-center shadow-sm">
+        <div class="font-headline-2 text-headline-2 text-text-primary">${profile.xp.toLocaleString('sv-SE')}</div>
+        <div class="font-caption-micro text-caption-micro text-text-tertiary">Totalt XP</div>
+      </div>
+      <div class="bg-surface-card rounded-xl p-space-md text-center shadow-sm">
+        <div class="font-headline-2 text-headline-2 text-text-primary">${completed}</div>
+        <div class="font-caption-micro text-caption-micro text-text-tertiary">Lektioner klara</div>
+      </div>
+      <div class="bg-surface-card rounded-xl p-space-md text-center shadow-sm">
+        <div class="font-headline-2 text-headline-2 text-text-primary">${readArticles.length}</div>
+        <div class="font-caption-micro text-caption-micro text-text-tertiary">Artiklar lästa</div>
+      </div>
+      <div class="bg-surface-card rounded-xl p-space-md text-center shadow-sm">
+        <div class="font-headline-2 text-headline-2 text-text-primary">${profile.streak_days}</div>
+        <div class="font-caption-micro text-caption-micro text-text-tertiary">Dagars streak</div>
+      </div>
+    </div>
+
+    <div class="bg-surface-card rounded-2xl p-space-xl shadow-sm mb-space-md">
+      <h2 class="font-headline-3 text-headline-3 text-text-primary mb-space-md">Framsteg per ämne</h2>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-3">${categoryCards}</div>
+    </div>
+
+    <div class="bg-surface-card rounded-2xl p-space-xl shadow-sm mb-space-md">
+      <h2 class="font-headline-3 text-headline-3 text-text-primary mb-space-md">Senaste aktivitet</h2>
+      ${activity.length ? `<div class="flex flex-col gap-2">${activity.map(a => `
+        <a href="${a.href}" class="flex items-center justify-between gap-3 bg-surface-subdued rounded-xl p-space-md hover:bg-surface-container transition-all">
+          <div class="flex items-center gap-3 min-w-0">
+            <span class="material-symbols-outlined text-[20px] ${a.type === 'lesson' ? 'text-positive-spruce' : 'text-primary'}">${a.type === 'lesson' ? 'check_circle' : 'newspaper'}</span>
+            <span class="font-label-md text-label-md text-text-primary truncate">${a.title}</span>
+          </div>
+          <span class="font-caption-micro text-caption-micro text-text-tertiary shrink-0">${a.meta}</span>
+        </a>`).join('')}</div>`
+        : `<p class="font-body-regular text-body-regular text-text-secondary">Ingen aktivitet än. <a class="text-primary underline" href="stitch-preview-kurser.html">Börja en lektion →</a></p>`}
+    </div>
+
+    <button id="signout-btn" class="w-full px-6 py-3 rounded-xl bg-surface-card hover:bg-surface-subdued text-text-primary font-label-md text-label-md transition-all flex items-center justify-center gap-2 shadow-sm">
+      <span class="material-symbols-outlined text-[18px]">logout</span>
+      <span>Logga ut</span>
+    </button>`;
   document.getElementById('signout-btn').addEventListener('click', signOut);
 }
 
@@ -596,7 +693,7 @@ async function initArticlesPage() {
     </div>`;
 }
 
-async function initArticleReaderPage() {
+async function initArticleReaderPage(ctx) {
   const root = document.getElementById('article-root');
   const articleId = new URLSearchParams(location.search).get('id');
   if (!articleId) {
@@ -607,6 +704,9 @@ async function initArticleReaderPage() {
   if (error || !article) {
     root.innerHTML = '<p class="font-body-regular text-body-regular text-text-secondary">Kunde inte hitta artikeln.</p>';
     return;
+  }
+  if (ctx?.user) {
+    sb.from('user_article_reads').upsert({ user_id: ctx.user.id, article_id: articleId, read_at: new Date().toISOString() });
   }
   const crumb = document.getElementById('article-crumb');
   if (crumb) crumb.textContent = article.title;
@@ -645,5 +745,5 @@ document.addEventListener('DOMContentLoaded', async () => {
   else if (document.getElementById('journey-root')) initJourneyPage(ctx);
   else if (document.getElementById('profile-root')) initProfilePage(ctx);
   else if (document.getElementById('articles-root')) initArticlesPage();
-  else if (document.getElementById('article-root')) initArticleReaderPage();
+  else if (document.getElementById('article-root')) initArticleReaderPage(ctx);
 });
