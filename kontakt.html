@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+
+<html class="h-full bg-bg-root" lang="sv"><head><title>Kontakt – UngEkonom</title><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><style>@layer base { html, body { margin: 0; padding: 0; } body { overscroll-behavior: none; } main > :first-child { margin-top: 0 !important; } main > :last-child { margin-bottom: 0 !important; } } ::-webkit-scrollbar { display: none; }</style><link href="stitch-assets/fonts.css" rel="stylesheet"/><link href="stitch-assets/tailwind.css" rel="stylesheet"/></head><body class="bg-bg-root font-body-regular text-text-primary antialiased min-h-full flex flex-col"><header class="fixed top-0 left-0 w-full z-50 bg-surface-card/90 backdrop-blur-xl shadow-[0_1px_8px_rgba(15,23,42,0.04)]"><div class="h-20 max-w-[1140px] mx-auto px-margin flex items-center justify-between"><div class="flex items-center gap-space-md"><img alt="UngEkonom Logo" class="h-8 w-auto object-contain" src="stitch-assets/logo.svg"/></div><nav class="hidden lg:flex items-center gap-space-lg" data-active-classes="text-primary-deep font-label-md"><a class="text-on-surface-variant hover:text-on-surface font-label-md text-label-md transition-colors" data-path="amnen-kurser" href="#amnen">Ämnen &amp; Kurser</a><a class="text-on-surface-variant hover:text-on-surface font-label-md text-label-md transition-colors" data-path="hur-det-fungerar" href="#hur-det-fungerar">Hur det fungerar</a><a class="text-on-surface-variant hover:text-on-surface font-label-md text-label-md transition-colors" data-path="artiklar" href="#artiklar">Artiklar</a><a class="text-on-surface-variant hover:text-on-surface font-label-md text-label-md transition-colors" data-path="for-gymnasieskolor" href="for-gymnasieskolor.html">För Gymnasieskolor</a><a class="text-on-surface-variant hover:text-on-surface font-label-md text-label-md transition-colors" data-path="om-oss" href="var-vision.html">Om oss</a></nav><div class="flex items-center gap-space-md"><a class="hidden sm:inline-flex items-center font-label-md text-label-md text-text-secondary hover:text-on-surface px-space-md py-space-sm transition-colors" data-path="login" href="auth.html">Logga in</a><a class="inline-flex items-center justify-center bg-primary-container hover:bg-primary-deep text-on-primary font-label-md text-label-md px-space-lg py-space-sm rounded-xl transition-all shadow-[0_1px_2px_0_rgba(15,23,42,0.04)]" data-path="register" href="auth.html?mode=register">Skapa gratis konto</a></div></div></header><main class="w-full pt-20 bg-bg-root flex-1"><div class="flex flex-col w-full">
+<div class="relative overflow-hidden w-full">
+<div class="absolute top-[-160px] left-1/2 -translate-x-1/2 w-[980px] h-[360px] bg-gradient-to-b from-primary-tint via-surface-container to-transparent rounded-full blur-3xl pointer-events-none opacity-80"></div>
+<section class="relative max-w-3xl mx-auto px-margin pt-12 md:pt-16 pb-8">
+<div class="mb-space-lg"><a class="inline-flex items-center gap-1.5 text-text-secondary hover:text-text-primary font-label-md text-label-md transition-colors" href="index.html"><span class="material-symbols-outlined text-[18px]">arrow_back</span><span>Till startsidan</span></a></div>
+<span class="font-label-md text-label-md text-primary-deep uppercase tracking-wider">KONTAKT</span>
+<h1 class="font-display-xl text-display-xl text-text-primary tracking-tight mt-2 mb-4">Hör av dig till oss</h1>
+<p class="font-body-medium text-body-medium text-text-secondary">Vi finns här för elever, lärare, föräldrar och alla som vill lära sig mer om privatekonomi.</p>
+</section>
+</div>
+<section class="max-w-3xl mx-auto px-margin pb-space-xl w-full">
+<div class="bg-surface-card rounded-2xl shadow-sm p-space-xl flex flex-col gap-space-lg">
+<p class="font-body-regular text-body-regular text-text-secondary">Har du en fråga, vill boka en föreläsning, engagera dig ideellt eller bara säga hej? Vi svarar så snart vi kan.</p>
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-space-md">
+<a class="flex flex-col gap-1 bg-surface-subdued rounded-xl p-space-md hover:bg-surface-container transition-colors" href="mailto:hej@ungekonom.se">
+<span class="material-symbols-outlined text-primary-deep text-[22px]">mail</span>
+<span class="font-label-md text-label-md text-text-primary">E-post</span>
+<span class="font-caption-micro text-caption-micro text-text-secondary">hej@ungekonom.se</span>
+</a>
+<div class="flex flex-col gap-1 bg-surface-subdued rounded-xl p-space-md">
+<span class="material-symbols-outlined text-primary-deep text-[22px]">school</span>
+<span class="font-label-md text-label-md text-text-primary">Skolor</span>
+<span class="font-caption-micro text-caption-micro text-text-secondary">Boka en föreläsning</span>
+</div>
+<div class="flex flex-col gap-1 bg-surface-subdued rounded-xl p-space-md">
+<span class="material-symbols-outlined text-primary-deep text-[22px]">volunteer_activism</span>
+<span class="font-label-md text-label-md text-text-primary">Engagemang</span>
+<span class="font-caption-micro text-caption-micro text-text-secondary">Bli en del av teamet</span>
+</div>
+</div>
+<form class="flex flex-col gap-space-md" onsubmit="return false;">
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-space-md">
+<div class="flex flex-col gap-1.5">
+<label class="font-label-md text-label-md text-text-primary" for="kontakt-namn">Namn</label>
+<input class="bg-surface-subdued px-3 py-2.5 rounded-xl font-body-regular text-body-regular text-text-primary outline-none focus:ring-2 focus:ring-primary-container" id="kontakt-namn" name="namn" type="text"/>
+</div>
+<div class="flex flex-col gap-1.5">
+<label class="font-label-md text-label-md text-text-primary" for="kontakt-epost">E-post</label>
+<input class="bg-surface-subdued px-3 py-2.5 rounded-xl font-body-regular text-body-regular text-text-primary outline-none focus:ring-2 focus:ring-primary-container" id="kontakt-epost" name="epost" type="email"/>
+</div>
+</div>
+<div class="flex flex-col gap-1.5">
+<label class="font-label-md text-label-md text-text-primary" for="kontakt-meddelande">Meddelande</label>
+<textarea class="bg-surface-subdued px-3 py-2.5 rounded-xl font-body-regular text-body-regular text-text-primary outline-none focus:ring-2 focus:ring-primary-container resize-none" id="kontakt-meddelande" name="meddelande" rows="5"></textarea>
+</div>
+<button class="self-start inline-flex items-center justify-center bg-primary-container hover:bg-primary-deep text-on-primary font-label-md text-label-md px-space-lg py-space-sm rounded-xl transition-all shadow-sm" type="submit">Skicka meddelande</button>
+<p class="font-caption-micro text-caption-micro text-text-tertiary">Formuläret är under uppbyggnad – maila oss gärna direkt på <a class="text-primary-deep hover:underline" href="mailto:hej@ungekonom.se">hej@ungekonom.se</a> så länge.</p>
+</form>
+</div>
+</section>
+</div></main>
+<footer class="w-full bg-surface-card border-t border-border-subtle mt-auto"><div class="max-w-[1140px] mx-auto px-margin py-space-xl"><div class="grid grid-cols-1 md:grid-cols-12 gap-space-xl pb-space-xl border-b border-border-subtle"><div class="md:col-span-5 flex flex-col items-start gap-space-sm"><div class="flex items-center gap-space-sm"><img alt="UngEkonom Logo" class="h-7 w-auto object-contain" src="stitch-assets/logo.svg"/></div><p class="font-body-regular text-body-regular text-text-secondary max-w-sm">Ekonomi för livet. En modern utbildningsplattform som ger unga vuxna och gymnasieelever självförtroende att bemästra sin privatekonomi.</p></div><div class="md:col-span-2 flex flex-col gap-space-sm"><span class="font-label-md text-label-md text-text-primary uppercase tracking-wider">Ämnen</span><ul class="flex flex-col gap-space-xs font-body-regular text-body-regular text-text-secondary"><li class="hover:text-on-surface transition-colors"><a data-path="privatekonomi" href="#amnen">Privatekonomi</a></li><li class="hover:text-on-surface transition-colors"><a data-path="aktier" href="#amnen">Aktier</a></li><li class="hover:text-on-surface transition-colors"><a data-path="fonder" href="#amnen">Fonder</a></li><li class="hover:text-on-surface transition-colors"><a data-path="vardering" href="#amnen">Värdering</a></li><li class="hover:text-on-surface transition-colors"><a data-path="krypto" href="#amnen">Krypto</a></li></ul></div><div class="md:col-span-2 flex flex-col gap-space-sm"><span class="font-label-md text-label-md text-text-primary uppercase tracking-wider">Resurser</span><ul class="flex flex-col gap-space-xs font-body-regular text-body-regular text-text-secondary"><li class="hover:text-on-surface transition-colors"><a data-path="kalkylatorer" href="#">Kalkylatorer</a></li><li class="hover:text-on-surface transition-colors"><a data-path="ordlista" href="#">Ekonomiordlista</a></li><li class="hover:text-on-surface transition-colors"><a data-path="artiklar" href="#artiklar">Artiklar &amp; Guider</a></li><li class="hover:text-on-surface transition-colors"><a data-path="fragor-och-svar" href="#">Frågor &amp; Svar</a></li></ul></div><div class="md:col-span-3 flex flex-col gap-space-sm"><span class="font-label-md text-label-md text-text-primary uppercase tracking-wider">Om oss</span><ul class="flex flex-col gap-space-xs font-body-regular text-body-regular text-text-secondary"><li class="hover:text-on-surface transition-colors"><a data-path="vision" href="var-vision.html">Vision</a></li><li class="hover:text-on-surface transition-colors"><a data-path="for-gymnasieskolor" href="for-gymnasieskolor.html">För Gymnasieskolor</a></li><li class="hover:text-on-surface transition-colors"><a data-path="engagera-dig" href="engagera-dig.html">Engagera dig</a></li><li class="hover:text-on-surface transition-colors"><a data-path="kontakt" href="kontakt.html">Kontakt</a></li></ul></div></div><div class="pt-space-lg flex flex-col md:flex-row items-center justify-between gap-space-md font-caption-micro text-caption-micro text-text-tertiary"><p>Innehållet är utbildning, inte finansiell rådgivning.</p><p>© 2026 UngEkonom · Byggd med ♥ i Sverige</p></div></div></footer></body></html>
