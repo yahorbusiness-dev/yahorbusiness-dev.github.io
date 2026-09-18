@@ -256,8 +256,10 @@ async function initLessonPage(ctx) {
   const prevLesson = posInCat > 0 ? sameCategory[posInCat - 1] : null;
   const nextLesson = posInCat >= 0 && posInCat < sameCategory.length - 1 ? sameCategory[posInCat + 1] : null;
 
+  const catMeta = CATEGORY_META[lesson.category] || CATEGORY_META.aktier;
+
   const crumb = document.getElementById('lesson-crumb');
-  if (crumb) crumb.textContent = `${(CATEGORY_META[lesson.category] || {}).label || lesson.category} • ${lesson.title}`;
+  if (crumb) crumb.textContent = `${catMeta.label} • ${lesson.title}`;
 
   const navEl = document.getElementById('lesson-nav');
   if (navEl) {
@@ -306,6 +308,10 @@ async function initLessonPage(ctx) {
     const s = steps[stepIndex];
     root.innerHTML = `
       <div class="mb-space-lg">
+        <div class="flex items-center gap-2 mb-3">
+          <span class="px-2.5 py-1 rounded-full ${catMeta.iconBg} ${catMeta.iconColor} font-label-md text-label-md">${catMeta.label}</span>
+          <span class="font-body-regular text-body-regular text-text-secondary truncate">${lesson.title}</span>
+        </div>
         <div class="flex items-center justify-between mb-2">
           <span class="font-caption-micro text-caption-micro text-primary uppercase tracking-wider">${s.label}</span>
           <span class="font-caption-micro text-caption-micro text-text-tertiary">Steg ${stepIndex + 1} av ${steps.length}</span>
@@ -341,6 +347,10 @@ async function initLessonPage(ctx) {
     const q = quiz[quizIndex];
     root.innerHTML = `
       <div class="mb-space-lg">
+        <div class="flex items-center gap-2 mb-3">
+          <span class="px-2.5 py-1 rounded-full ${catMeta.iconBg} ${catMeta.iconColor} font-label-md text-label-md">${catMeta.label}</span>
+          <span class="font-body-regular text-body-regular text-text-secondary truncate">${lesson.title}</span>
+        </div>
         <div class="flex items-center justify-between mb-2">
           <span class="font-caption-micro text-caption-micro text-primary uppercase tracking-wider">Quiz</span>
           <span class="font-caption-micro text-caption-micro text-text-tertiary">Fråga ${quizIndex + 1} av ${quiz.length}</span>
@@ -394,6 +404,9 @@ async function initLessonPage(ctx) {
   function renderDone(score) {
     root.innerHTML = `
       <div class="text-center py-space-xl">
+        <div class="flex items-center justify-center gap-2 mb-6">
+          <span class="px-2.5 py-1 rounded-full ${catMeta.iconBg} ${catMeta.iconColor} font-label-md text-label-md">${catMeta.label}</span>
+        </div>
         <div class="w-20 h-20 rounded-full bg-positive-wash text-positive-spruce flex items-center justify-center mx-auto mb-6">
           <span class="material-symbols-outlined text-[40px]">celebration</span>
         </div>
