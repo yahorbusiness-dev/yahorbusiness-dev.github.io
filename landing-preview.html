@@ -78,7 +78,19 @@
 <!-- Main Display Frame with DataStore Hero Asset -->
 <div class="relative bg-surface-card rounded-2xl shadow-xl overflow-hidden p-2 sm:p-3 bg-gradient-to-b from-surface-card to-surface-container-low">
 <div class="rounded-xl overflow-hidden shadow-sm relative">
-<img alt="UngEkonom-teamet samlat" class="w-full h-auto object-cover max-h-[500px]" src="stitch-assets/img/team-photo.jpg"/>
+<video class="w-full h-auto object-cover max-h-[500px] cursor-pointer" id="hero-pitch-video" playsinline="" poster="stitch-assets/img/team-photo.jpg" preload="metadata">
+<source src="stitch-assets/video/pitch.mp4" type="video/mp4"/>
+</video>
+<button aria-label="Spela upp video" class="absolute inset-0 flex items-center justify-center bg-black/20 hover:bg-black/30 transition-colors" id="hero-video-playbtn" type="button">
+<span class="w-16 h-16 rounded-full bg-white/90 flex items-center justify-center shadow-lg">
+<span class="material-symbols-outlined text-[32px] text-primary-deep">play_arrow</span>
+</span>
+</button>
+<div class="absolute bottom-3 right-3 flex items-center gap-1 bg-black/60 backdrop-blur-md rounded-full px-2 py-1.5">
+<button aria-label="Sänk volym" class="w-7 h-7 rounded-full flex items-center justify-center text-white hover:bg-white/20 transition-colors" id="hero-video-vol-down" type="button"><span class="material-symbols-outlined text-[18px]">remove</span></button>
+<button aria-label="Stäng av ljud" class="w-7 h-7 rounded-full flex items-center justify-center text-white hover:bg-white/20 transition-colors" id="hero-video-mute" type="button"><span class="material-symbols-outlined text-[18px]" id="hero-video-vol-icon">volume_up</span></button>
+<button aria-label="Höj volym" class="w-7 h-7 rounded-full flex items-center justify-center text-white hover:bg-white/20 transition-colors" id="hero-video-vol-up" type="button"><span class="material-symbols-outlined text-[18px]">add</span></button>
+</div>
 </div>
 </div>
 </div>
@@ -614,6 +626,53 @@
     void el.offsetWidth;
     el.classList.add('hero-emoji-pop');
   }, 3200);
+})();
+</script>
+<script>
+(function () {
+  var video = document.getElementById('hero-pitch-video');
+  var playBtn = document.getElementById('hero-video-playbtn');
+  var muteBtn = document.getElementById('hero-video-mute');
+  var volIcon = document.getElementById('hero-video-vol-icon');
+  var volDownBtn = document.getElementById('hero-video-vol-down');
+  var volUpBtn = document.getElementById('hero-video-vol-up');
+  if (!video) return;
+
+  video.volume = 0.5;
+  video.muted = false;
+
+  function updateVolIcon() {
+    if (video.muted || video.volume === 0) volIcon.textContent = 'volume_off';
+    else if (video.volume < 0.5) volIcon.textContent = 'volume_down';
+    else volIcon.textContent = 'volume_up';
+  }
+  updateVolIcon();
+
+  function togglePlay() {
+    if (video.paused) video.play(); else video.pause();
+  }
+  playBtn.addEventListener('click', togglePlay);
+  video.addEventListener('click', togglePlay);
+  video.addEventListener('play', function () { playBtn.classList.add('hidden'); });
+  video.addEventListener('pause', function () { playBtn.classList.remove('hidden'); });
+
+  muteBtn.addEventListener('click', function (e) {
+    e.stopPropagation();
+    video.muted = !video.muted;
+    updateVolIcon();
+  });
+  volDownBtn.addEventListener('click', function (e) {
+    e.stopPropagation();
+    video.muted = false;
+    video.volume = Math.max(0, Math.round((video.volume - 0.1) * 10) / 10);
+    updateVolIcon();
+  });
+  volUpBtn.addEventListener('click', function (e) {
+    e.stopPropagation();
+    video.muted = false;
+    video.volume = Math.min(1, Math.round((video.volume + 0.1) * 10) / 10);
+    updateVolIcon();
+  });
 })();
 </script>
 </body></html>
