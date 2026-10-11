@@ -5,7 +5,7 @@
 .tl-dot{transform:translateX(-50%) scale(0);transition:transform .5s cubic-bezier(.34,1.56,.64,1)}
 .tl-date{opacity:0;transform:translateY(16px);transition:opacity .6s ease .15s,transform .6s ease .15s}
 .tl-card{opacity:0;transform:translateX(40px);transition:opacity .7s ease .1s,transform .7s cubic-bezier(.22,1,.36,1) .1s}
-@media (min-width:768px){.tl-from-left{transform:translateX(-40px)}}
+@media (min-width:768px){.tl-from-left{transform:translateX(-40px)}.tl-from-up{transform:translateY(32px)}}
 .tl-item.is-visible .tl-dot{transform:translateX(-50%) scale(1)}
 .tl-item.is-visible .tl-date,.tl-item.is-visible .tl-card{opacity:1;transform:none}
 @media (prefers-reduced-motion:reduce){#tl-line,.tl-dot,.tl-date,.tl-card{transition:none!important}}
@@ -121,6 +121,18 @@
 <h3 class="font-headline-3 text-headline-3 text-text-primary">Första pilotskolan</h3>
 <p class="font-body-regular text-body-regular text-text-secondary">Vi startar samarbetet med vår första pilotskola.</p>
 </div>
+</div>
+</div>
+</div>
+<div class="tl-item relative mt-space-xl md:mt-20 md:flex md:justify-center">
+<div class="absolute left-4 md:left-1/2 top-6 md:top-0 w-5 h-5 rounded-full bg-surface-card border-2 border-dashed border-primary-container -translate-x-1/2 z-10 tl-dot"><span class="absolute inset-0 rounded-full bg-primary-container/40 animate-ping"></span></div>
+<div class="tl-card tl-from-up pl-12 md:pl-0 md:pt-10 md:w-full md:max-w-md relative z-10">
+<div class="bg-surface-card rounded-2xl border-2 border-dashed border-primary-fixed-dim p-space-xl text-left md:text-center flex flex-col md:items-center gap-space-sm">
+<span class="text-3xl">🚀</span>
+<span class="font-label-md text-label-md text-primary-deep uppercase tracking-wider">Fortsättning följer…</span>
+<h3 class="font-headline-2 text-headline-2 text-text-primary">Resan har bara börjat</h3>
+<p class="font-body-regular text-body-regular text-text-secondary">Nästa kapitel skriver vi tillsammans – med fler skolor, fler unga ekonomer och fler event runt om i Sverige. Vill du vara en del av det?</p>
+<a class="mt-space-sm self-start md:self-center inline-flex items-center justify-center gap-1.5 bg-primary-container hover:bg-primary-deep text-on-primary font-label-md text-label-md px-space-lg py-space-sm rounded-xl transition-all shadow-sm" href="engagera-dig.html">Engagera dig<span class="material-symbols-outlined text-[16px]">arrow_forward</span></a>
 </div>
 </div>
 </div>
