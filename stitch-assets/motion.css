@@ -21,3 +21,10 @@
 @media (prefers-reduced-motion:reduce){
   .hover-lift,.hover-lift:hover,.press:active{transition:none;transform:none}
 }
+
+/* SVG line that draws itself when its data-reveal ancestor is revealed.
+   Give the <path> pathLength="1" so the dash math works for any length. */
+.motion-ok .draw-line{stroke-dasharray:1;stroke-dashoffset:1;transition:stroke-dashoffset 1.6s cubic-bezier(.65,0,.35,1) .2s}
+.motion-ok .draw-after{opacity:0;transition:opacity .5s ease 1.6s}
+.motion-ok .is-revealed .draw-line{stroke-dashoffset:0}
+.motion-ok .is-revealed .draw-after{opacity:1}
