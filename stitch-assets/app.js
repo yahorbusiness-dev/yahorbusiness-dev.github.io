@@ -332,8 +332,24 @@ async function initLessonPage(ctx) {
     }).eq('id', user.id);
   }
 
+  // Legacy lesson bodies link onward via onclick="openLektion('id')"; disable
+  // links to lessons that are still locked in the MVP.
+  function lockClosedLinks() {
+    root.querySelectorAll('[onclick*="openLektion"]').forEach(el => {
+      const m = el.getAttribute('onclick').match(/openLektion\(\s*['"]([^'"]+)/);
+      const target = m && lessons.find(l => l.id === m[1]);
+      if (isLessonOpen(target, lessons)) return;
+      el.removeAttribute('onclick');
+      el.disabled = true;
+      el.style.opacity = '.55';
+      el.style.cursor = 'default';
+      el.textContent += ' · under utveckling';
+    });
+  }
+
   function renderStep() {
     const s = steps[stepIndex];
+    const stepLabel = (s.label || '').replace(/^Steg \d+ av \d+\s*[–-]\s*/, '');
     root.innerHTML = `
       <div class="mb-space-lg">
         <div class="flex items-center gap-2 mb-3">
@@ -341,7 +357,7 @@ async function initLessonPage(ctx) {
           <span class="font-body-regular text-body-regular text-text-secondary truncate">${lesson.title}</span>
         </div>
         <div class="flex items-center justify-between mb-2">
-          <span class="font-caption-micro text-caption-micro text-primary uppercase tracking-wider">${s.label}</span>
+          <span class="font-caption-micro text-caption-micro text-primary uppercase tracking-wider">${stepLabel}</span>
           <span class="font-caption-micro text-caption-micro text-text-tertiary">Steg ${stepIndex + 1} av ${steps.length}</span>
         </div>
         <div class="w-full h-1.5 bg-surface-subdued rounded-full overflow-hidden">
@@ -357,6 +373,7 @@ async function initLessonPage(ctx) {
           <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
         </button>
       </div>`;
+    lockClosedLinks();
     document.getElementById('lesson-back').addEventListener('click', () => { stepIndex--; renderStep(); });
     document.getElementById('lesson-next').addEventListener('click', async () => {
       if (stepIndex < steps.length - 1) {
