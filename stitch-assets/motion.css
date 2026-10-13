@@ -1,0 +1,23 @@
+/* Shared motion for UngEkonom pages. Pair with motion.js.
+   Hidden start states only apply once motion.js has added .motion-ok to <html>,
+   so content stays visible without JS and for reduced-motion users. */
+
+/* Scroll reveal: data-reveal="up" (default) | "left" | "right" | "fade" | "zoom" */
+.motion-ok [data-reveal]{opacity:0;transition:opacity .7s ease var(--reveal-delay,0s),transform .7s cubic-bezier(.22,1,.36,1) var(--reveal-delay,0s);will-change:opacity,transform}
+.motion-ok [data-reveal=""],.motion-ok [data-reveal="up"]{transform:translateY(24px)}
+.motion-ok [data-reveal="left"]{transform:translateX(-32px)}
+.motion-ok [data-reveal="right"]{transform:translateX(32px)}
+.motion-ok [data-reveal="zoom"]{transform:scale(.94)}
+.motion-ok [data-reveal].is-revealed{opacity:1;transform:none}
+
+/* Hover lift for cards and tiles */
+.hover-lift{transition:transform .25s cubic-bezier(.22,1,.36,1),box-shadow .25s ease}
+.hover-lift:hover{transform:translateY(-4px);box-shadow:0 12px 28px -8px rgba(15,23,42,.14)}
+
+/* Subtle press feedback for buttons and links */
+.press{transition:transform .15s ease}
+.press:active{transform:scale(.97)}
+
+@media (prefers-reduced-motion:reduce){
+  .hover-lift,.hover-lift:hover,.press:active{transition:none;transform:none}
+}
