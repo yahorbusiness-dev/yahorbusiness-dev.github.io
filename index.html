@@ -50,7 +50,7 @@
 <!-- Hero Visual Hub Mockup -->
 <div class="relative mt-12 md:mt-16 w-full max-w-4xl mx-auto">
 <!-- Floating Pill: XP Earned -->
-<div class="absolute -top-4 -left-2 sm:left-4 z-20 bg-surface-card/95 backdrop-blur-md px-3.5 py-2 rounded-xl shadow-lg flex items-center gap-2 animate-bounce [animation-duration:4s]">
+<div class="absolute -top-4 -left-2 sm:left-4 z-20 bg-surface-card/95 px-3.5 py-2 rounded-xl shadow-lg flex items-center gap-2 animate-bounce [animation-duration:4s]">
 <div class="w-7 h-7 rounded-lg bg-primary-tint flex items-center justify-center text-primary font-bold text-xs">⚡</div>
 <div class="text-left">
 <p class="font-caption-micro text-caption-micro text-text-secondary">Quiz slutfört</p>
@@ -396,14 +396,14 @@
 </div>
 <!-- Mini SVG Compound Chart -->
 <div class="py-6">
-<svg class="w-full h-36 overflow-visible" fill="none" viewbox="0 0 320 100" xmlns="http://www.w3.org/2000/svg">
+<svg class="w-full h-36 overflow-visible" data-reveal="fade" fill="none" viewbox="0 0 320 100" xmlns="http://www.w3.org/2000/svg">
 <!-- Grid line -->
 <line stroke="#E2E8F0" stroke-width="1" x1="0" x2="320" y1="99" y2="99"></line>
 <line stroke="#E2E8F0" stroke-dasharray="3 3" stroke-width="1" x1="0" x2="320" y1="50" y2="50"></line>
 <!-- Deposited baseline fill -->
 <path d="M0 99 L 80 88 L 160 76 L 240 64 L 320 52 L 320 99 Z" fill="#E2E8F0" opacity="0.6"></path>
 <!-- Compound interest curve -->
-<path d="M0 99 C 80 94, 160 75, 240 45 C 280 30, 300 15, 320 5" stroke="#2563EB" stroke-linecap="round" stroke-width="3.5"></path>
+<path class="draw-line" d="M0 99 C 80 94, 160 75, 240 45 C 280 30, 300 15, 320 5" pathLength="1" stroke="#2563EB" stroke-linecap="round" stroke-width="3.5"></path>
 <path d="M0 99 C 80 94, 160 75, 240 45 C 280 30, 300 15, 320 5 L 320 99 Z" fill="url(#blue-grad)" opacity="0.15"></path>
 <defs>
 <lineargradient id="blue-grad" x1="0%" x2="0%" y1="0%" y2="100%">
@@ -411,7 +411,7 @@
 <stop offset="100%" stop-color="#2563EB" stop-opacity="0"></stop>
 </lineargradient>
 </defs>
-<circle cx="320" cy="5" fill="#2563EB" r="5"></circle>
+<circle class="draw-after" cx="320" cy="5" fill="#2563EB" r="5"></circle>
 </svg>
 </div>
 <div class="grid grid-cols-2 gap-4 pt-4 text-center">
