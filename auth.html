@@ -110,7 +110,7 @@ form.addEventListener('submit', async (e) => {
     if (mode === 'login') {
       const { error } = await sb.auth.signInWithPassword({ email, password });
       if (error) throw error;
-      location.href = 'index-stitch-preview.html';
+      location.href = 'kurser.html';
     } else {
       const displayName = nameInput.value.trim() || email.split('@')[0];
       const { data, error } = await sb.auth.signUp({
@@ -120,7 +120,7 @@ form.addEventListener('submit', async (e) => {
       });
       if (error) throw error;
       if (data.session) {
-        location.href = 'index-stitch-preview.html';
+        location.href = 'kurser.html';
       } else {
         infoEl.textContent = 'Konto skapat! Kolla din e-post för att bekräfta kontot innan du loggar in.';
         infoEl.classList.remove('hidden');
@@ -140,7 +140,7 @@ form.addEventListener('submit', async (e) => {
 
 // Already logged in? Skip straight to the dashboard.
 sb.auth.getSession().then(({ data }) => {
-  if (data.session) location.href = 'index-stitch-preview.html';
+  if (data.session) location.href = 'kurser.html';
 });
 </script>
 </body>
