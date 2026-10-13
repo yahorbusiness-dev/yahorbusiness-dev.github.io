@@ -1,0 +1,1432 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UngEkonom Grafisk manual</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,400,0,0&display=block">
+<style>
+/* Layout: samma ramverk som ungekonom.se – 1140 px container, ljus grå sidbakgrund, vita kort, sektioner som växlar vit/grå.
+   Manualen är medvetet ljus (varumärket har ingen mörk version ännu), alla färger sätts explicit. */
+:root{
+  color-scheme: light;
+  --primary:#2563EB; --primary-deep:#1E40AF; --primary-text:#004AC6; --primary-tint:#EFF6FF; --primary-soft:#B4C5FF; --primary-line:#DBE1FF;
+  --green:#10B981; --green-text:#006C4A; --green-tint:#ECFDF5; --green-bright:#85F8C4;
+  --amber-tint:#FEF3C7; --amber-text:#B45309; --amber-strong:#92400E; --amber-icon:#D97706;
+  --ink:#0F172A; --ink-2:#475569; --ink-3:#94A3B8; --ink-muted:#64748B;
+  --bg:#F9FAFB; --card:#FFFFFF; --subdued:#F3F4F6; --border:#E2E8F0;
+  --danger:#DC2626; --danger-tint:#FEE2E2; --lav:#EAEDFF; --lav-low:#F2F3FF; --on-surface:#131B2E; --on-surface-var:#434655;
+  --font:'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+  --r-sm:8px; --r-ctl:12px; --r-card:16px; --r-hero:24px;
+  --sh-header:0 1px 8px rgba(15,23,42,.04); --sh-btn:0 1px 2px 0 rgba(15,23,42,.04); --sh-card:0 1px 2px 0 rgba(0,0,0,.05);
+  --sh-hover:0 4px 6px -1px rgba(0,0,0,.1),0 2px 4px -2px rgba(0,0,0,.1); --sh-float:0 10px 15px -3px rgba(0,0,0,.1),0 4px 6px -4px rgba(0,0,0,.1); --sh-feat:0 20px 25px -5px rgba(0,0,0,.1),0 8px 10px -6px rgba(0,0,0,.1);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important;animation:none!important}}
+body{background:var(--bg);color:var(--ink);font-family:var(--font);font-size:15px;line-height:23px;-webkit-font-smoothing:antialiased;margin:0}
+.ms{font-family:'Material Symbols Outlined';font-weight:normal;font-style:normal;font-size:20px;line-height:1;display:inline-block;white-space:nowrap;font-feature-settings:'liga';-webkit-font-smoothing:antialiased;vertical-align:middle}
+a{color:var(--primary-text)}
+a:focus-visible,button:focus-visible,summary:focus-visible{outline:2px solid var(--primary);outline-offset:2px;border-radius:6px}
+.wrap{max-width:1140px;margin:0 auto;padding-inline:24px}
+@media (max-width:480px){.wrap{padding-inline:16px}}
+/* Header */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:50;background:rgba(255,255,255,.9);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);box-shadow:var(--sh-header)}
+.top .wrap{height:64px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+.top-brand{display:flex;align-items:center;gap:12px;min-width:0}
+.top-brand svg{height:28px;width:auto;flex:none}
+.top-sep{width:1px;height:20px;background:var(--border)}
+.top-title{font-size:13px;font-weight:600;color:var(--ink-2);white-space:nowrap}
+.top-ver{font-size:12px;font-weight:600;color:var(--amber-text);background:var(--amber-tint);padding:3px 10px;border-radius:999px;white-space:nowrap}
+@media (max-width:560px){.top-sep,.top-title{display:none}}
+/* Sections */
+section.chap{padding-block:72px}
+section.chap.alt{background:var(--subdued)}
+section.chap.card-bg{background:var(--card)}
+@media (max-width:768px){section.chap{padding-block:48px}}
+.eyebrow{display:inline-flex;align-items:center;gap:6px;color:var(--primary-text);font-size:13px;line-height:18px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;margin-bottom:8px}
+.eyebrow .ms{font-size:18px}
+h1,h2,h3,h4{margin:0;text-wrap:balance}
+h2.ch{font-size:28px;line-height:34px;font-weight:600;letter-spacing:-.025em;margin-bottom:12px}
+h3.sub{font-size:22px;line-height:28px;font-weight:600;letter-spacing:-.02em;margin:48px 0 8px}
+h4{font-size:18px;line-height:24px;font-weight:600;letter-spacing:-.015em;margin-bottom:6px}
+p{margin:0 0 12px}
+.lead{color:var(--ink-2);max-width:42rem}
+.muted{color:var(--ink-2)}
+.small{font-size:13px;line-height:19px;color:var(--ink-2)}
+.cap{font-size:12px;line-height:16px;font-weight:500;color:var(--ink-muted)}
+ul.clean{margin:0;padding-left:20px;color:var(--ink-2)} ul.clean li{margin-bottom:6px}
+code,.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12.5px}
+code{background:var(--subdued);padding:1px 6px;border-radius:6px;color:var(--on-surface)}
+.card{background:var(--card);border-radius:var(--r-card);box-shadow:var(--sh-card);padding:24px;min-width:0}
+.alt .card{box-shadow:var(--sh-card)}
+.grid{display:grid;gap:24px}
+.g2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.g3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.g4{grid-template-columns:repeat(4,minmax(0,1fr))}
+@media (max-width:1024px){.g4{grid-template-columns:repeat(2,minmax(0,1fr))}.g3{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:680px){.g2,.g3,.g4{grid-template-columns:minmax(0,1fr)}}
+.mt24{margin-top:24px}.mt32{margin-top:32px}.mt16{margin-top:16px}.mt8{margin-top:8px}
+/* Status-taggar */
+.tag{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;line-height:16px;font-weight:600;padding:2px 9px;border-radius:999px;white-space:nowrap;vertical-align:middle}
+.t-b{background:var(--subdued);color:var(--ink-2);box-shadow:inset 0 0 0 1px var(--border)}
+.t-s{background:var(--primary-tint);color:var(--primary-text)}
+.t-f{background:var(--amber-tint);color:var(--amber-strong)}
+.t-q{background:var(--danger-tint);color:#991B1B}
+/* Tabeller */
+.tbl-wrap{overflow-x:auto;background:var(--card);border-radius:var(--r-card);box-shadow:var(--sh-card)}
+table{border-collapse:collapse;width:100%;font-size:13.5px;line-height:20px}
+th{font-size:12px;line-height:16px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-2);text-align:left;padding:12px 16px;background:var(--subdued);white-space:nowrap}
+td{padding:12px 16px;border-top:1px solid var(--border);vertical-align:top;color:var(--ink-2)}
+td strong{color:var(--ink)}
+td.nowrap{white-space:nowrap}
+tbody tr:first-child td{border-top:0}
+.num{font-variant-numeric:tabular-nums}
+/* Do / Don't */
+.dd{border-radius:var(--r-card);background:var(--card);box-shadow:var(--sh-card);overflow:hidden;display:flex;flex-direction:column;min-width:0}
+.dd .stage{padding:20px;background:var(--subdued);min-height:120px;display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:8px}
+.dd .lbl{display:flex;gap:8px;align-items:flex-start;padding:14px 16px;font-size:13.5px;line-height:20px;color:var(--ink-2)}
+.dd .lbl .ms{font-size:20px;flex:none}
+.dd.ok .lbl .ms{color:var(--green-text)} .dd.no .lbl .ms{color:var(--danger)}
+.dd.ok{box-shadow:inset 0 3px 0 var(--green),var(--sh-card)} .dd.no{box-shadow:inset 0 3px 0 var(--danger),var(--sh-card)}
+/* Knappar (exakt som sajten) */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;font-family:var(--font);font-size:13px;line-height:18px;font-weight:600;letter-spacing:.01em;border-radius:var(--r-ctl);padding:8px 16px;border:0;cursor:pointer;text-decoration:none;transition:all .15s cubic-bezier(.4,0,.2,1);white-space:nowrap}
+.btn .ms{font-size:16px}
+.btn-p{background:var(--primary);color:#fff;box-shadow:var(--sh-hover)}
+.btn-p:hover,.btn-p.is-hover{background:var(--primary-deep);transform:scale(1.01)}
+.btn-p.is-active{background:var(--primary-deep);transform:scale(.99)}
+.btn-p.is-focus{box-shadow:0 0 0 2px #fff,0 0 0 4px var(--primary)}
+.btn-p.is-disabled{background:var(--border);color:var(--ink-muted);box-shadow:none;cursor:not-allowed}
+.btn-s{background:var(--card);color:var(--ink);box-shadow:var(--sh-card),0 0 0 1px rgba(15,23,42,.04)}
+.btn-s .ms{color:var(--ink-2)}
+.btn-s:hover,.btn-s.is-hover{background:var(--subdued)}
+.btn-l{padding:14px 24px}
+.btn-xl{padding:16px 32px;box-shadow:var(--sh-float)}
+.btn-w{background:#fff;color:var(--ink)}
+.btn-text{background:none;padding:0;color:var(--primary-text)} .btn-text:hover{text-decoration:underline}
+.btn-sm-header{padding:8px 20px;box-shadow:var(--sh-btn)}
+/* Badges */
+.pill{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;font-size:12px;line-height:16px;font-weight:600}
+.p-blue{background:var(--primary-tint);color:var(--primary-text)}
+.p-green{background:var(--green-tint);color:var(--green-text)}
+.p-amber{background:var(--amber-tint);color:var(--amber-text)}
+.p-neutral{background:var(--lav);color:var(--on-surface-var)}
+/* Swatches */
+.sw{border-radius:var(--r-card);overflow:hidden;background:var(--card);box-shadow:var(--sh-card);display:flex;flex-direction:column;min-width:0}
+.sw .chip{height:96px;display:flex;align-items:flex-end;justify-content:space-between;padding:10px 12px;font-size:12px;font-weight:600}
+.sw .meta{padding:14px 16px;font-size:12.5px;line-height:18px;color:var(--ink-2);display:flex;flex-direction:column;gap:2px}
+.sw .meta b{font-size:14px;line-height:20px;color:var(--ink);font-weight:600}
+.sw .meta .codes{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:11.5px;color:var(--on-surface-var);font-variant-numeric:tabular-nums}
+.sw .meta .use{margin-top:6px}
+.sw .meta .tok{margin-top:6px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:11px;color:var(--primary-text)}
+.ratio{font-size:11px;font-weight:700;padding:2px 6px;border-radius:6px;background:rgba(255,255,255,.85);color:var(--ink)}
+/* TOC */
+.toc{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:32px}
+@media (max-width:900px){.toc{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:520px){.toc{grid-template-columns:minmax(0,1fr)}}
+.toc a{display:flex;gap:12px;align-items:flex-start;background:var(--card);border-radius:var(--r-ctl);padding:14px 16px;text-decoration:none;color:var(--ink);box-shadow:var(--sh-card);transition:box-shadow .15s}
+.toc a:hover{box-shadow:var(--sh-hover)}
+.toc .k{flex:none;width:32px;height:32px;border-radius:10px;background:var(--primary-tint);color:var(--primary-text);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px}
+.toc .t{font-weight:600;font-size:14px;line-height:20px}
+.toc .d{font-size:12px;line-height:16px;color:var(--ink-2)}
+/* Hero */
+.hero{position:relative;overflow:hidden;padding-block:72px 64px}
+.glow{position:absolute;top:-160px;left:50%;transform:translateX(-50%);width:980px;max-width:200%;height:360px;background:linear-gradient(to bottom,var(--primary-tint),var(--lav),transparent);border-radius:999px;filter:blur(64px);opacity:.8;pointer-events:none}
+.hero h1{font-size:44px;line-height:1.15;font-weight:600;letter-spacing:-.025em;max-width:46rem}
+.hero h1 span{color:var(--primary)}
+@media (max-width:768px){.hero h1{font-size:34px}}
+.legend{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;margin-top:20px;font-size:13px;color:var(--ink-2)}
+.legend span.item{display:inline-flex;gap:8px;align-items:center}
+/* Logo stages */
+.stage-logo{border-radius:var(--r-card);display:flex;align-items:center;justify-content:center;padding:40px 24px;min-height:180px}
+.stage-logo svg{max-width:100%;height:auto}
+/* Type specimen rows */
+.ts-row{display:grid;grid-template-columns:200px minmax(0,1fr);gap:24px;padding:20px 24px;border-top:1px solid var(--border);align-items:baseline}
+.ts-row:first-child{border-top:0}
+.ts-row .spec{font-size:12px;line-height:18px;color:var(--ink-2)}
+.ts-row .spec b{display:block;color:var(--ink);font-size:13px}
+@media (max-width:680px){.ts-row{grid-template-columns:minmax(0,1fr);gap:8px}}
+/* Misc */
+.callout{display:flex;gap:12px;padding:16px 20px;border-radius:var(--r-ctl);background:var(--primary-tint);color:var(--on-surface)}
+.callout .ms{color:var(--primary-text);flex:none}
+.callout.warn{background:var(--amber-tint)} .callout.warn .ms{color:var(--amber-text)}
+.callout.err{background:var(--danger-tint)} .callout.err .ms{color:var(--danger)}
+.callout p{margin:0}
+.kbd{display:inline-block;font-family:ui-monospace,Menlo,monospace;font-size:12px;padding:0 6px;border-radius:6px;background:var(--card);box-shadow:inset 0 0 0 1px var(--border);color:var(--ink)}
+.spacer-bar{height:16px;background:var(--primary);border-radius:3px;opacity:.85}
+.check{list-style:none;padding:0;margin:0;display:grid;gap:8px}
+.check li{display:flex;gap:10px;align-items:flex-start;color:var(--ink-2)}
+.check li .ms{color:var(--green-text);font-size:20px;flex:none}
+.check.no li .ms{color:var(--danger)}
+pre.code{background:var(--on-surface);color:#E2E8F0;border-radius:var(--r-ctl);padding:16px 20px;overflow-x:auto;font-size:12.5px;line-height:19px;margin:0}
+pre.code .c{color:#94A3B8}
+.foot{background:var(--card);border-top:1px solid var(--border);padding-block:40px;font-size:12px;color:var(--ink-muted)}
+.foot .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <div class="top-brand">
+      <span data-logo="color" data-h="28"></span>
+      <span class="top-sep"></span>
+      <span class="top-title">Grafisk manual &amp; designsystem</span>
+    </div>
+    <span class="top-ver">Utkast v0.1 · oktober 2026</span>
+  </div>
+</header>
+
+<main>
+<!-- OMSLAG -->
+<section class="hero">
+  <div class="glow"></div>
+  <div class="wrap" style="position:relative">
+    <div class="eyebrow"><span class="ms">auto_stories</span>Grafisk manual</div>
+    <h1>Så ser UngEkonom ut – <span>överallt där vi syns</span></h1>
+    <p class="lead mt16">Den här manualen dokumenterar det visuella uttryck som redan finns på ungekonom.se och gör det till gemensamma regler för webb, presentationer, dokument, sociala medier och framtida produkter. Allt är härlett ur sajtens källkod. Inget är uppfunnet utan att det är markerat.</p>
+    <div class="legend">
+      <span class="item"><span class="tag t-b">Befintligt</span> observerat i koden</span>
+      <span class="item"><span class="tag t-s">Standardiserat</span> befintligt, men nu fastställt som regel</span>
+      <span class="item"><span class="tag t-f">Förslag</span> nytt, behöver godkännas</span>
+      <span class="item"><span class="tag t-q">Att bekräfta</span> öppen fråga</span>
+    </div>
+    <nav class="toc" aria-label="Innehåll">
+      <a href="#oversikt"><span class="k">0</span><span><span class="t">Visuell översikt</span><br><span class="d">Allt viktigt på en sida</span></span></a>
+      <a href="#identitet"><span class="k">A</span><span><span class="t">Visuell identitet</span><br><span class="d">Karaktär och principer</span></span></a>
+      <a href="#logotyp"><span class="k">B</span><span><span class="t">Logotyp</span><br><span class="d">Versioner, frizon, minsta storlek</span></span></a>
+      <a href="#farg"><span class="k">C</span><span><span class="t">Färgpalett</span><br><span class="d">HEX, RGB, HSL, kontrast</span></span></a>
+      <a href="#typografi"><span class="k">D</span><span><span class="t">Typografi</span><br><span class="d">Typsnitt och skala</span></span></a>
+      <a href="#layout"><span class="k">E</span><span><span class="t">Layout och form</span><br><span class="d">Grid, avstånd, radier, skuggor</span></span></a>
+      <a href="#komponenter"><span class="k">F</span><span><span class="t">Komponentbibliotek</span><br><span class="d">Knappar, kort, fält, tillstånd</span></span></a>
+      <a href="#bildsprak"><span class="k">G</span><span><span class="t">Bildspråk</span><br><span class="d">Foto, ikoner, diagram</span></span></a>
+      <a href="#tillampningar"><span class="k">H</span><span><span class="t">Tillämpningar och mallar</span><br><span class="d">Bilder, dokument, sociala medier</span></span></a>
+      <a href="#regler"><span class="k">I</span><span><span class="t">Regler för konsekvens</span><br><span class="d">Måsten, tillåtet, misstag</span></span></a>
+      <a href="#skrivregler"><span class="k">J</span><span><span class="t">Skrivregler och symboler</span><br><span class="d">Tecken, förkortningar, siffror, ton</span></span></a>
+      <a href="#tokens"><span class="k">K</span><span><span class="t">Design tokens</span><br><span class="d">CSS-variabler och namnstandard</span></span></a>
+      <a href="#luckor"><span class="k">L</span><span><span class="t">Luckor och öppna beslut</span><br><span class="d">Det som måste beslutas</span></span></a>
+    </nav>
+  </div>
+</section>
+
+<!-- 0. ÖVERSIKT -->
+<section class="chap card-bg" id="oversikt">
+  <div class="wrap">
+    <div class="eyebrow"><span class="ms">dashboard</span>Visuell översikt</div>
+    <h2 class="ch">UngEkonom på en sida</h2>
+    <p class="lead">Fem saker gör att något ser ut att komma från UngEkonom. Behärskar du dem kommer du långt även utan resten av manualen.</p>
+    <div class="grid g3 mt32">
+      <div class="card" style="background:var(--bg)">
+        <h4>1. Logotyp</h4>
+        <div style="padding:16px 0"><span data-logo="color" data-h="40"></span></div>
+        <p class="small">Blå rundad kvadrat med stigande graflinje och grön punkt, ordbild i mörk marinblå och tagline <b>EKONOMI FÖR LIVET</b> i blått.</p>
+      </div>
+      <div class="card" style="background:var(--bg)">
+        <h4>2. Färg</h4>
+        <div style="display:flex;gap:6px;margin:16px 0;flex-wrap:wrap">
+          <span title="#2563EB" style="width:44px;height:44px;border-radius:12px;background:#2563EB"></span>
+          <span title="#1E40AF" style="width:44px;height:44px;border-radius:12px;background:#1E40AF"></span>
+          <span title="#10B981" style="width:44px;height:44px;border-radius:12px;background:#10B981"></span>
+          <span title="#0F172A" style="width:44px;height:44px;border-radius:12px;background:#0F172A"></span>
+          <span title="#EFF6FF" style="width:44px;height:44px;border-radius:12px;background:#EFF6FF;box-shadow:inset 0 0 0 1px #DBE1FF"></span>
+          <span title="#F9FAFB" style="width:44px;height:44px;border-radius:12px;background:#F9FAFB;box-shadow:inset 0 0 0 1px #E2E8F0"></span>
+        </div>
+        <p class="small">Klarblått <b>#2563EB</b> bär varumärket. Grönt <b>#10B981</b> betyder tillväxt. Resten är ljusa, svalt grå ytor och mörk marinblå text.</p>
+      </div>
+      <div class="card" style="background:var(--bg)">
+        <h4>3. Typografi</h4>
+        <div style="padding:12px 0"><span style="font-size:30px;line-height:36px;font-weight:700;letter-spacing:-.03em">Aa Åå Öö</span></div>
+        <p class="small"><b>Plus Jakarta Sans</b> i alla roller. Rubriker i halvfet (600) med tight bokstavsavstånd, brödtext 15/23 px, knappar och etiketter 13 px halvfet.</p>
+      </div>
+      <div class="card" style="background:var(--bg)">
+        <h4>4. Form</h4>
+        <div style="display:flex;gap:10px;align-items:flex-end;margin:16px 0">
+          <span style="width:40px;height:40px;border-radius:8px;background:var(--primary-tint)"></span>
+          <span style="width:48px;height:48px;border-radius:12px;background:var(--primary-tint)"></span>
+          <span style="width:60px;height:60px;border-radius:16px;background:var(--card);box-shadow:var(--sh-hover)"></span>
+          <span style="width:56px;height:24px;border-radius:999px;background:var(--green-tint)"></span>
+        </div>
+        <p class="small">Mjukt rundade hörn (12 px kontroller, 16 px kort), vita kort på ljusgrått, mycket svaga skuggor och nästan inga kantlinjer.</p>
+      </div>
+      <div class="card" style="background:var(--bg)">
+        <h4>5. Ton</h4>
+        <p style="font-size:18px;line-height:24px;font-weight:600;letter-spacing:-.015em;margin:14px 0">Byggd för ungas vanor – inte mossiga läroböcker</p>
+        <p class="small">Kunnig storasyster, inte bank. Rakt, konkret och uppmuntrande, med korta meningar och du-tilltal. Lekfulla detaljer (XP, streaks) finns men styr inte helheten.</p>
+      </div>
+      <div class="card" style="background:var(--bg)">
+        <h4>Layout</h4>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:16px 0">
+          <span style="height:34px;border-radius:8px;background:var(--card);box-shadow:var(--sh-card)"></span>
+          <span style="height:34px;border-radius:8px;background:var(--card);box-shadow:var(--sh-card)"></span>
+          <span style="height:34px;border-radius:8px;background:var(--card);box-shadow:var(--sh-card)"></span>
+        </div>
+        <p class="small">1140 px container, 24 px sidmarginal, rutnät med 1/2/3 kolumner och 24 px mellanrum. Sektioner växlar mellan ljusgrå och vit bakgrund.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- A. IDENTITET -->
+<section class="chap" id="identitet">
+  <div class="wrap">
+    <div class="eyebrow"><span class="ms">fingerprint</span>A · Visuell identitet</div>
+    <h2 class="ch">Fintech-precision med en vänlig, ung ton</h2>
+    <p class="lead">Sajten lånar formspråket från moderna nordiska bank- och fintech-appar (rena ytor, blått som förtroendefärg, tydliga siffror) och kombinerar det med inslag från lärappar: XP, streaks, quiz och emoji. Resultatet känns tryggt nog för föräldrar och lärare och lätt nog för en 17-åring.</p>
+
+    <div class="grid g2 mt32">
+      <div class="card">
+        <h4>Observerad designriktning <span class="tag t-b">Befintligt</span></h4>
+        <ul class="clean">
+          <li><b>Ljust och luftigt.</b> Sidbakgrund #F9FAFB, vita kort, stora vita ytor runt allt innehåll.</li>
+          <li><b>En färg bär varumärket.</b> Blått används för logotyp, knappar, länkar och eyebrows. Grönt och bärnsten används sparsamt som kategorifärger.</li>
+          <li><b>Djup genom skugga, inte linjer.</b> Kort separeras med mycket svaga skuggor. Kantlinjer förekommer nästan bara i sidfoten.</li>
+          <li><b>Siffror som hjältar.</b> Statistik (70+, 33+, 100%) och kalkylatorns slutvärde visas i stor, fet text.</li>
+          <li><b>Lekfulla detaljer.</b> Hoppande emoji i rubriken, flytande notiser ("+45 XP tjänade"), en eldsymbol för streak.</li>
+          <li><b>Centrerade hjältesektioner, vänsterställt innehåll.</b> Hero och CTA-banners centreras, kort och listor är vänsterställda.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h4>Designprinciper <span class="tag t-s">Standardiserat</span></h4>
+        <ol class="clean" style="padding-left:20px">
+          <li><b>Tydlighet före dekoration.</b> Varje sektion har en eyebrow, en rubrik och en kort ingress, i den ordningen.</li>
+          <li><b>Ett blått, många nyanser.</b> Hierarki skapas med ljusa toner (#EFF6FF) och mörkare blått (#1E40AF), inte med fler kulörer.</li>
+          <li><b>Mjuk geometri.</b> Inga skarpa hörn. Radien växer med elementets storlek: 8, 12, 16 och 24 px.</li>
+          <li><b>Lugn yta, levande detalj.</b> Grundlayouten är stillsam. Rörelse och emoji används i små, avgränsade punkter.</li>
+          <li><b>Siffror ska gå att lita på.</b> Belopp och procent skrivs exakt, med svensk formatering, och utan överdrifter.</li>
+        </ol>
+      </div>
+    </div>
+
+    <div class="grid g3 mt24">
+      <div class="card">
+        <h4>Igenkänning</h4>
+        <p class="small">Symbolens stigande linje med grön slutpunkt återkommer i hjälteverktyget (kurvan med en punkt längst upp), i ikonen <span class="ms" style="font-size:16px;color:var(--green)">trending_up</span> och i statistikens tillväxtsiffror. Det är identitetens tydligaste motiv.</p>
+      </div>
+      <div class="card">
+        <h4>Vad som skiljer oss från ett generiskt system</h4>
+        <p class="small">Komponenterna liknar Tailwind och Material, men <b>kombinationen</b> är egen: blå plus grön tillväxtpunkt, kort med grå "fotlist" (spårkorten), gamification-pillrar och svensk, rak copy. Det är de detaljerna som ska bevaras.</p>
+      </div>
+      <div class="card">
+        <h4>Strategiska frågor <span class="tag t-q">Att bekräfta</span></h4>
+        <p class="small">Positionering och varumärkesvärden är inte dokumenterade. Sajten antyder <i>oberoende, kostnadsfritt, för unga 16–25 år, utbildning och inte rådgivning</i>. Ledningen behöver bekräfta om det är de officiella kärnvärdena.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- B. LOGOTYP -->
+<section class="chap card-bg" id="logotyp">
+  <div class="wrap">
+    <div class="eyebrow"><span class="ms">verified</span>B · Logotyp</div>
+    <h2 class="ch">Logotypen</h2>
+    <p class="lead">Logotypen finns som en enda fil, <code>stitch-assets/logo.svg</code> (viewBox 225 × 48). Den består av en symbol och en ordbild med tagline. Formen och proportionerna nedan är oförändrade. Alla nya versioner är märkta som förslag.</p>
+
+    <div class="grid g2 mt32">
+      <div>
+        <div class="stage-logo" style="background:var(--bg)"><span data-logo="color" data-h="72"></span></div>
+        <p class="mt8"><b>Primär logotyp</b> <span class="tag t-b">Befintligt</span><br><span class="small">Symbol + ordbild + tagline. Används på ljus bakgrund i sidhuvud, sidfot, dokument och presentationer.</span></p>
+      </div>
+      <div>
+        <div class="stage-logo" style="background:var(--bg);position:relative">
+          <svg viewBox="0 0 225 48" width="420" style="overflow:visible" aria-label="Logotypens anatomi">
+            <rect x="2" y="6" width="36" height="36" rx="10" fill="#2563EB"/>
+            <path d="M12 28L18 20L23 25L28 16" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+            <circle cx="28" cy="16" r="2.5" fill="#10B981" stroke="#fff" stroke-width="1.5"/>
+            <text x="73" y="27" font-family="Plus Jakarta Sans, sans-serif" font-size="20" font-weight="800" fill="#0F172A" letter-spacing="-0.4">UngEkonom</text>
+            <text x="73" y="38" font-family="Plus Jakarta Sans, sans-serif" font-size="9.5" font-weight="600" fill="#2563EB" letter-spacing="0.76">EKONOMI FÖR LIVET</text>
+            <g stroke="#DC2626" stroke-width=".6" fill="none" stroke-dasharray="2 1.5"><rect x="2" y="6" width="36" height="36"/><line x1="38" y1="24" x2="73" y2="24"/></g>
+            <text x="20" y="52" font-size="5" fill="#DC2626" text-anchor="middle" font-family="Plus Jakarta Sans">symbol 36</text>
+            <text x="55.5" y="22" font-size="5" fill="#DC2626" text-anchor="middle" font-family="Plus Jakarta Sans">35</text>
+          </svg>
+        </div>
+        <p class="mt8"><b>Anatomi</b> <span class="tag t-b">Befintligt</span><br><span class="small">Symbol 36 × 36 med 10 i hörnradie. Linjen har 3 i tjocklek och rundade ändar. Ordbilden är 20 i extrafet (800), taglinen 9,5 i halvfet med 0,08 em spärrning. Avståndet mellan symbol och text är 35 enheter, ungefär en symbolbredd.</span></p>
+      </div>
+    </div>
+
+    <h3 class="sub">Versioner</h3>
+    <p class="muted">Idag finns bara den primära filen. Följande versioner behövs för att logotypen ska fungera i alla sammanhang.</p>
+    <div class="grid g4 mt24">
+      <div><div class="stage-logo" style="background:var(--primary-deep);min-height:140px"><span data-logo="white" data-h="40"></span></div><p class="mt8 small"><b style="color:var(--ink)">Negativ</b> <span class="tag t-f">Förslag</span><br>Vit ordbild, tagline i #B4C5FF. För mörkblå bakgrund och CTA-banners.</p></div>
+      <div><div class="stage-logo" style="background:var(--bg);min-height:140px"><span data-logo="mono" data-h="40"></span></div><p class="mt8 small"><b style="color:var(--ink)">Svartvit</b> <span class="tag t-f">Förslag</span><br>Allt i #0F172A, linjen urstansad. För fax, stämplar och svartvitt tryck.</p></div>
+      <div><div class="stage-logo" style="background:#0F172A;min-height:140px"><span data-logo="mono-white" data-h="40"></span></div><p class="mt8 small"><b style="color:var(--ink)">Vit (enfärg)</b> <span class="tag t-f">Förslag</span><br>För foton och mörka ytor där blått inte syns.</p></div>
+      <div><div class="stage-logo" style="background:var(--bg);min-height:140px;gap:16px;flex-wrap:wrap"><span data-logo="symbol" data-h="56"></span><span data-logo="nottag" data-h="34"></span></div><p class="mt8 small"><b style="color:var(--ink)">Symbol och kortversion</b> <span class="tag t-f">Förslag</span><br>Symbolen ensam för favicon, app-ikon och profilbild. Utan tagline för små storlekar.</p></div>
+    </div>
+
+    <h3 class="sub">Frizon och minsta storlek</h3>
+    <div class="grid g2 mt16">
+      <div class="card">
+        <div class="stage-logo" style="background:var(--bg);padding:24px">
+          <div style="position:relative;padding:22px;outline:1.5px dashed #DC2626;outline-offset:0;background:repeating-linear-gradient(45deg,rgba(220,38,38,.06) 0 6px,transparent 6px 12px)">
+            <div style="background:var(--bg)"><span data-logo="color" data-h="48"></span></div>
+          </div>
+        </div>
+        <p class="mt16 small"><b style="color:var(--ink)">Frizon = X = halva symbolens höjd</b> <span class="tag t-f">Förslag</span><br>Håll minst X fritt på alla sidor. Inga texter, bilder eller kanter får komma in där. På sajten har sidhuvudet 24 px symbol och därmed minst 12 px frizon, vilket uppfylls.</p>
+      </div>
+      <div class="card">
+        <div class="tbl-wrap" style="box-shadow:none">
+          <table>
+            <thead><tr><th>Version</th><th>Digitalt</th><th>Tryck</th></tr></thead>
+            <tbody>
+              <tr><td><strong>Med tagline</strong></td><td class="num">40 px hög</td><td class="num">12 mm hög</td></tr>
+              <tr><td><strong>Utan tagline</strong></td><td class="num">24 px hög</td><td class="num">8 mm hög</td></tr>
+              <tr><td><strong>Symbol</strong></td><td class="num">16 px</td><td class="num">5 mm</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="mt16 small"><span class="tag t-f">Förslag</span> Sidfoten visar idag logotypen 28 px hög, vilket gör taglinen cirka 5,5 px. Den går då inte att läsa. Vid under 40 px bör versionen utan tagline användas.</p>
+      </div>
+    </div>
+
+    <h3 class="sub">Placering</h3>
+    <div class="grid g3 mt16">
+      <div class="card"><h4>Webb</h4><p class="small">Övre vänstra hörnet i sidhuvudet, 32 px hög, länkad till startsidan <span class="tag t-b">Befintligt</span>. I sidfoten vänsterställd ovanför beskrivningstexten.</p></div>
+      <div class="card"><h4>Presentationer och dokument</h4><p class="small">Titelsida: logotyp uppe till vänster. Innehållssidor: endast symbolen eller kortversionen i sidfoten, nere till vänster. <span class="tag t-f">Förslag</span></p></div>
+      <div class="card"><h4>Tryck</h4><p class="small">Exportera med texten konverterad till konturer (se lucka L1). Använd CMYK-värdena i kapitel C och minsta storlek ovan.</p></div>
+    </div>
+
+    <h3 class="sub">Korrekt och felaktig användning</h3>
+    <div class="grid g4 mt16">
+      <div class="dd ok"><div class="stage"><span data-logo="color" data-h="32"></span></div><div class="lbl"><span class="ms">check_circle</span>Originalfärger på ljus, lugn bakgrund.</div></div>
+      <div class="dd ok"><div class="stage" style="background:var(--primary-deep)"><span data-logo="white" data-h="32"></span></div><div class="lbl"><span class="ms">check_circle</span>Negativ version på mörkblått.</div></div>
+      <div class="dd no"><div class="stage" style="background:var(--primary)"><span data-logo="color" data-h="32"></span></div><div class="lbl"><span class="ms">cancel</span>Färgversionen på blått. Symbolen försvinner.</div></div>
+      <div class="dd no"><div class="stage"><span data-logo="color" data-h="32" style="display:inline-block;transform:scaleX(1.45)"></span></div><div class="lbl"><span class="ms">cancel</span>Töjd eller ihoptryckt.</div></div>
+      <div class="dd no"><div class="stage"><span data-logo="recolor" data-h="32"></span></div><div class="lbl"><span class="ms">cancel</span>Andra färger, även om de finns i paletten.</div></div>
+      <div class="dd no"><div class="stage"><span data-logo="color" data-h="32" style="display:inline-block;transform:rotate(-8deg)"></span></div><div class="lbl"><span class="ms">cancel</span>Roterad eller lutad.</div></div>
+      <div class="dd no"><div class="stage" style="background:linear-gradient(135deg,#F59E0B,#EC4899,#10B981)"><span data-logo="color" data-h="32"></span></div><div class="lbl"><span class="ms">cancel</span>På oroliga bilder eller färgstarka gradienter.</div></div>
+      <div class="dd no"><div class="stage"><span data-logo="color" data-h="32" style="display:inline-block;filter:drop-shadow(3px 4px 3px rgba(0,0,0,.45))"></span></div><div class="lbl"><span class="ms">cancel</span>Effekter: skugga, glöd, kontur.</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- C. FÄRG -->
+<section class="chap" id="farg">
+  <div class="wrap">
+    <div class="eyebrow"><span class="ms">palette</span>C · Färgpalett</div>
+    <h2 class="ch">Färgpalett</h2>
+    <p class="lead">Alla värden är exakta och hämtade ur <code>stitch-assets/tailwind.css</code>. Inget är uppskattat från skärmbilder. Klassnamnet i blått under varje färg är det som används på sajten idag.</p>
+
+    <h3 class="sub">Primära varumärkesfärger</h3>
+    <div class="grid g3 mt16" data-swatches="brand"></div>
+    <h3 class="sub">Sekundär färg – tillväxt</h3>
+    <div class="grid g4 mt16" data-swatches="green"></div>
+    <h3 class="sub">Accent – bärnsten</h3>
+    <p class="muted">Används för budgetspåret, steg 3 och streak-notisen. Idag skrivs den som godtyckliga HEX-klasser. <span class="tag t-s">Standardiserat</span> Nu får den egna tokens.</p>
+    <div class="grid g4 mt16" data-swatches="amber"></div>
+    <h3 class="sub">Text, ytor och neutraler</h3>
+    <div class="grid g4 mt16" data-swatches="neutral"></div>
+    <h3 class="sub">Funktionella färger</h3>
+    <div class="grid g4 mt16" data-swatches="func"></div>
+    <h3 class="sub">Arv från Material 3-exporten</h3>
+    <p class="muted">Sajten genererades med Google Stitch, och några lavendeltonade ytor från Material 3 lever kvar. De bryter mot de annars svalt grå neutralerna. <span class="tag t-f">Förslag</span> Fasa ut dem och ersätt med närmaste neutral.</p>
+    <div class="grid g4 mt16" data-swatches="legacy"></div>
+
+    <h3 class="sub">Godkända kombinationer</h3>
+    <p class="muted">Kontrast enligt WCAG 2.2. AA kräver 4,5:1 för brödtext och 3:1 för stor text (minst 18,66 px fet eller 24 px) samt grafik.</p>
+    <div class="tbl-wrap mt16">
+      <table>
+        <thead><tr><th>Förgrund</th><th>Bakgrund</th><th>Kontrast</th><th>Bedömning</th><th>Användning</th></tr></thead>
+        <tbody>
+          <tr><td><strong>#0F172A</strong> text</td><td>#FFFFFF / #F9FAFB</td><td class="num">17,9 / 17,1</td><td><span class="pill p-green">AAA</span></td><td>Rubriker och brödtext</td></tr>
+          <tr><td><strong>#475569</strong> sekundär text</td><td>#FFFFFF / #F3F4F6</td><td class="num">7,6 / 6,9</td><td><span class="pill p-green">AAA</span></td><td>Ingresser, beskrivningar</td></tr>
+          <tr><td><strong>#004AC6</strong> blå text</td><td>#FFFFFF / #EFF6FF</td><td class="num">7,5 / 6,9</td><td><span class="pill p-green">AAA</span></td><td>Länkar, eyebrows, badges</td></tr>
+          <tr><td><strong>#FFFFFF</strong></td><td>#2563EB</td><td class="num">5,2</td><td><span class="pill p-blue">AA</span></td><td>Primärknapp</td></tr>
+          <tr><td><strong>#FFFFFF</strong></td><td>#1E40AF</td><td class="num">8,7</td><td><span class="pill p-green">AAA</span></td><td>Hover, mörka banners</td></tr>
+          <tr><td><strong>#006C4A</strong> grön text</td><td>#FFFFFF / #ECFDF5</td><td class="num">6,5 / 6,2</td><td><span class="pill p-blue">AA</span></td><td>Gröna badges och etiketter</td></tr>
+          <tr><td><strong>#B45309</strong> bärnsten</td><td>#FEF3C7</td><td class="num">4,5</td><td><span class="pill p-blue">AA (precis)</span></td><td>Bärnstensbadges, minst 12 px halvfet</td></tr>
+          <tr><td><strong>#92400E</strong></td><td>#FEF3C7</td><td class="num">6,4</td><td><span class="pill p-blue">AA</span></td><td>Liten text på bärnsten</td></tr>
+          <tr><td><strong>#DC2626</strong> fel</td><td>#FFFFFF</td><td class="num">4,8</td><td><span class="pill p-blue">AA</span></td><td>Felmeddelanden</td></tr>
+          <tr style="background:#FEF2F2"><td><strong>#94A3B8</strong> tertiär</td><td>#FFFFFF / #F3F4F6</td><td class="num">2,6 / 2,3</td><td><span class="pill" style="background:var(--danger-tint);color:#991B1B">Underkänd</span></td><td>Används idag för 12 px text (lästid, bildtexter). Byt till #64748B (4,8:1). Behåll #94A3B8 för ikoner och separatorer.</td></tr>
+          <tr style="background:#FEF2F2"><td><strong>#10B981</strong> grön</td><td>#FFFFFF / #ECFDF5</td><td class="num">2,5 / 2,4</td><td><span class="pill" style="background:var(--danger-tint);color:#991B1B">Underkänd som text</span></td><td>Används idag för "+233 933 kr". Endast grafik och ikoner. För text: #006C4A.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 class="sub">Proportioner</h3>
+    <p class="muted">Ungefärlig fördelning på en typisk sida. Använd den som riktmärke även i presentationer och trycksaker.</p>
+    <div style="display:flex;height:56px;border-radius:12px;overflow:hidden;margin-top:16px;box-shadow:var(--sh-card)" aria-label="Färgproportioner">
+      <div style="flex:58;background:#F9FAFB;display:flex;align-items:center;padding-left:12px;font-size:12px;font-weight:600;color:var(--ink-2)">Ljusa ytor 58 %</div>
+      <div style="flex:20;background:#FFFFFF;border-left:1px solid var(--border);display:flex;align-items:center;padding-left:12px;font-size:12px;font-weight:600;color:var(--ink-2)">Kort 20 %</div>
+      <div style="flex:12;background:#0F172A;display:flex;align-items:center;padding-left:10px;font-size:12px;font-weight:600;color:#fff">Text 12 %</div>
+      <div style="flex:7;background:#2563EB;display:flex;align-items:center;padding-left:8px;font-size:12px;font-weight:600;color:#fff">7 %</div>
+      <div style="flex:2;background:#10B981"></div>
+      <div style="flex:1;background:#D97706"></div>
+    </div>
+    <p class="cap mt8">Blått max cirka 10 %, grönt och bärnsten tillsammans max 5 %. Uppskattning baserad på startsidan, inte uppmätt.</p>
+  </div>
+</section>
+
+<!-- D. TYPOGRAFI -->
+<section class="chap card-bg" id="typografi">
+  <div class="wrap">
+    <div class="eyebrow"><span class="ms">text_fields</span>D · Typografi</div>
+    <h2 class="ch">Ett typsnitt, tydlig skala</h2>
+    <div class="grid g2 mt24">
+      <div class="card" style="background:var(--bg)">
+        <div style="font-size:64px;line-height:1;font-weight:700;letter-spacing:-.03em">Aa</div>
+        <h4 class="mt16">Plus Jakarta Sans <span class="tag t-b">Befintligt</span></h4>
+        <p class="small">Används för rubriker, brödtext, knappar och UI-element. Laddas lokalt som variabel font (vikt 400–700) från <code>stitch-assets/fonts/</code>. Fri licens (SIL Open Font License) och finns på Google Fonts, så den kan installeras för Office, Keynote och Figma.</p>
+        <p class="small" style="font-size:13px;letter-spacing:.02em;color:var(--ink)">ABCDEFGHIJKLMNOPQRSTUVWXYZÅÄÖ<br>abcdefghijklmnopqrstuvwxyzåäö<br>0123456789 &amp; % kr – · → ✓</p>
+      </div>
+      <div class="card" style="background:var(--bg)">
+        <h4>Vikter</h4>
+        <div style="display:grid;gap:6px;margin:12px 0 16px">
+          <div style="font-weight:400;font-size:20px">Regular 400 – brödtext</div>
+          <div style="font-weight:500;font-size:20px">Medium 500 – bildtext, betonad brödtext</div>
+          <div style="font-weight:600;font-size:20px">Semibold 600 – rubriker, knappar</div>
+          <div style="font-weight:700;font-size:20px">Bold 700 – display, siffror</div>
+          <div style="font-weight:800;font-size:20px">ExtraBold 800 – endast logotypen</div>
+        </div>
+        <p class="small"><b style="color:var(--ink)">Reservtypsnitt:</b> <code>system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif</code>. I Office där Plus Jakarta Sans saknas: <b>Arial</b>. <span class="tag t-f">Förslag</span></p>
+        <p class="small"><b style="color:var(--ink)">Ikoner:</b> Material Symbols Outlined (ikonfont, inte för text).</p>
+      </div>
+    </div>
+
+    <h3 class="sub">Typografisk skala</h3>
+    <p class="muted">Namnen är sajtens egna Tailwind-tokens. Notera att <code>headline-1</code> i praktiken används för H2 och att H1 på undersidor använder <code>display-xl</code>. <span class="tag t-s">Standardiserat</span> Kolumnen "Roll" anger hur nivåerna ska användas framöver.</p>
+    <div class="card mt16" style="padding:0;overflow:hidden">
+      <div class="ts-row"><div class="spec"><b>Hero · H1 startsida</b>40 → 44 px · 600 · 1,15 · −0,025 em<br><code>text-[2.5rem] md:text-[2.75rem]</code></div><div style="font-size:44px;line-height:1.15;font-weight:600;letter-spacing:-.025em;min-width:0">Privatekonomi för <span style="color:var(--primary)">unga</span></div></div>
+      <div class="ts-row"><div class="spec"><b>Display · H1 undersidor</b>36 / 41 px · 700 · −0,03 em<br><code>display-xl</code></div><div style="font-size:36px;line-height:41px;font-weight:700;letter-spacing:-.03em">Hör av dig till oss</div></div>
+      <div class="ts-row"><div class="spec"><b>H2 · Sektionsrubrik</b>28 / 34 px · 600 · −0,025 em<br><code>headline-1</code></div><div style="font-size:28px;line-height:34px;font-weight:600;letter-spacing:-.025em">Populära guider &amp; artiklar</div></div>
+      <div class="ts-row"><div class="spec"><b>H3 · Underrubrik / stort kort</b>22 / 28 px · 600 · −0,02 em<br><code>headline-2</code></div><div style="font-size:22px;line-height:28px;font-weight:600;letter-spacing:-.02em">Så fungerar det</div></div>
+      <div class="ts-row"><div class="spec"><b>H4 · Kortrubrik</b>18 / 24 px · 600 · −0,015 em<br><code>headline-3</code></div><div style="font-size:18px;line-height:24px;font-weight:600;letter-spacing:-.015em">Vad är en aktie – och varför finns de?</div></div>
+      <div class="ts-row"><div class="spec"><b>Brödtext</b>15 / 23 px · 400<br><code>body-regular</code></div><div style="color:var(--ink-2)">Varje spår är uppdelat i mikrolektioner på 3–5 minuter som avslutas med interaktiva quiz för garanterad förståelse.</div></div>
+      <div class="ts-row"><div class="spec"><b>Brödtext betonad</b>15 / 23 px · 500<br><code>body-medium</code></div><div style="font-weight:500">Månadssparande</div></div>
+      <div class="ts-row"><div class="spec"><b>Etikett / knapp / meny</b>13 / 18 px · 600 · +0,01 em<br><code>label-md</code></div><div style="font-size:13px;line-height:18px;font-weight:600;letter-spacing:.01em">Skapa gratis konto</div></div>
+      <div class="ts-row"><div class="spec"><b>Eyebrow</b>13 / 18 px · 600 · versaler · +0,05 em<br><code>label-md uppercase</code></div><div style="font-size:13px;line-height:18px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--primary-text)">Kunskapsbank</div></div>
+      <div class="ts-row"><div class="spec"><b>Bildtext / metadata</b>12 / 16 px · 500<br><code>caption-micro</code></div><div style="font-size:12px;line-height:16px;font-weight:500;color:var(--ink-muted)">5 min läsning · 4 quiz · Certifiering</div></div>
+      <div class="ts-row"><div class="spec"><b>Statistiksiffra</b>36 / 41 px · 700<br><code>display-xl font-bold</code></div><div style="display:flex;align-items:baseline;gap:6px"><span style="font-size:36px;line-height:41px;font-weight:700;letter-spacing:-.03em" class="num">70+</span><span style="font-size:13px;font-weight:600;color:var(--primary-text)">elever</span></div></div>
+    </div>
+
+    <div class="grid g3 mt24">
+      <div class="card"><h4>Radavstånd</h4><p class="small">Rubriker cirka 1,2 (tight). Brödtext 1,53 (23/15). Ingresser i hero 1,625 (<code>leading-relaxed</code>). Max radlängd för löptext 42rem ≈ 70 tecken.</p></div>
+      <div class="card"><h4>Bokstavsavstånd</h4><p class="small">Ju större text, desto tightare: −0,03 em på display, 0 på brödtext, +0,01 em på etiketter och +0,05 em på versaler. Spärra aldrig gemener.</p></div>
+      <div class="card"><h4>Tryck <span class="tag t-f">Förslag</span></h4><p class="small">Brödtext 10/14 pt, H1 28 pt, H2 18 pt, H3 13 pt halvfet, bildtext 8 pt. Samma vikter som digitalt. Undvik 400 under 8 pt.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- E. LAYOUT -->
+<section class="chap" id="layout">
+  <div class="wrap">
+    <div class="eyebrow"><span class="ms">grid_view</span>E · Layout och grafiska principer</div>
+    <h2 class="ch">Layout, avstånd och form</h2>
+
+    <div class="grid g2 mt24">
+      <div class="card">
+        <h4>Grid och container <span class="tag t-b">Befintligt</span></h4>
+        <div style="background:var(--bg);border-radius:12px;padding:12px;margin:12px 0">
+          <div style="display:grid;grid-template-columns:repeat(12,1fr);gap:4px">
+            <div style="grid-column:span 12;height:14px;border-radius:4px;background:var(--primary-line)"></div>
+            <div style="grid-column:span 4;height:42px;border-radius:6px;background:var(--card);box-shadow:var(--sh-card)"></div>
+            <div style="grid-column:span 4;height:42px;border-radius:6px;background:var(--card);box-shadow:var(--sh-card)"></div>
+            <div style="grid-column:span 4;height:42px;border-radius:6px;background:var(--card);box-shadow:var(--sh-card)"></div>
+            <div style="grid-column:span 6;height:42px;border-radius:6px;background:var(--primary-tint)"></div>
+            <div style="grid-column:span 6;height:42px;border-radius:6px;background:var(--subdued)"></div>
+          </div>
+        </div>
+        <ul class="clean">
+          <li>Container: <b>max 1140 px</b>, centrerad, <b>24 px</b> sidmarginal (<code>px-margin</code>).</li>
+          <li>Kortrutnät: 1 kolumn mobil → 2 från 768 px → 3 från 1024 px, mellanrum 24 px.</li>
+          <li>Verktyg och delade sektioner: 12-kolumnsgrid, 6 + 6.</li>
+          <li>Textblock: max 42rem (hero 48rem).</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h4>Sektionsrytm <span class="tag t-b">Befintligt</span></h4>
+        <div style="display:grid;gap:4px;margin:12px 0">
+          <div style="height:22px;border-radius:4px;background:#fff;box-shadow:inset 0 0 0 1px var(--border);font-size:11px;padding-left:8px;line-height:22px;color:var(--ink-2)">Sidhuvud 80 px, fast, vit 90 % + oskärpa</div>
+          <div style="height:40px;border-radius:4px;background:var(--bg);box-shadow:inset 0 0 0 1px var(--border);font-size:11px;padding-left:8px;line-height:40px;color:var(--ink-2)">Hero · bg-root + blå glöd</div>
+          <div style="height:22px;border-radius:4px;background:var(--subdued);font-size:11px;padding-left:8px;line-height:22px;color:var(--ink-2)">Statistikband · subdued</div>
+          <div style="height:30px;border-radius:4px;background:var(--bg);box-shadow:inset 0 0 0 1px var(--border);font-size:11px;padding-left:8px;line-height:30px;color:var(--ink-2)">Innehåll · bg-root</div>
+          <div style="height:30px;border-radius:4px;background:var(--subdued);font-size:11px;padding-left:8px;line-height:30px;color:var(--ink-2)">Innehåll · subdued</div>
+          <div style="height:30px;border-radius:4px;background:linear-gradient(135deg,#1E40AF,#004AC6,#2563EB);font-size:11px;padding-left:8px;line-height:30px;color:#fff">Avslutande CTA-banner</div>
+          <div style="height:22px;border-radius:4px;background:#fff;box-shadow:inset 0 0 0 1px var(--border);font-size:11px;padding-left:8px;line-height:22px;color:var(--ink-2)">Sidfot · vit, kantlinje upptill</div>
+        </div>
+        <p class="small">Sektioner har 64 px vertikal luft på mobil och 96 px från 768 px (<code>py-16 md:py-24</code>). Bakgrunden växlar mellan #F9FAFB och #F3F4F6, inga avdelare mellan dem.</p>
+      </div>
+    </div>
+
+    <h3 class="sub">Avståndsskala</h3>
+    <p class="muted">Sajten blandar egna tokens (<code>space-xs…xl</code>) med Tailwinds standardsteg. <span class="tag t-s">Standardiserat</span> Alla ingår nu i en skala med 4 px som bas. Använd bara dessa värden.</p>
+    <div class="tbl-wrap mt16">
+      <table>
+        <thead><tr><th>Token</th><th>Värde</th><th>Visuellt</th><th>Idag på sajten</th><th>Typisk användning</th></tr></thead>
+        <tbody>
+          <tr><td><code>spacing.1</code></td><td class="num">4 px</td><td><div class="spacer-bar" style="width:4px"></div></td><td><code>space-xs</code></td><td>Ikon–text i små element, listavstånd</td></tr>
+          <tr><td><code>spacing.2</code></td><td class="num">8 px</td><td><div class="spacer-bar" style="width:8px"></div></td><td><code>space-sm</code>, <code>gap-2</code></td><td>Ikon–text i knappar</td></tr>
+          <tr><td><code>spacing.3</code></td><td class="num">12 px</td><td><div class="spacer-bar" style="width:12px"></div></td><td><code>space-md</code></td><td>Mellan knappar, mellan rubrik och ingress</td></tr>
+          <tr><td><code>spacing.4</code></td><td class="num">16 px</td><td><div class="spacer-bar" style="width:16px"></div></td><td><code>4</code></td><td>Knappens sidoluft, korts interna avstånd</td></tr>
+          <tr><td><code>spacing.5</code></td><td class="num">20 px</td><td><div class="spacer-bar" style="width:20px"></div></td><td><code>space-lg</code></td><td>Menyavstånd, paneler</td></tr>
+          <tr><td><code>spacing.6</code></td><td class="num">24 px</td><td><div class="spacer-bar" style="width:24px"></div></td><td><code>margin</code>, <code>6</code></td><td>Sidmarginal, kortens inre luft, rutnätsmellanrum</td></tr>
+          <tr><td><code>spacing.8</code></td><td class="num">32 px</td><td><div class="spacer-bar" style="width:32px"></div></td><td><code>space-xl</code>, <code>8</code></td><td>Stora kort, sidfot</td></tr>
+          <tr><td><code>spacing.12</code></td><td class="num">48 px</td><td><div class="spacer-bar" style="width:48px"></div></td><td><code>12</code></td><td>Sektionsrubrik → innehåll</td></tr>
+          <tr><td><code>spacing.16</code></td><td class="num">64 px</td><td><div class="spacer-bar" style="width:64px"></div></td><td><code>16</code></td><td>Sektioner, mobil</td></tr>
+          <tr><td><code>spacing.24</code></td><td class="num">96 px</td><td><div class="spacer-bar" style="width:96px"></div></td><td><code>24</code></td><td>Sektioner, desktop</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 class="sub">Hörnradier, skuggor och djup</h3>
+    <div class="grid g2 mt16">
+      <div class="card">
+        <div style="display:flex;gap:16px;align-items:flex-end;flex-wrap:wrap">
+          <div style="text-align:center"><div style="width:56px;height:56px;border-radius:8px;background:var(--primary-tint);box-shadow:inset 0 0 0 1px var(--primary-line)"></div><div class="cap mt8">8 px<br>sm</div></div>
+          <div style="text-align:center"><div style="width:64px;height:64px;border-radius:12px;background:var(--primary-tint);box-shadow:inset 0 0 0 1px var(--primary-line)"></div><div class="cap mt8">12 px<br>control</div></div>
+          <div style="text-align:center"><div style="width:76px;height:76px;border-radius:16px;background:var(--primary-tint);box-shadow:inset 0 0 0 1px var(--primary-line)"></div><div class="cap mt8">16 px<br>card</div></div>
+          <div style="text-align:center"><div style="width:92px;height:92px;border-radius:24px;background:var(--primary-tint);box-shadow:inset 0 0 0 1px var(--primary-line)"></div><div class="cap mt8">24 px<br>hero</div></div>
+          <div style="text-align:center"><div style="width:72px;height:32px;border-radius:999px;background:var(--primary-tint);box-shadow:inset 0 0 0 1px var(--primary-line)"></div><div class="cap mt8">pill</div></div>
+        </div>
+        <p class="small mt16">Regeln är att radien växer med storleken: mini-kort 8, knappar, fält och ikonplattor 12, kort 16, stora banners 24 och badges helt rundade. Logotypens symbol har proportionellt samma rundning (10/36 ≈ 28 %).</p>
+      </div>
+      <div class="card">
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;background:var(--bg);padding:20px;border-radius:12px">
+          <div style="height:56px;border-radius:12px;background:#fff;box-shadow:var(--sh-card);display:flex;align-items:center;justify-content:center" class="cap">card</div>
+          <div style="height:56px;border-radius:12px;background:#fff;box-shadow:var(--sh-hover);display:flex;align-items:center;justify-content:center" class="cap">hover</div>
+          <div style="height:56px;border-radius:12px;background:#fff;box-shadow:var(--sh-float);display:flex;align-items:center;justify-content:center" class="cap">floating</div>
+        </div>
+        <ul class="clean mt16">
+          <li><b>card</b> (<code>shadow-sm</code>): alla vilande kort.</li>
+          <li><b>hover</b> (<code>shadow-md</code>): kort vid hovring, primärknapp i hero.</li>
+          <li><b>floating</b> och <b>feature</b> (<code>shadow-lg/xl</code>): flytande notiser, videoram, verktyg och CTA-banner.</li>
+          <li>Sidhuvudet har en egen, nästan osynlig skugga: <code>0 1px 8px rgba(15,23,42,.04)</code>.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="grid g3 mt24">
+      <div class="card"><h4>Linjer och avdelare</h4><p class="small">Används sparsamt: 1 px #E2E8F0 i sidfoten och i diagram. Streckad 2 px #B4C5FF för "kommer snart"-element (tidslinjen). Kort avgränsas med skugga, inte med ram.</p></div>
+      <div class="card"><h4>Gradienter</h4><p class="small">Bara två: <b>glöden</b> bakom hero (#EFF6FF → #EAEDFF → transparent, 64 px oskärpa) och <b>CTA-gradienten</b> (#1E40AF → #004AC6 → #2563EB, diagonal). Inga andra gradienter. Inga regnbågar.</p></div>
+      <div class="card"><h4>Responsivt</h4><p class="small">Mobil först. Brytpunkter 640 / 768 / 1024 px (Tailwind). Menyn döljs under 1024 px, där bara knapparna finns kvar. Knappar blir fullbredd under 640 px. Bilder och kort staplas i en kolumn.</p></div>
+    </div>
+    <div class="callout warn mt24"><span class="ms">warning</span><p><b>Lucka:</b> under 1024 px finns ingen meny alls, bara "Logga in" och "Skapa gratis konto". Mobilnavigering (hamburgermeny eller liknande) behöver utformas, se L6.</p></div>
+  </div>
+</section>
+
+<!-- F. KOMPONENTER -->
+<section class="chap card-bg" id="komponenter">
+  <div class="wrap">
+    <div class="eyebrow"><span class="ms">widgets</span>F · Komponentbibliotek</div>
+    <h2 class="ch">Komponenter och tillstånd</h2>
+    <p class="lead">Alla exempel nedan är byggda med sajtens exakta värden. Klasserna anges så att utvecklare kan återskapa dem.</p>
+
+    <h3 class="sub">Knappar</h3>
+    <div class="grid g2 mt16">
+      <div class="card" style="background:var(--bg)">
+        <h4>Varianter <span class="tag t-b">Befintligt</span></h4>
+        <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin:16px 0">
+          <a class="btn btn-p" href="#komponenter">Börja lära dig gratis <span class="ms">arrow_forward</span></a>
+          <a class="btn btn-s" href="#komponenter"><span class="ms">grid_view</span> Utforska kurser</a>
+          <a class="btn btn-text" href="#komponenter">Läs guide <span class="ms">arrow_forward</span></a>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;padding:16px;border-radius:16px;background:linear-gradient(135deg,#1E40AF,#004AC6,#2563EB)">
+          <a class="btn btn-w btn-xl" href="#komponenter">Skapa gratis konto nu <span class="ms">arrow_forward</span></a>
+        </div>
+        <table class="mt16" style="font-size:12.5px">
+          <tbody>
+            <tr><td><strong>Primär</strong></td><td><code>bg-primary-container hover:bg-primary-deep text-on-primary rounded-xl</code></td></tr>
+            <tr><td><strong>Sekundär</strong></td><td><code>bg-surface-card hover:bg-surface-subdued text-text-primary shadow-sm</code></td></tr>
+            <tr><td><strong>Textlänk</strong></td><td><code>text-primary font-label-md hover:underline</code></td></tr>
+            <tr><td><strong>På mörkt</strong></td><td><code>bg-surface-card text-text-primary px-8 py-4 shadow-lg</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="card" style="background:var(--bg)">
+        <h4>Tillstånd</h4>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:16px;margin:16px 0">
+          <div><span class="btn btn-p">Skapa konto</span><div class="cap mt8">Vilande <span class="tag t-b">B</span></div></div>
+          <div><span class="btn btn-p is-hover">Skapa konto</span><div class="cap mt8">Hover: #1E40AF, skala 1,01 <span class="tag t-b">B</span></div></div>
+          <div><span class="btn btn-p is-active">Skapa konto</span><div class="cap mt8">Aktiv: skala 0,99 <span class="tag t-b">B</span></div></div>
+          <div><span class="btn btn-p is-focus">Skapa konto</span><div class="cap mt8">Fokus: 2 px ring #2563EB med 2 px luft <span class="tag t-f">F</span></div></div>
+          <div><span class="btn btn-p is-disabled">Skapa konto</span><div class="cap mt8">Inaktiv: #E2E8F0 / #64748B <span class="tag t-f">F</span></div></div>
+        </div>
+        <h4 class="mt16">Storlekar <span class="tag t-s">Standardiserat</span></h4>
+        <p class="small">Sajten har fyra olika knappstorlekar (px-4 py-2, px-5 py-2, px-6 py-3.5 och px-8 py-4). Framöver gäller tre:</p>
+        <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center">
+          <span class="btn btn-p">Liten · 8/16</span>
+          <span class="btn btn-p btn-l">Mellan · 14/24</span>
+          <span class="btn btn-p btn-xl">Stor · 16/32</span>
+        </div>
+        <p class="small mt16">Liten: sidhuvud och hero. Mellan: i innehåll och paneler. Stor: endast avslutande CTA-banner. Ikon 16–18 px efter texten för "framåt", före texten för kategori.</p>
+      </div>
+    </div>
+
+    <h3 class="sub">Kort och paneler</h3>
+    <div class="grid g3 mt16">
+      <div>
+        <div style="background:#fff;padding:24px;border-radius:16px;box-shadow:var(--sh-card);display:flex;flex-direction:column">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px"><span class="pill p-blue">13 lektioner</span><span class="ms" style="color:var(--ink-3);font-size:24px">query_stats</span></div>
+          <h4>1. Aktier</h4>
+          <p class="small" style="margin-bottom:24px">Från noll till ditt första aktieköp. Förstå bolagsvärdering och vad som driver kursen.</p>
+          <div style="display:flex;justify-content:space-between;align-items:center;background:var(--subdued);margin:0 -24px -24px;padding:14px 24px;border-radius:0 0 16px 16px"><span class="cap">4 quiz · Certifiering</span><span style="font-size:13px;font-weight:600;color:var(--primary-text)">Starta spår <span class="ms" style="font-size:16px">chevron_right</span></span></div>
+        </div>
+        <p class="mt8 small"><b style="color:var(--ink)">Spårkort</b> <span class="tag t-b">Befintligt</span> Badge och ikon upptill, grå fotlist med metadata och åtgärd. Kategorifärgen styr badge och ikonens hovringsfärg.</p>
+      </div>
+      <div>
+        <div style="background:#fff;padding:32px;border-radius:16px;box-shadow:var(--sh-card)">
+          <div style="width:48px;height:48px;border-radius:12px;background:var(--green-tint);color:var(--green-text);font-size:22px;font-weight:600;display:flex;align-items:center;justify-content:center;margin-bottom:24px">2</div>
+          <h4>Korta mikrolektioner</h4>
+          <p class="small">Lär dig på bussen eller mellan lektioner, med visuella grafer och exempel.</p>
+          <div style="display:flex;gap:8px;align-items:center;margin-top:16px" class="cap"><span class="ms" style="color:var(--green);font-size:16px">check_circle</span>Mobilt och responsivt</div>
+        </div>
+        <p class="mt8 small"><b style="color:var(--ink)">Stegkort</b> <span class="tag t-b">Befintligt</span> Numrerad platta 48 px, 12 px radie, blå → grön → bärnsten i ordning.</p>
+      </div>
+      <div>
+        <div style="background:#fff;border-radius:16px;box-shadow:var(--sh-card);overflow:hidden">
+          <div style="height:120px;background:linear-gradient(135deg,#DBE1FF,#ECFDF5);position:relative;display:flex;align-items:center;justify-content:center"><span class="ms" style="font-size:40px;color:var(--primary-soft)">image</span><span style="position:absolute;top:12px;left:12px;background:rgba(255,255,255,.9);padding:4px 10px;border-radius:999px;font-size:12px;font-weight:600;color:var(--primary-text)">1. Aktier</span></div>
+          <div style="padding:24px">
+            <h4>Utdelning – att få betalt för att äga aktier</h4>
+            <div style="display:flex;justify-content:space-between;margin-top:16px" class="cap"><span><span class="ms" style="font-size:14px">schedule</span> 4 min läsning</span><span style="color:var(--primary-text);font-weight:600">Läs guide <span class="ms" style="font-size:14px">arrow_forward</span></span></div>
+          </div>
+        </div>
+        <p class="mt8 small"><b style="color:var(--ink)">Artikelkort</b> <span class="tag t-b">Befintligt</span> Bild 176 px hög, beskärs med <code>object-cover</code> och zoomas 105 % vid hovring. Kategoripill uppe till vänster.</p>
+      </div>
+    </div>
+
+    <div class="grid g2 mt24">
+      <div>
+        <div style="background:var(--primary-tint);border-radius:16px;padding:32px;display:flex;flex-wrap:wrap;gap:20px;align-items:center;justify-content:space-between">
+          <div style="max-width:24rem"><div class="eyebrow" style="margin-bottom:4px">För lärare och skolor</div><h4 style="font-size:22px;line-height:28px">Tar du studenten eller är du lärare?</h4></div>
+          <span class="btn btn-p btn-l">Boka gästföreläsning <span class="ms">arrow_forward</span></span>
+        </div>
+        <p class="mt8 small"><b style="color:var(--ink)">Infopanel</b> <span class="tag t-b">Befintligt</span> Tonad blå yta utan skugga. För målgruppsspecifika uppmaningar.</p>
+      </div>
+      <div>
+        <div style="background:#fff;border-radius:16px;box-shadow:var(--sh-card);padding:20px">
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:12px"><b style="font-size:15px">Är UngEkonom verkligen gratis?</b><span class="ms" style="color:var(--ink-2)">expand_more</span></div>
+          <p class="small" style="margin:12px 0 0">Ja. Alla lektioner, quiz och verktyg är kostnadsfria, utan reklam.</p>
+        </div>
+        <p class="mt8 small"><b style="color:var(--ink)">Dragspel (FAQ)</b> <span class="tag t-b">Befintligt</span> Kort med <code>&lt;details&gt;</code>, 20 px inre luft, pil till höger som roteras när panelen är öppen.</p>
+      </div>
+    </div>
+
+    <h3 class="sub">Badges, eyebrows och notiser</h3>
+    <div class="grid g3 mt16">
+      <div class="card" style="background:var(--bg)">
+        <div style="display:flex;flex-wrap:wrap;gap:8px"><span class="pill p-blue">13 lektioner</span><span class="pill p-green">Specialmodul</span><span class="pill p-amber">5 lektioner</span><span class="pill p-neutral">5 lektioner</span></div>
+        <p class="small mt16"><b style="color:var(--ink)">Pill/badge</b> 12 px halvfet, 4/10 px luft, helt rundad. Blå = standard, grön = tillväxt/special, bärnsten = budget, neutral = övrigt. <span class="tag t-f">Förslag</span> Ersätt den lavendelfärgade neutrala med #F3F4F6 / #475569.</p>
+      </div>
+      <div class="card" style="background:var(--bg)">
+        <div class="eyebrow"><span class="ms">school</span>Kunskapsbank</div>
+        <p class="small mt8"><b style="color:var(--ink)">Eyebrow</b> Versaler, 13 px halvfet, blå #004AC6, valfri ikon 18 px före. Står alltid direkt ovanför en H2. <span class="tag t-s">Standardiserat</span> Spärrning +0,05 em. Idag blandas <code>tracking-wide</code>, <code>tracking-wider</code> och ingen spärrning.</p>
+      </div>
+      <div class="card" style="background:var(--bg)">
+        <div style="display:flex;flex-wrap:wrap;gap:12px">
+          <div style="background:#fff;padding:8px 14px;border-radius:12px;box-shadow:var(--sh-float);display:flex;gap:8px;align-items:center"><span style="width:28px;height:28px;border-radius:8px;background:var(--primary-tint);display:flex;align-items:center;justify-content:center;font-size:12px">⚡</span><span><span class="cap" style="display:block;color:var(--ink-2)">Quiz slutfört</span><b style="font-size:13px">+45 XP tjänade</b></span></div>
+          <div style="background:var(--amber-tint);padding:8px 14px;border-radius:12px;box-shadow:var(--sh-float);display:flex;gap:8px;align-items:center"><span>🔥</span><span><span class="cap" style="display:block;color:var(--amber-strong)">Aktiv svit</span><b style="font-size:13px;color:var(--amber-text)">7 dagars svit</b></span></div>
+        </div>
+        <p class="small mt16"><b style="color:var(--ink)">Flytande notis</b> Gamification. Bara i produktbilder och i appen, aldrig i löptext.</p>
+      </div>
+    </div>
+
+    <h3 class="sub">Formulär</h3>
+    <div class="grid g2 mt16">
+      <div class="card" style="background:var(--bg)">
+        <div style="display:grid;gap:16px">
+          <label style="display:grid;gap:6px"><span style="font-size:13px;font-weight:600">E-post</span><input id="demo-email" type="email" placeholder="namn@exempel.se" style="font:inherit;font-size:15px;padding:12px 16px;border-radius:12px;border:1px solid var(--border);background:#fff;color:var(--ink);outline:none" onfocus="this.style.boxShadow='0 0 0 2px #2563EB'" onblur="this.style.boxShadow='none'"></label>
+          <label style="display:grid;gap:6px"><span style="font-size:13px;font-weight:600">Meddelande</span><textarea id="demo-msg" rows="3" style="font:inherit;font-size:15px;padding:12px 16px;border-radius:12px;border:1px solid var(--border);background:#fff;color:var(--ink);outline:none;resize:none" onfocus="this.style.boxShadow='0 0 0 2px #2563EB'" onblur="this.style.boxShadow='none'">Hej! Vi vill boka en gästföreläsning.</textarea></label>
+          <label style="display:grid;gap:6px"><span style="font-size:13px;font-weight:600">Lösenord</span><input id="demo-pw" type="password" value="abc" style="font:inherit;font-size:15px;padding:12px 16px;border-radius:12px;border:1px solid var(--danger);background:#fff;color:var(--ink);outline:none"><span style="font-size:12px;font-weight:500;color:var(--danger);display:flex;gap:4px;align-items:center"><span class="ms" style="font-size:16px">error</span>Lösenordet måste ha minst 8 tecken.</span></label>
+        </div>
+        <p class="small mt16"><span class="tag t-s">Standardiserat</span> Ett fältformat: vit bakgrund, 1 px #E2E8F0, 12 px radie, 12/16 px inre luft, etikett ovanför i 13 px halvfet #0F172A. Fokus: 2 px ring #2563EB. Fel: röd ram och meddelande med ikon under fältet.</p>
+      </div>
+      <div class="card">
+        <h4>Inkonsekvens idag</h4>
+        <div class="tbl-wrap" style="box-shadow:none">
+          <table>
+            <thead><tr><th></th><th>kontakt.html</th><th>auth.html</th></tr></thead>
+            <tbody>
+              <tr><td><strong>Bakgrund</strong></td><td>#F3F4F6</td><td>#F3F4F6 50 %</td></tr>
+              <tr><td><strong>Ram</strong></td><td>ingen</td><td>1 px #E2E8F0</td></tr>
+              <tr><td><strong>Luft</strong></td><td>10/12 px</td><td>12/16 px</td></tr>
+              <tr><td><strong>Etikettfärg</strong></td><td>#0F172A</td><td>#475569</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="small mt16">Felläge och hjälptext saknas helt. Reglaget i ränta på ränta-verktyget använder webbläsarens standardreglage färgat med <code>accent-color: #2563EB</code>.</p>
+      </div>
+    </div>
+
+    <h3 class="sub">Navigering, sidhuvud och sidfot</h3>
+    <div class="card mt16" style="padding:0;overflow:hidden">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;padding:16px 24px;background:rgba(255,255,255,.9);box-shadow:var(--sh-header);flex-wrap:wrap">
+        <span data-logo="color" data-h="28"></span>
+        <span style="display:flex;gap:20px;font-size:13px;font-weight:600;color:var(--on-surface-var);flex-wrap:wrap"><span>Ämnen och kurser</span><span>Hur det fungerar</span><span>Artiklar</span><span style="color:var(--primary-deep)">Om oss</span></span>
+        <span style="display:flex;gap:12px;align-items:center"><span style="font-size:13px;font-weight:600;color:var(--ink-2)">Logga in</span><span class="btn btn-p btn-sm-header">Skapa gratis konto</span></span>
+      </div>
+      <div style="padding:24px;display:grid;gap:8px" class="small">
+        <div><b style="color:var(--ink)">Sidhuvud</b> <span class="tag t-b">Befintligt</span> Fast, 80 px högt, vitt 90 % med oskärpa. Logotyp till vänster, meny i mitten (13 px halvfet #434655, aktiv sida #1E40AF), "Logga in" som textknapp och "Skapa gratis konto" som primärknapp till höger.</div>
+        <div><b style="color:var(--ink)">Sidfot</b> <span class="tag t-b">Befintligt</span> Vit, 1 px kantlinje upptill. Logotyp och beskrivning till vänster, tre kolumner med rubriker i versaler. Nederst: ansvarsfriskrivning och "© 2026 UngEkonom".</div>
+        <div><span class="tag t-f">Förslag</span> Byt menyfärgen #434655 (Material) mot #475569 så att den stämmer med övrig sekundär text.</div>
+      </div>
+    </div>
+
+    <h3 class="sub">Saknas idag</h3>
+    <div class="grid g3 mt16">
+      <div class="card"><h4>Tabeller <span class="tag t-f">Förslag</span></h4><p class="small">Rubrikrad i #F3F4F6 med 12 px versaler, celler 12/16 px, 1 px #E2E8F0 mellan rader, siffror högerställda med tabellsiffror. Tabellerna i denna manual följer förslaget.</p></div>
+      <div class="card"><h4>Dialoger och menyer <span class="tag t-f">Förslag</span></h4><p class="small">Vitt kort med 16 px radie, skuggan <i>feature</i>, bakgrund #131B2E 35 % (finns redan som <code>bg-on-surface/35</code>). Primär åtgärd till höger.</p></div>
+      <div class="card"><h4>Informationsrutor <span class="tag t-f">Förslag</span></h4><p class="small">Tonad yta, ikon och text, 12 px radie. Info blå, framgång grön, varning bärnsten, fel röd. Se exempel i kapitel E och L.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- G. BILDSPRÅK -->
+<section class="chap" id="bildsprak">
+  <div class="wrap">
+    <div class="eyebrow"><span class="ms">photo_library</span>G · Bildspråk och grafiska tillgångar</div>
+    <h2 class="ch">Bildspråk</h2>
+    <div class="grid g2 mt24">
+      <div class="card">
+        <h4>Fotografi</h4>
+        <p class="small"><span class="tag t-b">Befintligt</span> Artikelkorten använder tre AI-genererade platshållarbilder från Stitch (beskrivna som "Scandinavian wooden desk…", "Nordic digital banking screen…", "two young Scandinavian university students…"). De hämtas från Googles servrar och kan försvinna. Heroområdet visar en egen pitchvideo med miniatyrbild.</p>
+        <p class="small"><span class="tag t-f">Förslag</span> <b>Riktning:</b> ljusa, naturliga miljöer i Sverige, riktiga unga 16–25 år, dagsljus, mobil och dator i användning, gärna med blå eller gröna detaljer. Beskär tätt, motivet i centrum, 16:9 eller 4:3.</p>
+        <ul class="check no mt16">
+          <li><span class="ms">cancel</span>Stockfoton med kostymer, sedelbuntar eller guldtackor</li>
+          <li><span class="ms">cancel</span>Kraftiga filter, mörka eller mättade bilder</li>
+          <li><span class="ms">cancel</span>AI-bilder som föreställer verkliga elever eller skolor</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h4>Ikoner</h4>
+        <p class="small"><span class="tag t-b">Befintligt</span> <b>Material Symbols Outlined</b> (Google), lokalt hostad, vikt 400, utan fyllning. Storlekar: 14–16 px i text och knappar, 18 px i eyebrows, 20–24 px i kort, 28–32 px i ikonplattor.</p>
+        <div style="display:flex;flex-wrap:wrap;gap:10px;margin:12px 0">
+          <span style="width:44px;height:44px;border-radius:12px;background:var(--primary-tint);color:var(--primary-text);display:flex;align-items:center;justify-content:center"><span class="ms">school</span></span>
+          <span style="width:44px;height:44px;border-radius:12px;background:var(--green-tint);color:var(--green-text);display:flex;align-items:center;justify-content:center"><span class="ms">trending_up</span></span>
+          <span style="width:44px;height:44px;border-radius:12px;background:var(--amber-tint);color:var(--amber-text);display:flex;align-items:center;justify-content:center"><span class="ms">account_balance_wallet</span></span>
+          <span style="width:44px;height:44px;border-radius:12px;background:var(--subdued);color:var(--ink-2);display:flex;align-items:center;justify-content:center"><span class="ms">pie_chart</span></span>
+          <span style="width:44px;height:44px;border-radius:12px;background:var(--primary-tint);color:var(--primary-text);display:flex;align-items:center;justify-content:center"><span class="ms">savings</span></span>
+          <span style="width:44px;height:44px;border-radius:12px;background:var(--subdued);color:var(--ink-2);display:flex;align-items:center;justify-content:center"><span class="ms">schedule</span></span>
+        </div>
+        <p class="small">Ikoner står i en tonad platta med 12 px radie i samma färgfamilj, eller fritt i text. En ikon ersätter aldrig text i navigering och knappar. Undantag: universella kontroller (spela, volym, stäng) som då har <code>aria-label</code>.</p>
+      </div>
+    </div>
+    <div class="grid g3 mt24">
+      <div class="card">
+        <h4>Diagram</h4>
+        <svg viewBox="0 0 320 110" width="100%" aria-label="Exempel på diagram">
+          <line x1="0" y1="99" x2="320" y2="99" stroke="#E2E8F0"/><line x1="0" y1="50" x2="320" y2="50" stroke="#E2E8F0" stroke-dasharray="3 3"/>
+          <path d="M0 99 L80 88 L160 76 L240 64 L320 52 L320 99 Z" fill="#E2E8F0" opacity=".6"/>
+          <defs><linearGradient id="bg1" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#2563EB"/><stop offset="1" stop-color="#2563EB" stop-opacity="0"/></linearGradient></defs>
+          <path d="M0 99 C80 94,160 75,240 45 C280 30,300 15,316 7 L316 99 L0 99Z" fill="url(#bg1)" opacity=".15"/>
+          <path d="M0 99 C80 94,160 75,240 45 C280 30,300 15,316 7" stroke="#2563EB" stroke-width="3.5" stroke-linecap="round" fill="none"/>
+          <circle cx="316" cy="7" r="5" fill="#2563EB"/>
+        </svg>
+        <p class="small mt8"><span class="tag t-b">Befintligt</span> Huvudserie i #2563EB, 3,5 px, rundade ändar, ljus gradient under och en markerad slutpunkt. Jämförelseserie som grå yta. Rutnät 1 px #E2E8F0, streckat för hjälplinjer. Ordning för fler serier: blått, grönt #10B981, bärnsten #D97706, #94A3B8.</p>
+      </div>
+      <div class="card">
+        <h4>Emoji</h4>
+        <p style="font-size:26px;line-height:1.5;letter-spacing:4px;margin:8px 0;word-break:break-all">💰 📈 🤓 🏆 🔥 💳 🪙 📊 💹 🚀</p>
+        <p class="small"><span class="tag t-b">Befintligt</span> Hero-rubriken växlar mellan dessa tio emoji var 3,2 sekund med en studsande animation. ⚡ och 🔥 finns i notiser. ♥ står i sidfoten.</p>
+        <p class="small"><span class="tag t-s">Standardiserat</span> Emoji är en krydda för den unga målgruppen. Tillåtna: i hero-detaljen, i gamification och i sociala medier. Inte i rubriker, brödtext, knappar, dokument eller material till skolor och partner.</p>
+      </div>
+      <div class="card">
+        <h4>Dekorativa element</h4>
+        <ul class="clean">
+          <li><b>Glöd:</b> mjuk blå oskärpa bakom hero.</li>
+          <li><b>Hörnkvarts:</b> en grön kvartscirkel (10 %) i hörnet på framhävda kort.</li>
+          <li><b>Ljusfläckar:</b> vita och gröna oskarpa cirklar i CTA-bannern.</li>
+          <li><b>Streckad ram:</b> för "kommer snart"-innehåll.</li>
+        </ul>
+        <p class="small"><span class="tag t-f">Förslag</span> Ett mönster från symbolens stigande linje (upprepad, 6 % opacitet) för omslag och sociala medier.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- H. TILLÄMPNINGAR -->
+<section class="chap card-bg" id="tillampningar">
+  <div class="wrap">
+    <div class="eyebrow"><span class="ms">devices</span>H · Tillämpningar och mallar</div>
+    <h2 class="ch">Samma identitet i alla format</h2>
+    <p class="lead">Mallarna nedan är förslag som bygger på sajtens regler. <span class="tag t-f">Förslag</span> Grundreglerna är desamma överallt: ljus bakgrund, ett blått, Plus Jakarta Sans och rundade former. Anpassningen gäller storlekar och täthet.</p>
+
+    <h3 class="sub">Presentationer (16:9)</h3>
+    <div class="grid g2 mt16">
+      <div>
+        <div style="aspect-ratio:16/9;max-width:100%;border-radius:12px;overflow:hidden;position:relative;background:linear-gradient(135deg,#1E40AF,#004AC6,#2563EB);box-shadow:var(--sh-float);padding:6% 7%;display:flex;flex-direction:column;justify-content:space-between;color:#fff">
+          <div style="position:absolute;right:-10%;top:-20%;width:45%;aspect-ratio:1;border-radius:50%;background:rgba(255,255,255,.1);filter:blur(24px)"></div>
+          <span data-logo="white" data-h="26"></span>
+          <div><div style="font-size:clamp(9px,1.4vw,12px);font-weight:600;letter-spacing:.05em;color:#B4C5FF;text-transform:uppercase">Gästföreläsning · Gymnasiet</div><div style="font-size:clamp(16px,3vw,28px);line-height:1.15;font-weight:600;letter-spacing:-.025em;margin-top:6px">Ränta på ränta – din bästa vän</div></div>
+          <div style="font-size:clamp(8px,1.1vw,11px);color:#DBE1FF">13 oktober 2026 · UngEkonom</div>
+        </div>
+        <p class="small mt8"><b style="color:var(--ink)">Titelbild:</b> CTA-gradienten, negativ logotyp uppe till vänster, eyebrow och rubrik nere till vänster.</p>
+      </div>
+      <div>
+        <div style="aspect-ratio:16/9;max-width:100%;border-radius:12px;overflow:hidden;background:#F9FAFB;box-shadow:var(--sh-float);padding:5% 6%;display:flex;flex-direction:column;gap:5%">
+          <div><div style="font-size:clamp(8px,1.1vw,11px);font-weight:600;letter-spacing:.05em;color:#004AC6;text-transform:uppercase">Steg 2 av 3</div><div style="font-size:clamp(13px,2.2vw,20px);font-weight:600;letter-spacing:-.025em;color:#0F172A;margin-top:4px">Börja tidigt – låt tiden jobba</div></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4%;flex:1">
+            <div style="background:#fff;border-radius:10px;box-shadow:var(--sh-card);padding:8%"><div style="font-size:clamp(12px,2.2vw,20px);font-weight:700;color:#0F172A" class="num">500 kr</div><div style="font-size:clamp(7px,.9vw,10px);color:#475569">per månad</div></div>
+            <div style="background:#fff;border-radius:10px;box-shadow:var(--sh-card);padding:8%"><div style="font-size:clamp(12px,2.2vw,20px);font-weight:700;color:#0F172A" class="num">30 år</div><div style="font-size:clamp(7px,.9vw,10px);color:#475569">sparhorisont</div></div>
+            <div style="background:#ECFDF5;border-radius:10px;padding:8%"><div style="font-size:clamp(12px,2.2vw,20px);font-weight:700;color:#006C4A" class="num">≈ 610 000 kr</div><div style="font-size:clamp(7px,.9vw,10px);color:#006C4A">vid 7 % per år</div></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center"><span data-logo="symbol" data-h="14"></span><span style="font-size:clamp(7px,.9vw,10px);color:#64748B">Utbildning, inte finansiell rådgivning · 4</span></div>
+        </div>
+        <p class="small mt8"><b style="color:var(--ink)">Innehållsbild:</b> ljus bakgrund, eyebrow och H2 uppe till vänster, max tre kort per bild, symbol och sidnummer i sidfoten.</p>
+      </div>
+    </div>
+    <div class="tbl-wrap mt16">
+      <table>
+        <thead><tr><th>Element</th><th>PowerPoint/Keynote</th><th>Word/rapport (A4)</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Typsnitt</strong></td><td>Plus Jakarta Sans, reserv Arial</td><td>Plus Jakarta Sans, reserv Arial</td></tr>
+          <tr><td><strong>Rubrik 1</strong></td><td class="num">40 pt halvfet, −2 % spärrning</td><td class="num">24 pt halvfet</td></tr>
+          <tr><td><strong>Rubrik 2</strong></td><td class="num">28 pt halvfet</td><td class="num">16 pt halvfet</td></tr>
+          <tr><td><strong>Brödtext</strong></td><td class="num">18–20 pt, #475569</td><td class="num">10 pt, radavstånd 1,4, #0F172A</td></tr>
+          <tr><td><strong>Eyebrow</strong></td><td class="num">12 pt versaler, #004AC6</td><td class="num">8 pt versaler, #004AC6</td></tr>
+          <tr><td><strong>Marginaler</strong></td><td>6 % av bildbredden</td><td class="num">25 mm sidor, 20 mm topp/botten</td></tr>
+          <tr><td><strong>Logotyp</strong></td><td>Titelbild: hel. Övriga: symbol nere till vänster.</td><td>Försättsblad: hel, 40 mm bred. Sidhuvud: kortversion 25 mm.</td></tr>
+          <tr><td><strong>Färgbakgrund</strong></td><td>Titel- och avslutningsbild får gradient, övriga ljusa</td><td>Endast vitt. Faktarutor i #EFF6FF.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 class="sub">Dokument, sociala medier och webb</h3>
+    <div class="grid g3 mt16">
+      <div>
+        <div style="aspect-ratio:210/297;max-width:100%;background:#fff;border-radius:6px;box-shadow:var(--sh-float);padding:12% 11%;display:flex;flex-direction:column;gap:5%">
+          <div style="display:flex;justify-content:space-between;align-items:center"><span data-logo="nottag" data-h="16"></span><span style="font-size:8px;color:#64748B">Rapport · 2026</span></div>
+          <div style="margin-top:8%"><div style="font-size:7px;font-weight:600;letter-spacing:.05em;color:#004AC6;text-transform:uppercase">Pilotutvärdering</div><div style="font-size:17px;line-height:1.15;font-weight:600;letter-spacing:-.025em;color:#0F172A;margin-top:4px">Privatekonomi i gymnasiet – höstterminen 2026</div></div>
+          <div style="display:grid;gap:4px"><div style="height:4px;background:#E2E8F0;border-radius:2px"></div><div style="height:4px;background:#E2E8F0;border-radius:2px;width:92%"></div><div style="height:4px;background:#E2E8F0;border-radius:2px;width:96%"></div><div style="height:4px;background:#E2E8F0;border-radius:2px;width:70%"></div></div>
+          <div style="background:#EFF6FF;border-radius:6px;padding:6%;font-size:7px;color:#004AC6;font-weight:600">Faktaruta · 70+ elever i piloten</div>
+          <div style="display:grid;gap:4px"><div style="height:4px;background:#E2E8F0;border-radius:2px"></div><div style="height:4px;background:#E2E8F0;border-radius:2px;width:85%"></div></div>
+          <div style="margin-top:auto;display:flex;justify-content:space-between;font-size:6.5px;color:#64748B;border-top:1px solid #E2E8F0;padding-top:4%"><span>UngEkonom · hej@ungekonom.se</span><span>1</span></div>
+        </div>
+        <p class="small mt8"><b style="color:var(--ink)">Rapport / internt dokument:</b> vit sida, kortversion av logotypen i sidhuvudet, faktarutor i ljusblått, sidfot med kontakt och sidnummer.</p>
+      </div>
+      <div>
+        <div style="aspect-ratio:1;max-width:100%;border-radius:12px;overflow:hidden;background:#F9FAFB;box-shadow:var(--sh-float);padding:9%;display:flex;flex-direction:column;justify-content:space-between;position:relative">
+          <div style="position:absolute;top:-30%;left:10%;width:80%;height:60%;background:linear-gradient(#EFF6FF,#EAEDFF,transparent);filter:blur(20px);border-radius:50%"></div>
+          <span class="pill p-green" style="position:relative;align-self:flex-start">Visste du?</span>
+          <div style="position:relative"><div style="font-size:clamp(28px,6vw,46px);font-weight:700;letter-spacing:-.03em;color:#0F172A;line-height:1" class="num">50/30/20</div><div style="font-size:clamp(12px,1.6vw,15px);font-weight:600;color:#475569;margin-top:8px">Den enklaste budgetregeln för dig som pluggar</div></div>
+          <div style="display:flex;justify-content:space-between;align-items:center;position:relative"><span data-logo="nottag" data-h="18"></span><span style="font-size:11px;font-weight:600;color:#004AC6">ungekonom.se</span></div>
+        </div>
+        <p class="small mt8"><b style="color:var(--ink)">Inlägg 1:1:</b> en siffra eller ett påstående, glöden upptill, kategoripill, kortversion av logotypen nederst. Emoji får förekomma i bildtexten, inte i grafiken.</p>
+      </div>
+      <div>
+        <div style="aspect-ratio:9/16;max-width:62%;margin:0 auto;border-radius:16px;overflow:hidden;background:linear-gradient(160deg,#1E40AF,#004AC6 55%,#2563EB);box-shadow:var(--sh-float);padding:12% 9%;display:flex;flex-direction:column;justify-content:space-between;color:#fff">
+          <span data-logo="white" data-h="18"></span>
+          <div><div style="font-size:9px;font-weight:600;letter-spacing:.05em;color:#B4C5FF;text-transform:uppercase">Ny lektion</div><div style="font-size:19px;line-height:1.15;font-weight:600;letter-spacing:-.025em;margin-top:6px">Vad är en indexfond?</div><div style="font-size:10px;color:#DBE1FF;margin-top:6px">5 min · gratis</div></div>
+          <span style="align-self:center;background:#fff;color:#0F172A;font-size:10px;font-weight:600;padding:8px 14px;border-radius:10px">Börja lära dig gratis</span>
+        </div>
+        <p class="small mt8"><b style="color:var(--ink)">Story 9:16:</b> gradient, negativ logotyp, en uppmaning. Håll 250 px fritt upptill och nedtill för appens gränssnitt.</p>
+      </div>
+    </div>
+
+    <div class="grid g2 mt24">
+      <div class="card" style="background:var(--bg)">
+        <h4>Webbplatser och landningssidor</h4>
+        <ul class="clean">
+          <li>Utgå från ordningen på startsidan: hero → bevis (siffror) → innehåll i kort → hur det fungerar → målgruppspanel → avslutande CTA.</li>
+          <li>Undersidor: eyebrow i versaler, H1 i <code>display-xl</code>, ingress på max 2 rader, därefter kort.</li>
+          <li>En primärknapp per vy. Övriga åtgärder är sekundära eller textlänkar.</li>
+          <li>Använd sidhuvud och sidfot oförändrade. <code>ge-en-gava.html</code> följer inte detta idag (L4).</li>
+        </ul>
+      </div>
+      <div class="card" style="background:var(--bg)">
+        <h4>Marknadsföring och framtida produkter</h4>
+        <ul class="clean">
+          <li><b>Affisch och flyer:</b> vit eller ljusgrå bakgrund, en stor rubrik, en siffra, en QR-kod i ett vitt kort med 16 px radie. Logotyp nere till vänster.</li>
+          <li><b>App och plattform:</b> samma tokens. Gamification (XP, svit, diplom) får använda bärnsten och emoji mer fritt än webben.</li>
+          <li><b>Mörkt läge:</b> finns inte. Det ska utformas innan appen lanseras (L9).</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- I. REGLER -->
+<section class="chap" id="regler">
+  <div class="wrap">
+    <div class="eyebrow"><span class="ms">rule</span>I · Riktlinjer för konsekvent användning</div>
+    <h2 class="ch">Vad som alltid gäller – och vad som får variera</h2>
+    <div class="grid g3 mt24">
+      <div class="card" style="box-shadow:inset 0 3px 0 var(--primary),var(--sh-card)">
+        <h4>Obligatoriskt</h4>
+        <ul class="check">
+          <li><span class="ms" style="color:var(--primary-text)">lock</span>Logotypen i originalform, någon av de godkända versionerna, med frizon.</li>
+          <li><span class="ms" style="color:var(--primary-text)">lock</span>Plus Jakarta Sans (reserv Arial). Inga andra typsnitt.</li>
+          <li><span class="ms" style="color:var(--primary-text)">lock</span>Färger endast från paletten i kapitel C.</li>
+          <li><span class="ms" style="color:var(--primary-text)">lock</span>Text minst 4,5:1 i kontrast.</li>
+          <li><span class="ms" style="color:var(--primary-text)">lock</span>Varumärket skrivs alltid <b>UngEkonom</b>.</li>
+          <li><span class="ms" style="color:var(--primary-text)">lock</span>"Utbildning, inte finansiell rådgivning" på allt innehåll om pengar.</li>
+        </ul>
+      </div>
+      <div class="card" style="box-shadow:inset 0 3px 0 var(--green),var(--sh-card)">
+        <h4>Rekommenderat</h4>
+        <ul class="check">
+          <li><span class="ms">thumb_up</span>Börja varje sektion med eyebrow, rubrik och ingress.</li>
+          <li><span class="ms">thumb_up</span>En primärknapp per vy eller bild.</li>
+          <li><span class="ms">thumb_up</span>Lyft fram en siffra hellre än en lång mening.</li>
+          <li><span class="ms">thumb_up</span>Använd tokens och klasser, inte HEX direkt i koden.</li>
+          <li><span class="ms">thumb_up</span>Använd 4 px-skalan för alla avstånd.</li>
+        </ul>
+      </div>
+      <div class="card" style="box-shadow:inset 0 3px 0 var(--amber-icon),var(--sh-card)">
+        <h4>Tillåtna variationer</h4>
+        <ul class="check">
+          <li><span class="ms" style="color:var(--amber-text)">tune</span>Kategorifärg (blå, grön, bärnsten) per ämne eller spår.</li>
+          <li><span class="ms" style="color:var(--amber-text)">tune</span>Gradientbakgrund på titelbilder, CTA och stories.</li>
+          <li><span class="ms" style="color:var(--amber-text)">tune</span>Emoji och gamification i appen och i sociala medier.</li>
+          <li><span class="ms" style="color:var(--amber-text)">tune</span>Centrerad layout i hero och CTA, vänsterställd i övrigt.</li>
+        </ul>
+      </div>
+    </div>
+
+    <h3 class="sub">Vanliga misstag</h3>
+    <div class="grid g4 mt16">
+      <div class="dd ok"><div class="stage"><span class="btn btn-p">Skapa gratis konto</span></div><div class="lbl"><span class="ms">check_circle</span>En tydlig primärknapp med verb först.</div></div>
+      <div class="dd no"><div class="stage"><span class="btn btn-p">Klicka här</span><span class="btn btn-p" style="background:#10B981">Läs mer</span><span class="btn btn-p" style="background:#D97706">OK</span></div><div class="lbl"><span class="ms">cancel</span>Flera primärknappar i olika färger, vaga texter.</div></div>
+      <div class="dd ok"><div class="stage" style="flex-direction:column;align-items:flex-start"><span style="font-size:12px;font-weight:500;color:#64748B">5 min läsning</span><span style="font-size:13px;font-weight:600;color:#006C4A">+233 933 kr</span></div><div class="lbl"><span class="ms">check_circle</span>Liten text i #64748B, grön text i #006C4A.</div></div>
+      <div class="dd no"><div class="stage" style="flex-direction:column;align-items:flex-start"><span style="font-size:12px;font-weight:500;color:#94A3B8">5 min läsning</span><span style="font-size:13px;font-weight:600;color:#10B981">+233 933 kr</span></div><div class="lbl"><span class="ms">cancel</span>Ljusgrå och ljusgrön text. Går inte att läsa.</div></div>
+      <div class="dd ok"><div class="stage"><div style="background:#fff;border-radius:16px;box-shadow:var(--sh-card);padding:16px 20px;font-weight:600">Kort med 16 px radie</div></div><div class="lbl"><span class="ms">check_circle</span>Mjuk skugga, ingen ram.</div></div>
+      <div class="dd no"><div class="stage"><div style="background:#fff;border-radius:2px;border:2px solid #0F172A;box-shadow:6px 6px 0 #2563EB;padding:16px 20px;font-weight:600">Kort med hård ram</div></div><div class="lbl"><span class="ms">cancel</span>Skarpa hörn, tjocka ramar, hårda skuggor.</div></div>
+      <div class="dd ok"><div class="stage"><span style="font-weight:600;font-size:16px">Fonder och indexfonder</span></div><div class="lbl"><span class="ms">check_circle</span>Svensk meningsversal.</div></div>
+      <div class="dd no"><div class="stage"><span style="font-weight:600;font-size:16px;font-family:Georgia,serif">Fonder &amp; Indexfonder!</span></div><div class="lbl"><span class="ms">cancel</span>Fel typsnitt, engelsk versalering, utropstecken.</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- J. SKRIVREGLER -->
+<section class="chap card-bg" id="skrivregler">
+  <div class="wrap">
+    <div class="eyebrow"><span class="ms">edit_note</span>J · Skrivregler, symboler och förkortningar</div>
+    <h2 class="ch">Skrivstandard</h2>
+    <p class="lead">Grunden är Språkrådets <i>Svenska skrivregler</i>. Allt under "Observerat" är hämtat ur texten på de elva publicerade sidorna. Där sajten avviker från svensk standard anges det, tillsammans med beslutet.</p>
+
+    <div class="card mt24" style="background:var(--primary-tint);box-shadow:none">
+      <h4>Kortversion – de tio viktigaste reglerna</h4>
+      <ol class="clean" style="columns:2 280px;column-gap:32px;color:var(--on-surface)">
+        <li>Skriv alltid <b>UngEkonom</b>, med versalt U och E.</li>
+        <li>Meningsversal överallt: <i>Fonder och indexfonder</i>, inte <i>Fonder &amp; Indexfonder</i>.</li>
+        <li>Ingen punkt i rubriker, knappar, menyer eller badges.</li>
+        <li>Tankstreck (–) med mellanslag för paus. Utan mellanslag i intervall: <i>16–25 år</i>.</li>
+        <li>Siffror: <i>1 500 kr</i>, <i>7,5 %</i>, <i>13 oktober 2026</i>, <i>kl. 14.30</i>.</li>
+        <li>&amp; bara i rubriker, menyer och etiketter. I löptext skriver du <i>och</i>.</li>
+        <li>Knappar börjar med ett verb: <i>Skapa gratis konto</i>, aldrig <i>Klicka här</i>.</li>
+        <li>Du-tilltal, korta meningar, högst ett utropstecken per vy.</li>
+        <li>Svenska ord före engelska: <i>ämnen</i>, inte <i>curriculum</i>.</li>
+        <li>Emoji bara i hero-detaljen, gamification och sociala medier.</li>
+      </ol>
+    </div>
+
+    <h3 class="sub">A. Symboler och specialtecken</h3>
+    <div class="tbl-wrap mt16">
+      <table>
+        <thead><tr><th>Tecken</th><th>Observerat</th><th>Regel</th><th>Mellanslag</th><th>Var</th><th>Rätt</th><th>Fel</th></tr></thead>
+        <tbody>
+          <tr><td class="nowrap"><strong>&amp;</strong> et-tecken</td><td>44 ggr: meny, kort- och sektionsrubriker, sidfot</td><td>Tillåtet för att korta rubriker, menyer, etiketter och sektionsnamn. I löptext: "och". <span class="tag t-s">S</span></td><td>Före och efter</td><td>Rubrik, meny, etikett</td><td>Frågor &amp; svar</td><td>Lär dig om fonder &amp; risk i lektionen.</td></tr>
+          <tr><td class="nowrap"><strong>+</strong> plus</td><td>"70+", "33+", "+45 XP" – men "+70" på Om oss</td><td>Efter talet för "fler än". Före talet för ökning. Aldrig istället för "och". <span class="tag t-s">S</span></td><td>Inget mellan tal och tecken</td><td>Statistik, gamification</td><td>70+ elever · +45 XP</td><td>+70 elever · Aktier + fonder</td></tr>
+          <tr><td class="nowrap"><strong>−</strong> minus</td><td>Inte observerat</td><td>Använd minustecken (U+2212), inte bindestreck. <span class="tag t-f">F</span></td><td>Inget mellan tecken och tal</td><td>Belopp, procent</td><td>−1 200 kr</td><td>-1200kr</td></tr>
+          <tr><td class="nowrap"><strong>/</strong> snedstreck</td><td>"kr/mån", "UX/UI", "P/E-tal", "50/30/20"</td><td>För "per" och par av korta led. Med flerordsled: skriv ut. <span class="tag t-b">B</span></td><td>Inga</td><td>Överallt</td><td>1 500 kr/mån</td><td>1 500 kr / mån</td></tr>
+          <tr><td class="nowrap"><strong>-</strong> bindestreck</td><td>"E-post", "P/E-tal" – men även "3-5 minuters", "ränta-på-ränta effekten", "fintech-bolag"</td><td>Endast i sammansättningar med förkortning, siffra eller sammanbindning: "e-post", "P/E-tal", "ränta på ränta-effekten". Aldrig i intervall. <span class="tag t-s">S</span></td><td>Inga</td><td>Överallt</td><td>fintechbolag · 3–5 minuter</td><td>fintech-bolag · 3-5 minuter</td></tr>
+          <tr><td class="nowrap"><strong>–</strong> tankstreck</td><td>29 ggr, korrekt med mellanslag; "16–25 år" korrekt</td><td>Med mellanslag: paus, inskott, i sidtitlar. Utan mellanslag: intervall (tal, datum, tid). <span class="tag t-b">B</span></td><td>Se regel</td><td>Överallt</td><td>Byggd för unga – inte läroböcker · 16–25 år</td><td>16 – 25 år</td></tr>
+          <tr><td class="nowrap"><strong>—</strong> långt tankstreck</td><td>Förekommer inte</td><td>Används inte. Det är engelsk typografi. <span class="tag t-s">S</span></td><td>–</td><td>Ingenstans</td><td>pengar – och tid</td><td>pengar—och tid</td></tr>
+          <tr><td class="nowrap"><strong>·</strong> mittpunkt</td><td>17 ggr: förtroenderad, metadata, sidfot</td><td>Avgränsare mellan korta metadata på samma rad. Inte i löptext. <span class="tag t-b">B</span></td><td>Före och efter</td><td>Metadata, sidfot, bildtext</td><td>4 quiz · Certifiering</td><td>4 quiz, · Certifiering</td></tr>
+          <tr><td class="nowrap"><strong>”…”</strong> citattecken</td><td>Svenska ” ” i Frågor &amp; svar</td><td>Svenska citattecken, samma tecken (U+201D) på båda sidor. Halva ’ ’ för citat i citat. <span class="tag t-b">B</span></td><td>Inget innanför</td><td>Löptext</td><td>Svaret är ”ja”.</td><td>Svaret är "ja" / “ja”</td></tr>
+          <tr><td class="nowrap"><strong>’</strong> apostrof</td><td>Inte observerat; genitiv "UngEkonoms" korrekt</td><td>Typografisk apostrof (U+2019). Aldrig i svensk genitiv. <span class="tag t-s">S</span></td><td>–</td><td>Sällan</td><td>UngEkonoms lektioner</td><td>UngEkonom's lektioner</td></tr>
+          <tr><td class="nowrap"><strong>( ) [ ]</strong></td><td>"(7% snitt)"</td><td>Vanliga parenteser för förtydliganden. Hakparenteser bara för inskott i citat. <span class="tag t-b">B</span></td><td>Utanför, inte innanför</td><td>Löptext, etiketter</td><td>(7 % i snitt)</td><td>( 7% snitt )</td></tr>
+          <tr><td class="nowrap"><strong>: ;</strong></td><td>Kolon i ingresser och FAQ</td><td>Inget mellanslag före. Semikolon undviks i UI-text: dela upp meningen. <span class="tag t-s">S</span></td><td>Bara efter</td><td>Löptext</td><td>Så här: välj ett spår.</td><td>Så här : välj ett spår</td></tr>
+          <tr><td class="nowrap"><strong>.</strong> punkt</td><td>Punkt i H2 "…redan idag." men inte i övriga rubriker</td><td>Punkt i hela meningar i löptext och bildtext. Aldrig i rubriker, knappar, badges eller menyer. <span class="tag t-s">S</span></td><td>–</td><td>Löptext</td><td>Bli en bättre UngEkonom – redan i dag</td><td>…redan idag.</td></tr>
+          <tr><td class="nowrap"><strong>…</strong> ellips</td><td>"Våra små men stora steg…", "Fortsättning följer…"</td><td>Ett tecken (U+2026), direkt efter ordet vid avbrott. Undvik i rubriker. <span class="tag t-s">S</span></td><td>Inget före vid avbrott</td><td>Etiketter, löptext</td><td>Fortsättning följer…</td><td>Fortsättning följer...</td></tr>
+          <tr><td class="nowrap"><strong>! ?</strong></td><td>"Ja!", "Nej!", "Absolut!", "hör av dig!"</td><td>Frågor är tillåtna i rubriker (FAQ, CTA). Högst ett utropstecken per vy, inte i svar på frågor. <span class="tag t-s">S</span></td><td>Inget före</td><td>Rubriker, CTA</td><td>Redo att köra?</td><td>Ja! Absolut!</td></tr>
+          <tr><td class="nowrap"><strong>©</strong></td><td>"© 2026 UngEkonom" i sidfoten</td><td>Bara i sidfot och dokumentets kolofon. <span class="tag t-b">B</span></td><td>Efter</td><td>Sidfot</td><td>© 2026 UngEkonom</td><td>(c) UngEkonom 2026</td></tr>
+          <tr><td class="nowrap"><strong>® ™</strong></td><td>Förekommer inte</td><td>Används inte förrän varumärket är registrerat. <span class="tag t-q">Bekräfta</span></td><td>–</td><td>–</td><td>UngEkonom</td><td>UngEkonom™</td></tr>
+          <tr><td class="nowrap"><strong>→ ← ↗</strong></td><td>Textpilar ("Läs guide →", "← Tillbaka", "↗") och ikonpilar (arrow_forward, chevron_right) blandat</td><td>Använd ikonen <code>arrow_forward</code> efter text, <code>arrow_back</code> före "Tillbaka" och <code>open_in_new</code> för externa länkar. Inga textpilar. <span class="tag t-s">S</span></td><td>8 px glipa</td><td>Knappar, länkar</td><td>Läs guide <span class="ms" style="font-size:14px">arrow_forward</span></td><td>Läs guide →</td></tr>
+          <tr><td class="nowrap"><strong>✓</strong> bock</td><td>Texttecknet ✓ i förtroenderaden, ikonen check_circle i stegkort</td><td>Använd ikonen <code>check</code> (listor) eller <code>check_circle</code> (status), grön #006C4A. <span class="tag t-s">S</span></td><td>6 px glipa</td><td>Listor, förtroenderad</td><td><span class="ms" style="font-size:14px;color:#006C4A">check</span> Ingen reklam</td><td>✓ Ingen reklam</td></tr>
+          <tr><td class="nowrap"><strong>♥ ❤️</strong></td><td>"Byggd med ♥ i Sverige", ❤️ på Ge en gåva</td><td>♥ endast i sidfotsraden. Ingen hjärt-emoji i UI. <span class="tag t-s">S</span></td><td>Före och efter</td><td>Sidfot</td><td>Byggd med ♥ i Sverige</td><td>Tack ❤️</td></tr>
+          <tr><td class="nowrap"><strong>%</strong></td><td>"100%", "7%" utan mellanslag</td><td>Svensk standard: <b>fast mellanslag</b> före %. Avvikelse från sajten, ändras. <span class="tag t-q">Bekräfta</span></td><td>Fast mellanslag före</td><td>Överallt</td><td>100 % · 7 %</td><td>100% · 7 procent i diagram</td></tr>
+          <tr><td class="nowrap"><strong>kr</strong></td><td>"1 500 kr", "kr/mån", "503 933 kr"</td><td>"kr" efter beloppet med fast mellanslag. "SEK" bara i tabeller med flera valutor. Aldrig ":-". <span class="tag t-b">B</span></td><td>Fast mellanslag före</td><td>Överallt</td><td>1 500 kr</td><td>1500:- · SEK 1 500</td></tr>
+          <tr><td class="nowrap"><strong>°</strong> och mått</td><td>Förekommer inte</td><td>Mellanslag mellan tal och enhet: "5 min", "25 år", "40 mm". <span class="tag t-f">F</span></td><td>Fast mellanslag</td><td>Överallt</td><td>5 min läsning</td><td>5min</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 class="sub">B. Namn, initialer, akronymer och förkortningar</h3>
+    <div class="grid g2 mt16">
+      <div class="card" style="background:var(--bg)">
+        <h4>Regler</h4>
+        <ul class="clean">
+          <li><b>Initialförkortningar</b> skrivs med versaler utan punkter: ISK, CSN, CV, XP.</li>
+          <li><b>Första gången</b> i en text skrivs begreppet ut med förkortningen i parentes: "investeringssparkonto (ISK)". Undantag: CSN och CV, som alla känner till.</li>
+          <li><b>Böjning</b> med kolon: ISK:n, ISK:er, CSN:s. Sammansättning med bindestreck: ISK-konto (undvik dock "ISK-konto", det är dubbelt), P/E-tal.</li>
+          <li><b>Förkortningar med punkt</b> (t.ex., bl.a., kl.) undviks i UI. Skriv ut ("till exempel") där det går. "kl." är tillåtet.</li>
+          <li><b>I rubriker, knappar och diagram</b> får vedertagna förkortningar användas utan förklaring om de förklaras i närheten.</li>
+          <li><b>Personers initialer</b> förekommer inte på sajten. <span class="tag t-f">F</span> Skriv "A. Andersson" med punkt och mellanslag, och använd fullständigt namn när det är möjligt.</li>
+          <li><b>Domän och e-post</b> skrivs med gemener: ungekonom.se, hej@ungekonom.se.</li>
+        </ul>
+      </div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Godkänt</th><th>Status</th><th>Kommentar</th></tr></thead>
+          <tbody>
+            <tr><td><strong>UngEkonom</strong></td><td><span class="tag t-b">Verifierat</span></td><td>Rätt i nästan alla fall. Genitiv: UngEkonoms. Avvikelser: "Ungekonom" (startsidans CTA) och "Ung Ekonom" (Ge en gåva).</td></tr>
+            <tr><td><strong>UNGEKONOM</strong></td><td><span class="tag t-b">Verifierat</span></td><td>Bara när CSS sätter versaler (eyebrow). Skriv "UngEkonom" i källan.</td></tr>
+            <tr><td><strong>en ungekonom</strong>?</td><td><span class="tag t-q">Bekräfta</span></td><td>"Bli en bättre Ungekonom" använder namnet som substantiv om en person. Ska det vara "UngEkonom", "ungekonom" eller undvikas?</td></tr>
+            <tr><td><strong>Ekonomi för livet</strong></td><td><span class="tag t-b">Verifierat</span></td><td>Tagline. Versaler endast i logotypen.</td></tr>
+            <tr><td><strong>UngEkonom i skolan</strong></td><td><span class="tag t-b">Verifierat</span></td><td>Namn på skolerbjudandet (sidfoten).</td></tr>
+            <tr><td><strong>XP</strong></td><td><span class="tag t-b">Verifierat</span></td><td>Förklaras som "erfarenhetspoäng (XP)".</td></tr>
+            <tr><td><strong>ISK</strong></td><td><span class="tag t-b">Verifierat</span></td><td>Investeringssparkonto. Förklaras första gången.</td></tr>
+            <tr><td><strong>CSN · CV</strong></td><td><span class="tag t-b">Verifierat</span></td><td>Behöver inte förklaras.</td></tr>
+            <tr><td><strong>P/E-tal</strong></td><td><span class="tag t-b">Verifierat</span></td><td>Pris i förhållande till vinst per aktie.</td></tr>
+            <tr><td><strong>UX/UI</strong></td><td><span class="tag t-b">Verifierat</span></td><td>Bara i interna och rekryterande texter.</td></tr>
+            <tr><td><strong>BankID · Skolverket · Skatteverket</strong></td><td><span class="tag t-b">Verifierat</span></td><td>Egennamn, skrivs som ägaren gör.</td></tr>
+            <tr><td><strong>Web3 · Bitcoin</strong></td><td><span class="tag t-b">Verifierat</span></td><td>Bitcoin (nätverket) versalt. Valutan: bitcoin.</td></tr>
+            <tr><td><strong>quiz</strong> (pl. quiz)</td><td><span class="tag t-b">Verifierat</span></td><td>"4 quiz".</td></tr>
+            <tr><td><strong>svit</strong> eller <strong>streak</strong>?</td><td><span class="tag t-q">Bekräfta</span></td><td>Både "Aktiv svit" och "7 dagars streak" förekommer. Rekommendation: välj ett ord för hela produkten.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <h3 class="sub">C. Versaler, gemener och betoning</h3>
+    <div class="tbl-wrap mt16">
+      <table>
+        <thead><tr><th>Texttyp</th><th>Regel</th><th>Webb</th><th>Presentation/dokument</th><th>Fel</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Rubriker</strong></td><td>Meningsversal. Bara första ordet och egennamn får versal.</td><td>Populära guider &amp; artiklar</td><td>Ränta på ränta – din bästa vän</td><td>Värdering &amp; Analys</td></tr>
+          <tr><td><strong>Meny</strong></td><td>Meningsversal, max tre ord.</td><td>Ämnen &amp; kurser</td><td>Agenda</td><td>Ämnen &amp; Kurser</td></tr>
+          <tr><td><strong>Knappar och länkar</strong></td><td>Meningsversal, verb först, max fyra ord, ingen punkt.</td><td>Boka gästföreläsning</td><td>Läs mer på ungekonom.se</td><td>BOKA NU · Klicka här.</td></tr>
+          <tr><td><strong>Eyebrows och kolumnrubriker</strong></td><td>Skrivs med meningsversal i källan. CSS gör dem versala med +0,05 em spärrning.</td><td>KUNSKAPSBANK</td><td>STEG 2 AV 3</td><td>Versaler i löptext</td></tr>
+          <tr><td><strong>Badges</strong></td><td>Meningsversal.</td><td>13 lektioner</td><td>Visste du?</td><td>100% Kostnadsfritt</td></tr>
+          <tr><td><strong>Engelska termer</strong></td><td>Använd svenska när det finns. Annars gemener och svensk sammansättning.</td><td>Ämnen · Testa själv · fallstudier</td><td>fintechbolag</td><td>CURRICULUM · LIVE VERKTYG · case-studier</td></tr>
+          <tr><td><strong>Fetstil</strong></td><td>Siffror och nyckelord, högst ett par per stycke.</td><td>Spara <b>500 kr</b> i månaden</td><td>Samma</td><td>Hela meningar i fetstil</td></tr>
+          <tr><td><strong>Kursiv</strong></td><td>Bara för verktitlar och citerade begrepp i dokument. Inte i UI.</td><td>–</td><td><i>Svenska skrivregler</i></td><td>Kursiv för betoning i knappar</td></tr>
+          <tr><td><strong>Understrykning</strong></td><td>Bara för länkar, och då vid hovring.</td><td>Länk vid hovring</td><td>Länkar</td><td>Understruken rubrik</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 class="sub">D. Siffror, datum, tider och mått</h3>
+    <div class="tbl-wrap mt16">
+      <table>
+        <thead><tr><th>Typ</th><th>Regel</th><th>Rätt</th><th>Fel</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Siffror eller bokstäver</strong></td><td>Siffror i UI, statistik, tabeller och med enhet. I löptext skrivs 1–12 utan enhet med bokstäver.</td><td>sex spår · 33+ lektioner · 5 min</td><td>Världens 8:e underverk (skriv: åttonde)</td></tr>
+          <tr><td><strong>Tusental</strong></td><td>Fast (smalt) mellanslag från fyra siffror. <code>toLocaleString('sv-SE')</code> gör rätt.</td><td>1 500 · 503 933</td><td>1500 · 1,500 · 1.500</td></tr>
+          <tr><td><strong>Decimaler</strong></td><td>Decimalkomma.</td><td>7,5 %</td><td>7.5%</td></tr>
+          <tr><td><strong>Procent</strong></td><td>Fast mellanslag före %. "procent" i löptext är också tillåtet.</td><td>100 % · 7 procent</td><td>100%</td></tr>
+          <tr><td><strong>Belopp</strong></td><td>Hela kronor utan decimaler när det går. "kr" efter.</td><td>270 000 kr · 49,50 kr</td><td>270 000:- · 270 000 SEK</td></tr>
+          <tr><td><strong>Datum</strong></td><td>Löptext: dag, månad, år med månaden i gemener. Tabeller och formulär: ÅÅÅÅ-MM-DD.</td><td>13 oktober 2026 · 2026-10-13</td><td>13/10-26 · Oktober 13, 2026</td></tr>
+          <tr><td><strong>Månad som etikett</strong></td><td>Versal bara när månaden inleder etiketten (tidslinjen).</td><td>December 2025</td><td>i December</td></tr>
+          <tr><td><strong>Klockslag</strong></td><td>Punkt mellan timme och minut, "kl." före.</td><td>kl. 14.30 · 14.00–15.30</td><td>14:30 · 2 pm</td></tr>
+          <tr><td><strong>Intervall</strong></td><td>Tankstreck utan mellanslag.</td><td>16–25 år · 3–5 minuter</td><td>3-5 minuter · 16 till 25 år</td></tr>
+          <tr><td><strong>Mått</strong></td><td>Mellanslag före enheten, svenska förkortningar utan punkt.</td><td>5 min · 25 år · 40 mm · 2 tim</td><td>5min · 5 mins</td></tr>
+          <tr><td><strong>Telefon</strong> <span class="tag t-q">Bekräfta</span></td><td>Inget telefonnummer finns på sajten. Förslag: riktnummer, bindestreck, grupper om två–tre.</td><td>070-123 45 67</td><td>+46701234567 i löptext</td></tr>
+          <tr><td><strong>Version</strong></td><td>"version" eller "v" utan mellanslag i tekniska sammanhang.</td><td>version 1.2 · v0.1</td><td>Ver. 1,2</td></tr>
+          <tr><td><strong>Numrerade listor</strong></td><td>Siffra, punkt, mellanslag. Kortrubriker får numreras när ordningen betyder något.</td><td>1. Aktier</td><td>1) Aktier · #1 Aktier</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 class="sub">E. Tonalitet</h3>
+    <div class="grid g2 mt16">
+      <div class="card" style="background:var(--bg)">
+        <h4>Rösten <span class="tag t-b">Observerad</span></h4>
+        <p class="small">Informell men kunnig. Du-tilltal, "vi" om UngEkonom. Konkreta exempel från ungas vardag: bussen, CSN, studentbudget. Lätt självironi ("inte mossiga läroböcker") men aldrig nedlåtande. Ansvarsfull: utbildning, inte rådgivning.</p>
+        <ul class="clean">
+          <li><b>Meningslängd:</b> högst cirka 20 ord. En tanke per mening.</li>
+          <li><b>Rubriker:</b> löfte eller fråga, 3–8 ord.</li>
+          <li><b>Ingress:</b> en till två meningar som förklarar nyttan.</li>
+          <li><b>Bildtext och metadata:</b> fragment utan punkt, avgränsade med ·.</li>
+          <li><b>Faktaruta:</b> en siffra plus en mening.</li>
+          <li><b>CTA:</b> verb + objekt + eventuellt "gratis".</li>
+        </ul>
+      </div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Situation</th><th>Mönster</th><th>Exempel</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Instruktion</strong></td><td>Imperativ, ett steg i taget</td><td>Välj ett spår och gör startquizet.</td></tr>
+            <tr><td><strong>Information</strong></td><td>Påstående, saklig</td><td>Alla lektioner är kostnadsfria.</td></tr>
+            <tr><td><strong>Varning</strong></td><td>Vad som händer + vad du gör</td><td>Historisk avkastning är ingen garanti. Sprid dina risker.</td></tr>
+            <tr><td><strong>Fel</strong></td><td>Vad som är fel + hur det rättas</td><td>Lösenordet måste ha minst 8 tecken.</td></tr>
+            <tr><td><strong>Bekräftelse</strong></td><td>Resultat i perfekt</td><td>Ditt konto är skapat.</td></tr>
+            <tr><td><strong>Uppmaning</strong></td><td>Verb först</td><td>Skapa gratis konto</td></tr>
+            <tr><td><strong>Emoji</strong></td><td>Se kapitel G</td><td>Bara i hero, gamification och sociala medier</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <h3 class="sub">F. Symboler i den grafiska identiteten</h3>
+    <div class="grid g3 mt16">
+      <div class="card"><h4>Stil</h4><p class="small">Material Symbols Outlined (verifierat i <code>stitch-assets/fonts.css</code>), vikt 400, ingen fyllning, rundade linjeslut. Linjen är cirka 2 px vid 24 px, vilket matchar logotypens linjeprofil.</p></div>
+      <div class="card"><h4>Ikon och text</h4><p class="small">Ikoner kompletterar alltid en textetikett. Riktning (pil) efter texten, kategori (ämnesikon) före. Ikoner som står ensamma ska ha <code>aria-label</code>. Ingen ikon intill logotypen.</p></div>
+      <div class="card"><h4>Kanaler</h4><p class="small">Samma ikonbibliotek i webb, presentationer och dokument (laddas ned som SVG från Google Fonts). I sociala medier får emoji ersätta ikoner i bildtexter, aldrig i grafiken.</p></div>
+    </div>
+
+    <h3 class="sub">G. Godkända och förbjudna skrivsätt</h3>
+    <div class="tbl-wrap mt16">
+      <table>
+        <thead><tr><th>Observerat på sajten</th><th>Skriv så här</th><th>Varför</th></tr></thead>
+        <tbody>
+          <tr><td>Ungekonom · Ung Ekonom</td><td><strong>UngEkonom</strong></td><td>Varumärkesnamnet</td></tr>
+          <tr><td>Ränta-på-ränta simulator · ränta-på-ränta effekten</td><td><strong>Ränta på ränta-simulator · ränta på ränta-effekten</strong></td><td>Sammansättning med flerordsuttryck</td></tr>
+          <tr><td>3-5 minuters mikrolektioner · Korta 5-minuters mikrolektioner</td><td><strong>mikrolektioner på 3–5 minuter</strong></td><td>Intervall och särskrivning</td></tr>
+          <tr><td>dags-streak · 7 dagars streak</td><td><strong>dagssvit · 7 dagars svit</strong> (om "svit" väljs)</td><td>Ett begrepp, sammanskrivet</td></tr>
+          <tr><td>fintech-bolag · case-studier · blockchain-infrastruktur</td><td><strong>fintechbolag · fallstudier · blockkedjeinfrastruktur</strong></td><td>Svensk sammanskrivning, svenska ord</td></tr>
+          <tr><td>CURRICULUM · LIVE VERKTYG</td><td><strong>ÄMNEN · TESTA SJÄLV</strong></td><td>Svenska först</td></tr>
+          <tr><td>Fonder &amp; Indexfonder · Värdering &amp; Analys · För Lärare &amp; Skolor</td><td><strong>Fonder &amp; indexfonder · Värdering &amp; analys · För lärare &amp; skolor</strong></td><td>Meningsversal</td></tr>
+          <tr><td>100% Kostnadsfritt</td><td><strong>100 % kostnadsfritt</strong></td><td>Procent och versal</td></tr>
+          <tr><td>+70 (Om oss)</td><td><strong>70+</strong></td><td>Samma som startsidan</td></tr>
+          <tr><td>idag</td><td><strong>i dag</strong></td><td>Båda är korrekta. Välj en form – förslag: i dag</td></tr>
+          <tr><td>maila · mail</td><td><strong>mejla · e-post</strong></td><td>Svensk stavning</td></tr>
+          <tr><td>Ja! · Nej! · Absolut!</td><td><strong>Ja. · Nej. · Ja, absolut.</strong></td><td>Lugnare ton i svar</td></tr>
+          <tr><td>Läs guide →</td><td><strong>Läs guide</strong> + ikonen arrow_forward</td><td>En pilsymbol i hela systemet</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="grid g2 mt24">
+      <div class="card" style="background:var(--bg)">
+        <h4>Korrekturchecklista</h4>
+        <ul class="check" id="checklist">
+          <li><span class="ms">check_box_outline_blank</span>"UngEkonom" stavat rätt överallt</li>
+          <li><span class="ms">check_box_outline_blank</span>Rubriker, knappar och menyer i meningsversal, utan punkt</li>
+          <li><span class="ms">check_box_outline_blank</span>Tankstreck (–) i intervall och pauser, inga bindestreck där</li>
+          <li><span class="ms">check_box_outline_blank</span>Mellanslag i tusental, före % och före kr</li>
+          <li><span class="ms">check_box_outline_blank</span>Förkortningar förklarade första gången</li>
+          <li><span class="ms">check_box_outline_blank</span>Inga onödiga engelska ord</li>
+          <li><span class="ms">check_box_outline_blank</span>Knapptexter börjar med verb</li>
+          <li><span class="ms">check_box_outline_blank</span>Högst ett utropstecken per vy, ingen emoji utanför tillåtna platser</li>
+          <li><span class="ms">check_box_outline_blank</span>Svenska citattecken ”…”</li>
+          <li><span class="ms">check_box_outline_blank</span>Ansvarsfriskrivning finns där det handlar om investeringar</li>
+        </ul>
+      </div>
+      <div class="card" style="background:var(--bg)">
+        <h4>Rätt och fel i vanliga situationer</h4>
+        <div class="grid" style="gap:10px">
+          <div class="callout" style="background:var(--green-tint)"><span class="ms" style="color:var(--green-text)">check_circle</span><p>Spara 1 500 kr/mån i 15 år, så kan det bli cirka 504 000 kr vid 7 % i snitt per år.</p></div>
+          <div class="callout err"><span class="ms">cancel</span><p>Spara 1500kr/mån i 15 år = 503.933 SEK!!! 🚀</p></div>
+          <div class="callout" style="background:var(--green-tint)"><span class="ms" style="color:var(--green-text)">check_circle</span><p>Gästföreläsning för gymnasiet, 13 oktober kl. 10.00–11.30</p></div>
+          <div class="callout err"><span class="ms">cancel</span><p>Gästföreläsning För Gymnasiet, 13/10 10:00-11:30.</p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- K. TOKENS -->
+<section class="chap" id="tokens">
+  <div class="wrap">
+    <div class="eyebrow"><span class="ms">data_object</span>K · Designsystem och design tokens</div>
+    <h2 class="ch">Design tokens</h2>
+    <p class="lead">Reglerna ovan finns som kod i repot, i mappen <code>designsystem/</code>. Sajten är byggd med Tailwind CSS (förkompilerad i <code>stitch-assets/tailwind.css</code>), så systemet levereras i samma teknik.</p>
+    <div class="grid g3 mt24">
+      <div class="card"><h4><span class="ms" style="color:var(--primary-text)">description</span> tokens.css</h4><p class="small">CSS-variabler med prefixet <code>--ue-</code>. Kan användas i vilken HTML-sida eller e-postmall som helst, med eller utan Tailwind. Varje värde är märkt [B], [S] eller [F].</p></div>
+      <div class="card"><h4><span class="ms" style="color:var(--primary-text)">description</span> tailwind.preset.js</h4><p class="small">Återskapar sajtens egna klassnamn (<code>bg-primary-container</code>, <code>font-headline-1</code>, <code>gap-space-lg</code> …) och lägger till <code>accent-*</code>, <code>text-muted</code> och <code>critical-wash</code>.</p></div>
+      <div class="card"><h4><span class="ms" style="color:var(--primary-text)">description</span> tokens.json</h4><p class="small">Samma värden i W3C Design Tokens-format för Figma (Tokens Studio), Style Dictionary eller andra verktyg.</p></div>
+    </div>
+
+    <h3 class="sub">Namnstandard</h3>
+    <p class="muted"><code>kategori.roll.variant</code> i JSON och <code>--ue-kategori-roll-variant</code> i CSS. Rollen beskriver användningen, inte färgen: <code>color.text.secondary</code>, inte <code>color.slate.600</code>.</p>
+    <div class="tbl-wrap mt16">
+      <table>
+        <thead><tr><th>Token</th><th>Värde</th><th>Tailwind-klass idag</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td><code>color.brand.primary</code></td><td class="mono">#2563EB</td><td><code>primary-container</code></td><td><span class="tag t-b">B</span></td></tr>
+          <tr><td><code>color.brand.primary-strong</code></td><td class="mono">#1E40AF</td><td><code>primary-deep</code></td><td><span class="tag t-b">B</span></td></tr>
+          <tr><td><code>color.brand.primary-text</code></td><td class="mono">#004AC6</td><td><code>primary</code></td><td><span class="tag t-b">B</span></td></tr>
+          <tr><td><code>color.brand.primary-tint</code></td><td class="mono">#EFF6FF</td><td><code>primary-tint</code></td><td><span class="tag t-b">B</span></td></tr>
+          <tr><td><code>color.brand.secondary</code></td><td class="mono">#10B981</td><td><code>positive-spruce</code></td><td><span class="tag t-b">B</span></td></tr>
+          <tr><td><code>color.brand.secondary-text</code></td><td class="mono">#006C4A</td><td><code>secondary</code></td><td><span class="tag t-b">B</span></td></tr>
+          <tr><td><code>color.accent.text</code></td><td class="mono">#B45309</td><td><code>text-[#B45309]</code> → <code>accent-text</code></td><td><span class="tag t-s">S</span></td></tr>
+          <tr><td><code>color.text.primary</code></td><td class="mono">#0F172A</td><td><code>text-primary</code></td><td><span class="tag t-b">B</span></td></tr>
+          <tr><td><code>color.text.secondary</code></td><td class="mono">#475569</td><td><code>text-secondary</code></td><td><span class="tag t-b">B</span></td></tr>
+          <tr><td><code>color.text.muted</code></td><td class="mono">#64748B</td><td>ny: <code>text-muted</code></td><td><span class="tag t-f">F</span></td></tr>
+          <tr><td><code>color.background.default</code></td><td class="mono">#F9FAFB</td><td><code>bg-root</code></td><td><span class="tag t-b">B</span></td></tr>
+          <tr><td><code>color.surface.card</code></td><td class="mono">#FFFFFF</td><td><code>surface-card</code></td><td><span class="tag t-b">B</span></td></tr>
+          <tr><td><code>typography.heading.h2</code></td><td class="mono">600 28/34 −0,025em</td><td><code>font-headline-1 text-headline-1</code></td><td><span class="tag t-s">S</span></td></tr>
+          <tr><td><code>typography.body.default</code></td><td class="mono">400 15/23</td><td><code>font-body-regular text-body-regular</code></td><td><span class="tag t-b">B</span></td></tr>
+          <tr><td><code>spacing.6</code></td><td class="mono">24px</td><td><code>px-margin</code>, <code>gap-6</code></td><td><span class="tag t-s">S</span></td></tr>
+          <tr><td><code>radius.control</code> / <code>radius.card</code></td><td class="mono">12px / 16px</td><td><code>rounded-xl</code> / <code>rounded-2xl</code></td><td><span class="tag t-s">S</span></td></tr>
+          <tr><td><code>shadow.card</code></td><td class="mono">0 1px 2px rgba(0,0,0,.05)</td><td><code>shadow-sm</code></td><td><span class="tag t-b">B</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="cap mt8">Urval. Hela listan finns i <code>designsystem/tokens.css</code>.</p>
+
+    <h3 class="sub">Exempel: en ny komponent</h3>
+<pre class="code"><span class="c">/* Utan Tailwind – bara tokens.css */</span>
+.ue-card {
+  background: var(--ue-color-surface-card);
+  border-radius: var(--ue-radius-card);
+  box-shadow: var(--ue-shadow-card);
+  padding: var(--ue-spacing-6);
+}
+.ue-card:hover { box-shadow: var(--ue-shadow-card-hover); }
+
+<span class="c">&lt;!-- Med Tailwind – samma klasser som sajten --&gt;</span>
+&lt;a class="inline-flex items-center gap-2 bg-primary-container hover:bg-primary-deep
+          text-on-primary font-label-md text-label-md px-4 py-2 rounded-xl
+          focus-visible:ring-2 focus-visible:ring-primary-container focus-visible:ring-offset-2"&gt;
+  Skapa gratis konto
+&lt;/a&gt;</pre>
+
+    <div class="grid g2 mt24">
+      <div class="card"><h4>Struktur för framtida komponenter <span class="tag t-f">Förslag</span></h4>
+        <ul class="clean">
+          <li><b>Grund:</b> tokens (färg, typo, avstånd, radie, skugga, rörelse).</li>
+          <li><b>Element:</b> knapp, fält, badge, ikonplatta, eyebrow, länk.</li>
+          <li><b>Komponenter:</b> kort (spår, steg, artikel), infopanel, dragspel, notis, statistik.</li>
+          <li><b>Mönster:</b> sidhuvud, sidfot, hero, sektionshuvud, CTA-banner.</li>
+          <li><b>Mallar:</b> startsida, undersida, artikel, formulärsida.</li>
+        </ul>
+      </div>
+      <div class="card"><h4>Responsiva principer</h4>
+        <ul class="clean">
+          <li>Mobil först. Lägg till <code>md:</code> och <code>lg:</code> uppåt.</li>
+          <li>Kortrutnät 1 → 2 → 3 kolumner. Aldrig fler än 4.</li>
+          <li>Sektionsluft 64 → 96 px, hero-rubrik 40 → 44 px.</li>
+          <li>Knappar i fullbredd under 640 px, staplade med 12 px mellanrum.</li>
+          <li>Tryckytor minst 44 × 44 px på mobil (ikonknapparna i videospelaren är 28 px idag).</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- L. LUCKOR -->
+<section class="chap card-bg" id="luckor">
+  <div class="wrap">
+    <div class="eyebrow"><span class="ms">checklist</span>L · Identifierade luckor och öppna beslut</div>
+    <h2 class="ch">Detta behöver beslutas innan manualen fastställs</h2>
+    <p class="lead">Prioritet: <span class="pill" style="background:var(--danger-tint);color:#991B1B">Hög</span> påverkar igenkänning eller tillgänglighet. <span class="pill p-amber">Medel</span> påverkar konsekvens. <span class="pill p-neutral">Låg</span> är förbättringar.</p>
+    <div class="tbl-wrap mt24">
+      <table>
+        <thead><tr><th>#</th><th>Lucka</th><th>Observation</th><th>Rekommendation</th><th>Prio</th></tr></thead>
+        <tbody>
+          <tr><td>L1</td><td><strong>Logotypens text är inte konturerad</strong></td><td>logo.svg använder <code>&lt;text&gt;</code> med <code>-apple-system</code> först i typsnittslistan. Som <code>&lt;img&gt;</code> laddas inga webbtypsnitt, så ordbilden visas i SF Pro på Apple och i Arial eller liknande på Windows och Android. Vikt 800 finns inte heller i den laddade fonten (400–700).</td><td>Konvertera ordbild och tagline till konturer i Plus Jakarta Sans ExtraBold/SemiBold. Detta ändrar inte formen, det låser den.</td><td><span class="pill" style="background:var(--danger-tint);color:#991B1B">Hög</span></td></tr>
+          <tr><td>L2</td><td><strong>Logotypversioner, favicon och delningsbild saknas</strong></td><td>Det finns bara en logotypfil. Ingen favicon, ingen app-ikon, ingen og:image.</td><td>Ta fram negativ, svartvit och vit version, symbol, kortversion utan tagline, favicon (32/180/512 px) och en standardbild för delning (1200 × 630).</td><td><span class="pill" style="background:var(--danger-tint);color:#991B1B">Hög</span></td></tr>
+          <tr><td>L3</td><td><strong>Kontrastbrister</strong></td><td>#94A3B8 används för 12 px text (2,6:1). #10B981 används som textfärg (2,5:1).</td><td>Inför <code>text-muted</code> #64748B för liten text och #006C4A för grön text.</td><td><span class="pill" style="background:var(--danger-tint);color:#991B1B">Hög</span></td></tr>
+          <tr><td>L4</td><td><strong>Ge en gåva har en egen design</strong></td><td><code>ge-en-gava.html</code> laddar inte tailwind.css, har en egen palett (bl.a. #0B4DFF och lime #BBF53D), eget sidhuvud och skriver "Ung Ekonom".</td><td>Bygg om sidan med de gemensamma komponenterna.</td><td><span class="pill" style="background:var(--danger-tint);color:#991B1B">Hög</span></td></tr>
+          <tr><td>L5</td><td><strong>Fokusmarkering saknas på knappar och länkar</strong></td><td>Bara formulärfälten har synlig fokus. Knappar och länkar förlitar sig på webbläsarens standard.</td><td><code>focus-visible:ring-2 ring-primary-container ring-offset-2</code> på alla interaktiva element.</td><td><span class="pill" style="background:var(--danger-tint);color:#991B1B">Hög</span></td></tr>
+          <tr><td>L6</td><td><strong>Ingen mobilmeny</strong></td><td>Menyn döljs under 1024 px och ersätts inte.</td><td>Utforma en meny (till exempel en panel som fälls ut) i samma stil som sidhuvudet.</td><td><span class="pill" style="background:var(--danger-tint);color:#991B1B">Hög</span></td></tr>
+          <tr><td>L7</td><td><strong>Två fältstilar, inga fel- och inaktiva lägen</strong></td><td>kontakt.html och auth.html skiljer sig i ram, luft och etikettfärg.</td><td>Använd standarden i kapitel F.</td><td><span class="pill p-amber">Medel</span></td></tr>
+          <tr><td>L8</td><td><strong>Arv från Material 3</strong></td><td>Lavendeltonade ytor (#EAEDFF, #F2F3FF, #D2D9F4), #434655 i menyn och #131B2E som "on-surface" ligger vid sidan av slate-neutralerna.</td><td>Fasa ut och ersätt med #F3F4F6, #475569 och #0F172A.</td><td><span class="pill p-amber">Medel</span></td></tr>
+          <tr><td>L9</td><td><strong>Inget mörkt läge</strong></td><td>Alla färger är bara definierade för ljus bakgrund.</td><td>Definiera ett mörkt tema innan appen eller plattformen lanseras.</td><td><span class="pill p-amber">Medel</span></td></tr>
+          <tr><td>L10</td><td><strong>Bärnsten som godtyckliga HEX-klasser</strong></td><td><code>bg-[#FEF3C7]</code>, <code>text-[#B45309]</code> och <code>text-[#92400E]</code> används direkt.</td><td>Byt till <code>accent-*</code> från presetet.</td><td><span class="pill p-amber">Medel</span></td></tr>
+          <tr><td>L11</td><td><strong>Fyra knappstorlekar</strong></td><td>px-4 py-2, px-5 py-2, px-6 py-3.5 och px-8 py-4.</td><td>Tre storlekar enligt kapitel F.</td><td><span class="pill p-amber">Medel</span></td></tr>
+          <tr><td>L12</td><td><strong>Rubrikstorlekar utanför skalan</strong></td><td>Hero-H1 (40/44 px, 600) och CTA-rubriken (30/36 px) ligger utanför tokens. Namnet headline-1 används för H2.</td><td>Lägg till <code>hero</code>-token och byt namn på nivåerna vid nästa ombyggnad.</td><td><span class="pill p-amber">Medel</span></td></tr>
+          <tr><td>L13</td><td><strong>Bilder</strong></td><td>Tre AI-genererade platshållare som hämtas från Googles servrar. Inga egna bilder.</td><td>Ta fram ett eget bildbibliotek enligt kapitel G och spara bilderna lokalt.</td><td><span class="pill p-amber">Medel</span></td></tr>
+          <tr><td>L14</td><td><strong>Skrivsätt att besluta</strong></td><td>% med eller utan mellanslag, "svit" eller "streak", "en ungekonom", "idag" eller "i dag", "&amp;" eller "och" i menyn.</td><td>Beslut i skrivgruppen. Förslagen står i kapitel J.</td><td><span class="pill p-amber">Medel</span></td></tr>
+          <tr><td>L15</td><td><strong>Varumärkesplattform</strong></td><td>Positionering, kärnvärden och målgruppsbeskrivning är inte dokumenterade.</td><td>Bekräfta i ledningen och lägg in i kapitel A.</td><td><span class="pill p-amber">Medel</span></td></tr>
+          <tr><td>L16</td><td><strong>Tryckfärger</strong></td><td>Bara RGB/HEX finns.</td><td>Ta fram CMYK- och Pantone-värden tillsammans med ett tryckeri, med provtryck.</td><td><span class="pill p-neutral">Låg</span></td></tr>
+          <tr><td>L17</td><td><strong>Ikonfonten är 4 MB</strong></td><td>Hela Material Symbols laddas, trots att cirka 40 ikoner används.</td><td>Skapa en delmängd eller använd SVG-ikoner.</td><td><span class="pill p-neutral">Låg</span></td></tr>
+          <tr><td>L18</td><td><strong>Kontaktuppgifter för dokument</strong></td><td>Telefon, postadress och organisationsnummer finns inte på sajten.</td><td>Komplettera för brevmallar och rapporter.</td><td><span class="pill p-neutral">Låg</span></td></tr>
+          <tr><td>L19</td><td><strong>Varumärkesskydd</strong></td><td>Okänt om UngEkonom är registrerat.</td><td>Bekräfta innan ® eller ™ används.</td><td><span class="pill p-neutral">Låg</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 class="sub">Antaganden i detta utkast</h3>
+    <ul class="clean">
+      <li>"PPC-sidan" har tolkats som ungekonom.se med <code>index.html</code> som huvudreferens. Ytterligare tio publicerade sidor har använts för komponenter och text.</li>
+      <li>Förhandsvisningssidor (<code>stitch-preview-*</code>, <code>landing-preview</code>, <code>index-legacy</code>) har inte räknats som en del av identiteten.</li>
+      <li>Färgproportionerna i kapitel C är uppskattade, inte uppmätta.</li>
+      <li>Mallarna i kapitel H, storlekar för tryck och logotypversionerna är förslag som behöver godkännas.</li>
+    </ul>
+  </div>
+</section>
+</main>
+
+<footer class="foot">
+  <div class="wrap">
+    <span>UngEkonom · Grafisk manual · utkast v0.1 · 13 oktober 2026</span>
+    <span>Källa: ungekonom.se (index.html, stitch-assets/) · Tokens i designsystem/</span>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var FONT='Plus Jakarta Sans, system-ui, sans-serif';
+  function mark(bg,line,dot,dotStroke){
+    return '<rect x="2" y="6" width="36" height="36" rx="10" fill="'+bg+'"/>'+
+      '<path d="M12 28L18 20L23 25L28 16" stroke="'+line+'" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>'+
+      '<circle cx="28" cy="16" r="2.5" fill="'+dot+'" stroke="'+dotStroke+'" stroke-width="1.5"/>';
+  }
+  function words(word,tag,tagline){
+    var s='<text x="73" y="'+(tagline?27:31)+'" font-family="'+FONT+'" font-size="20" font-weight="800" fill="'+word+'" letter-spacing="-0.4">UngEkonom</text>';
+    if(tagline) s+='<text x="73" y="38" font-family="'+FONT+'" font-size="9.5" font-weight="600" fill="'+tag+'" letter-spacing="0.76">EKONOMI FÖR LIVET</text>';
+    return s;
+  }
+  var V={
+    'color':     {vb:'0 0 225 48', b:mark('#2563EB','#FFFFFF','#10B981','#FFFFFF')+words('#0F172A','#2563EB',true)},
+    'white':     {vb:'0 0 225 48', b:mark('#FFFFFF','#2563EB','#10B981','#FFFFFF')+words('#FFFFFF','#B4C5FF',true)},
+    'mono':      {vb:'0 0 225 48', b:mark('#0F172A','#FFFFFF','#0F172A','#FFFFFF')+words('#0F172A','#0F172A',true)},
+    'mono-white':{vb:'0 0 225 48', b:mark('#FFFFFF','#0F172A','#FFFFFF','#0F172A')+words('#FFFFFF','#FFFFFF',true)},
+    'recolor':   {vb:'0 0 225 48', b:mark('#D97706','#FFFFFF','#2563EB','#FFFFFF')+words('#10B981','#D97706',true)},
+    'nottag':    {vb:'0 0 200 48', b:mark('#2563EB','#FFFFFF','#10B981','#FFFFFF')+words('#0F172A','',false)},
+    'symbol':    {vb:'2 6 36 36',  b:mark('#2563EB','#FFFFFF','#10B981','#FFFFFF')}
+  };
+  document.querySelectorAll('[data-logo]').forEach(function(el){
+    var v=V[el.getAttribute('data-logo')]; if(!v) return;
+    var h=+el.getAttribute('data-h')||32, p=v.vb.split(' ').map(Number), w=Math.round(h*p[2]/p[3]);
+    el.innerHTML='<svg role="img" aria-label="UngEkonom logotyp" viewBox="'+v.vb+'" width="'+w+'" height="'+h+'" style="display:block;max-width:100%;height:auto">'+v.b+'</svg>';
+  });
+
+  var S={
+    brand:[
+      ['Varumärkesblå','#2563EB','37, 99, 235','221°, 83 %, 53 %','Logotyp, primärknappar, diagramlinjer, fokusring. Vit text 5,2:1.','primary-container','#fff','B'],
+      ['Djupblå','#1E40AF','30, 64, 175','226°, 71 %, 40 %','Hover på knappar, aktiv meny, CTA-gradientens start.','primary-deep','#fff','B'],
+      ['Textblå','#004AC6','0, 74, 198','218°, 100 %, 39 %','Länkar, eyebrows, badgetext och ikoner på ljus yta (7,5:1).','primary','#fff','B'],
+      ['Blå ton','#EFF6FF','239, 246, 255','214°, 100 %, 97 %','Badges, ikonplattor, infopaneler, faktarutor.','primary-tint','#004AC6','B'],
+      ['Ljusblå','#B4C5FF','180, 197, 255','226°, 100 %, 85 %','Streckade ramar, text på djupblå bakgrund.','primary-fixed-dim','#1E40AF','B'],
+      ['Blå linje','#DBE1FF','219, 225, 255','230°, 100 %, 93 %','Kantlinje på framhävda kort.','primary-fixed','#1E40AF','B']
+    ],
+    green:[
+      ['Tillväxtgrön','#10B981','16, 185, 129','160°, 84 %, 39 %','Logotypens punkt, ikoner, diagram. Inte för text (2,5:1).','positive-spruce','#fff','B'],
+      ['Mörkgrön','#006C4A','0, 108, 74','161°, 100 %, 21 %','Grön text, badges, bockar, positiva belopp.','secondary','#fff','B'],
+      ['Grön ton','#ECFDF5','236, 253, 245','152°, 81 %, 96 %','Gröna badges och ikonplattor.','positive-wash','#006C4A','B'],
+      ['Mintgrön','#85F8C4','133, 248, 196','153°, 89 %, 75 %','Statusprick på mörkblå bakgrund.','secondary-fixed','#006C4A','B']
+    ],
+    amber:[
+      ['Bärnsten ton','#FEF3C7','254, 243, 199','48°, 96 %, 89 %','Bakgrund för budgetspåret, steg 3, svitnotis.','accent-tint','#92400E','S'],
+      ['Bärnsten text','#B45309','180, 83, 9','26°, 90 %, 37 %','Text och ikon på bärnstenston (4,5:1).','accent-text','#fff','S'],
+      ['Bärnsten mörk','#92400E','146, 64, 14','23°, 82 %, 31 %','Liten text på bärnstenston.','accent-strong','#fff','S'],
+      ['Bärnsten ikon','#D97706','217, 119, 6','32°, 95 %, 44 %','Ikoner och diagramserie 3. Inte för text.','accent-icon','#fff','S']
+    ],
+    neutral:[
+      ['Bläck','#0F172A','15, 23, 42','222°, 47 %, 11 %','Rubriker, brödtext, logotypens ordbild.','text-primary','#fff','B'],
+      ['Skiffer','#475569','71, 85, 105','215°, 19 %, 35 %','Ingresser, beskrivningar, sekundär text.','text-secondary','#fff','B'],
+      ['Dämpad','#64748B','100, 116, 139','215°, 16 %, 47 %','Liten text, metadata (4,8:1). Ny.','text-muted','#fff','F'],
+      ['Silver','#94A3B8','148, 163, 184','215°, 20 %, 65 %','Ikoner i vila, separatorer. Inte för liten text.','text-tertiary','#0F172A','B'],
+      ['Linje','#E2E8F0','226, 232, 240','214°, 32 %, 91 %','Kantlinjer, diagramrutnät, reglagets spår.','border-subtle','#475569','B'],
+      ['Grå yta','#F3F4F6','243, 244, 246','220°, 14 %, 96 %','Alternerande sektioner, kortens fotlist, fält.','surface-subdued','#475569','B'],
+      ['Sidbakgrund','#F9FAFB','249, 250, 251','210°, 20 %, 98 %','Sidans grundbakgrund.','bg-root','#475569','B'],
+      ['Vit','#FFFFFF','255, 255, 255','0°, 0 %, 100 %','Kort, sidhuvud, sidfot, text på blått.','surface-card','#475569','B']
+    ],
+    func:[
+      ['Framgång','#006C4A','0, 108, 74','161°, 100 %, 21 %','Bekräftelser. Bakgrund #ECFDF5.','secondary','#fff','S'],
+      ['Varning','#B45309','180, 83, 9','26°, 90 %, 37 %','Varningar. Bakgrund #FEF3C7.','accent-text','#fff','S'],
+      ['Fel','#DC2626','220, 38, 38','0°, 72 %, 51 %','Felmeddelanden, ogiltiga fält (4,8:1).','critical-danger','#fff','B'],
+      ['Fel ton','#FEE2E2','254, 226, 226','0°, 93 %, 94 %','Bakgrund för felrutor.','critical-wash','#991B1B','S']
+    ],
+    legacy:[
+      ['Lavendel','#EAEDFF','234, 237, 255','231°, 100 %, 96 %','Neutral badge, glöd. → #F3F4F6','surface-container','#434655','B'],
+      ['Lavendel låg','#F2F3FF','242, 243, 255','235°, 100 %, 97 %','Videoramens gradient. → #F9FAFB','surface-container-low','#434655','B'],
+      ['Grafit','#434655','67, 70, 85','230°, 12 %, 30 %','Menytext. → #475569','on-surface-variant','#fff','B'],
+      ['Natt','#131B2E','19, 27, 46','222°, 42 %, 13 %','Dialogbakgrund 35 %. → #0F172A','on-surface','#fff','B']
+    ]
+  };
+  var TAG={B:['t-b','Befintligt'],S:['t-s','Standardiserat'],F:['t-f','Förslag']};
+  document.querySelectorAll('[data-swatches]').forEach(function(g){
+    (S[g.getAttribute('data-swatches')]||[]).forEach(function(c){
+      var d=document.createElement('div'); d.className='sw';
+      var light=c[6]!=='#fff';
+      d.innerHTML='<div class="chip" style="background:'+c[1]+';color:'+c[6]+';'+(c[1]==='#FFFFFF'||c[1]==='#F9FAFB'?'box-shadow:inset 0 -1px 0 #E2E8F0':'')+'"><span>Aa</span><span class="tag '+TAG[c[7]][0]+'">'+TAG[c[7]][1]+'</span></div>'+
+        '<div class="meta"><b>'+c[0]+'</b><span class="codes">HEX '+c[1]+'</span><span class="codes">RGB '+c[2]+'</span><span class="codes">HSL '+c[3]+'</span><span class="use">'+c[4]+'</span><span class="tok">'+c[5]+'</span></div>';
+      g.appendChild(d);
+    });
+  });
+
+  document.querySelectorAll('#checklist li').forEach(function(li){
+    li.style.cursor='pointer'; li.setAttribute('role','checkbox'); li.setAttribute('aria-checked','false'); li.tabIndex=0;
+    function t(){var on=li.getAttribute('aria-checked')!=='true';li.setAttribute('aria-checked',on);li.querySelector('.ms').textContent=on?'check_box':'check_box_outline_blank';li.style.color=on?'var(--ink)':'';}
+    li.addEventListener('click',t); li.addEventListener('keydown',function(e){if(e.key===' '||e.key==='Enter'){e.preventDefault();t();}});
+  });
+})();
+</script>
+</body>
+</html>

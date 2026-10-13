@@ -1,0 +1,147 @@
+/*
+ * UngEkonom design tokens – v0.1 (utkast)
+ * Härledda från stitch-assets/tailwind.css och index.html.
+ * Namnstandard: --ue-<kategori>-<roll>-<variant>
+ * Kommentaren efter varje värde anger motsvarande Tailwind-klass på sajten.
+ * [B] = befintligt värde, [S] = standardiserat, [F] = nytt förslag.
+ */
+:root {
+  /* ---------- Färg: varumärke ---------- */
+  --ue-color-brand-primary: #2563EB;          /* [B] primary-container – logotyp, primärknapp */
+  --ue-color-brand-primary-strong: #1E40AF;   /* [B] primary-deep – hover, gradientstart */
+  --ue-color-brand-primary-text: #004AC6;     /* [B] primary – länkar, eyebrows, ikoner på ljus yta */
+  --ue-color-brand-primary-tint: #EFF6FF;     /* [B] primary-tint – badges, infopaneler */
+  --ue-color-brand-primary-soft: #B4C5FF;     /* [B] primary-fixed-dim – streckade ramar, text på mörkblått */
+  --ue-color-brand-primary-line: #DBE1FF;     /* [B] primary-fixed – kantlinje på framhävda kort */
+
+  --ue-color-brand-secondary: #10B981;        /* [B] positive-spruce – logotypens punkt, grafik, ikoner (ej brödtext) */
+  --ue-color-brand-secondary-text: #006C4A;   /* [B] secondary – grön text och etiketter */
+  --ue-color-brand-secondary-tint: #ECFDF5;   /* [B] positive-wash – gröna badges och ikonplattor */
+  --ue-color-brand-secondary-bright: #85F8C4; /* [B] secondary-fixed – prick på mörk bakgrund */
+
+  /* ---------- Färg: accent (gamification/budget) ---------- */
+  --ue-color-accent-tint: #FEF3C7;            /* [S] idag bg-[#FEF3C7] */
+  --ue-color-accent-text: #B45309;            /* [S] idag text-[#B45309] */
+  --ue-color-accent-strong: #92400E;          /* [S] idag text-[#92400E] */
+  --ue-color-accent-icon: #D97706;            /* [S] idag text-[#D97706] */
+
+  /* ---------- Färg: text ---------- */
+  --ue-color-text-primary: #0F172A;           /* [B] text-primary */
+  --ue-color-text-secondary: #475569;         /* [B] text-secondary */
+  --ue-color-text-tertiary: #94A3B8;          /* [B] text-tertiary – endast ≥18 px eller dekor (2,6:1) */
+  --ue-color-text-muted: #64748B;             /* [F] ersätter tertiary för liten text (4,8:1) */
+  --ue-color-text-on-primary: #FFFFFF;        /* [B] on-primary */
+
+  /* ---------- Färg: ytor ---------- */
+  --ue-color-background-default: #F9FAFB;     /* [B] bg-root – sidbakgrund */
+  --ue-color-surface-card: #FFFFFF;           /* [B] surface-card */
+  --ue-color-surface-subdued: #F3F4F6;        /* [B] surface-subdued – alternerande sektioner, fält */
+  --ue-color-border-subtle: #E2E8F0;          /* [B] border-subtle */
+
+  /* ---------- Färg: funktion ---------- */
+  --ue-color-feedback-success: #006C4A;       /* [S] = secondary-text */
+  --ue-color-feedback-success-bg: #ECFDF5;
+  --ue-color-feedback-warning: #B45309;       /* [S] = accent-text */
+  --ue-color-feedback-warning-bg: #FEF3C7;
+  --ue-color-feedback-danger: #DC2626;        /* [B] critical-danger */
+  --ue-color-feedback-danger-bg: #FEE2E2;     /* [B] bg-[#FEE2E2] */
+  --ue-color-feedback-info: #004AC6;
+  --ue-color-feedback-info-bg: #EFF6FF;
+  --ue-color-focus-ring: #2563EB;             /* [B] focus:ring-primary-container */
+
+  /* ---------- Typografi ---------- */
+  --ue-font-family-base: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+  --ue-font-family-icon: 'Material Symbols Outlined';
+
+  --ue-font-hero-size: 2.5rem;      /* [B] 40 px mobil → 44 px från 768 px */
+  --ue-font-hero-size-md: 2.75rem;
+  --ue-font-hero-line: 1.15;
+  --ue-font-hero-weight: 600;
+  --ue-font-hero-tracking: -0.025em;
+
+  --ue-font-display-size: 36px;     /* [B] display-xl */
+  --ue-font-display-line: 41px;
+  --ue-font-display-weight: 700;
+  --ue-font-display-tracking: -0.03em;
+
+  --ue-font-h1-size: 28px;          /* [B] headline-1 (används som H2 på sajten) */
+  --ue-font-h1-line: 34px;
+  --ue-font-h1-weight: 600;
+  --ue-font-h1-tracking: -0.025em;
+
+  --ue-font-h2-size: 22px;          /* [B] headline-2 */
+  --ue-font-h2-line: 28px;
+  --ue-font-h2-weight: 600;
+  --ue-font-h2-tracking: -0.02em;
+
+  --ue-font-h3-size: 18px;          /* [B] headline-3 */
+  --ue-font-h3-line: 24px;
+  --ue-font-h3-weight: 600;
+  --ue-font-h3-tracking: -0.015em;
+
+  --ue-font-body-size: 15px;        /* [B] body-regular / body-medium */
+  --ue-font-body-line: 23px;
+  --ue-font-body-weight: 400;
+  --ue-font-body-medium-weight: 500;
+
+  --ue-font-label-size: 13px;       /* [B] label-md – knappar, meny, eyebrows */
+  --ue-font-label-line: 18px;
+  --ue-font-label-weight: 600;
+  --ue-font-label-tracking: 0.01em;
+
+  --ue-font-caption-size: 12px;     /* [B] caption-micro */
+  --ue-font-caption-line: 16px;
+  --ue-font-caption-weight: 500;
+
+  --ue-font-eyebrow-tracking: 0.05em; /* [S] idag tracking-wide/-wider blandat */
+
+  /* ---------- Avstånd (4 px-bas) ---------- */
+  --ue-spacing-1: 4px;    /* space-xs */
+  --ue-spacing-2: 8px;    /* space-sm */
+  --ue-spacing-3: 12px;   /* space-md */
+  --ue-spacing-4: 16px;
+  --ue-spacing-5: 20px;   /* space-lg */
+  --ue-spacing-6: 24px;   /* margin, gap-6 */
+  --ue-spacing-8: 32px;   /* space-xl */
+  --ue-spacing-10: 40px;
+  --ue-spacing-12: 48px;
+  --ue-spacing-16: 64px;  /* sektion mobil */
+  --ue-spacing-24: 96px;  /* sektion desktop */
+
+  /* ---------- Layout ---------- */
+  --ue-layout-container: 1140px;
+  --ue-layout-gutter: 24px;
+  --ue-layout-header-height: 80px;
+  --ue-layout-measure: 42rem;       /* max-w-2xl – löptext */
+
+  /* ---------- Hörnradier ---------- */
+  --ue-radius-sm: 8px;      /* rounded-lg – små plattor, mini-kort */
+  --ue-radius-control: 12px;/* rounded-xl – knappar, fält, ikonplattor */
+  --ue-radius-card: 16px;   /* rounded-2xl – kort, paneler */
+  --ue-radius-hero: 24px;   /* rounded-3xl – CTA-banner */
+  --ue-radius-pill: 9999px; /* rounded-full – badges, chips */
+
+  /* ---------- Skuggor ---------- */
+  --ue-shadow-header: 0 1px 8px rgba(15, 23, 42, 0.04);
+  --ue-shadow-button: 0 1px 2px 0 rgba(15, 23, 42, 0.04);
+  --ue-shadow-card: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --ue-shadow-card-hover: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+  --ue-shadow-floating: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+  --ue-shadow-feature: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+
+  /* ---------- Gradienter ---------- */
+  --ue-gradient-cta: linear-gradient(to bottom right, #1E40AF, #004AC6, #2563EB);
+  --ue-gradient-glow: linear-gradient(to bottom, #EFF6FF, #EAEDFF, transparent);
+
+  /* ---------- Rörelse ---------- */
+  --ue-motion-duration: 150ms;
+  --ue-motion-ease: cubic-bezier(0.4, 0, 0.2, 1);
+  --ue-motion-ease-pop: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ue-motion-hover-scale: 1.01;
+  --ue-motion-press-scale: 0.99;
+
+  /* ---------- Brytpunkter (Tailwind-standard, endast referens) ---------- */
+  --ue-breakpoint-sm: 640px;
+  --ue-breakpoint-md: 768px;
+  --ue-breakpoint-lg: 1024px;
+}
