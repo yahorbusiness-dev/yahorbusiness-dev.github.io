@@ -14,11 +14,12 @@
 <img alt="UngEkonom Logo" class="h-10 w-auto object-contain" src="stitch-assets/logo.svg"/>
 </div>
 <div class="bg-surface-card rounded-2xl shadow-lg p-space-xl">
-<div class="flex bg-surface-subdued rounded-xl p-1 mb-space-lg">
+<div class="flex bg-surface-subdued rounded-xl p-1 mb-space-lg" id="auth-tabs">
 <button class="flex-1 py-2.5 rounded-lg font-label-md text-label-md transition-all" id="tab-login" type="button">Logga in</button>
 <button class="flex-1 py-2.5 rounded-lg font-label-md text-label-md transition-all" id="tab-register" type="button">Skapa konto</button>
 </div>
 
+<div class="hidden bg-primary-tint rounded-xl p-space-md mb-space-lg" id="signup-closed"><p class="font-label-md text-label-md text-primary-deep">Registreringen öppnar snart</p><p class="font-body-regular text-[13px] text-text-secondary mt-1">Vi lägger sista handen vid plattformen. Har du frågor? <a class="text-primary-container font-semibold hover:underline" href="kontakt.html">Kontakta oss</a>.</p></div>
 <form id="auth-form" class="flex flex-col gap-space-md">
 <div id="name-field" class="hidden flex-col gap-1.5">
 <label class="font-label-md text-label-md text-text-secondary" for="display-name">Namn</label>
@@ -53,6 +54,11 @@ Genom att fortsätta godkänner du att UngEkonom är en utbildningstjänst och i
 const SUPABASE_URL = 'https://psvjlxqdqcuhmafqorlv.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_yuBvIFJ1sU3sfLpC0P3rmA_lNdgxITd';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// Sign-ups are closed until launch: hides the register tab and shows a notice
+// to visitors coming from "Skapa gratis konto". Also turn off "Allow new users
+// to sign up" in Supabase so the API refuses sign-ups too.
+const REGISTRATION_OPEN = false;
 
 let mode = 'login'; // 'login' | 'register'
 
@@ -92,10 +98,13 @@ tabLogin.addEventListener('click', () => setMode('login'));
 tabRegister.addEventListener('click', () => setMode('register'));
 
 // Default to register mode if arriving from a "Skapa gratis konto" CTA
-if (new URLSearchParams(location.search).get('mode') === 'register') {
-  setMode('register');
-} else {
+const wantsRegister = new URLSearchParams(location.search).get('mode') === 'register';
+if (!REGISTRATION_OPEN) {
+  document.getElementById('auth-tabs').classList.add('hidden');
+  if (wantsRegister) document.getElementById('signup-closed').classList.remove('hidden');
   setMode('login');
+} else {
+  setMode(wantsRegister ? 'register' : 'login');
 }
 
 form.addEventListener('submit', async (e) => {
