@@ -6,7 +6,7 @@
 <title>UngEkonom – Logga in</title>
 <link href="stitch-assets/fonts.css" rel="stylesheet"/>
 <link href="stitch-assets/tailwind.css" rel="stylesheet"/>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 </head>
 <body class="bg-bg-root font-body-regular text-text-primary antialiased min-h-screen flex items-center justify-center p-space-lg">
 <div class="w-full max-w-md">
@@ -116,7 +116,10 @@ form.addEventListener('submit', async (e) => {
       const { data, error } = await sb.auth.signUp({
         email,
         password,
-        options: { data: { display_name: displayName } },
+        // Confirmation link lands on kurser.html, which loads the Supabase client
+        // and picks up the session from the URL. Must be in Auth > URL Configuration
+        // > Redirect URLs, otherwise Supabase falls back to the Site URL.
+        options: { data: { display_name: displayName }, emailRedirectTo: new URL('kurser.html', location.href).href },
       });
       if (error) throw error;
       if (data.session) {
@@ -130,6 +133,9 @@ form.addEventListener('submit', async (e) => {
     const messages = {
       'Invalid login credentials': 'Fel e-post eller lösenord.',
       'User already registered': 'Det finns redan ett konto med den e-postadressen.',
+      'Email not confirmed': 'Bekräfta din e-post först – kolla inkorgen (och skräpposten) efter vårt mejl.',
+      'email rate limit exceeded': 'För många försök just nu. Vänta en stund och försök igen.',
+      'Password should be at least 6 characters.': 'Lösenordet måste vara minst 6 tecken.',
     };
     errorEl.textContent = messages[err.message] || err.message || 'Något gick fel, försök igen.';
     errorEl.classList.remove('hidden');
