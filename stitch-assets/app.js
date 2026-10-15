@@ -470,7 +470,7 @@ async function initLessonPage(ctx) {
       ${lessonHeader('Quiz', `Fråga ${quizIndex + 1} av ${quiz.length}`, steps.length + quizIndex)}
       <h2 class="font-headline-2 text-headline-2 text-text-primary mb-6">${q.question}</h2>
       <div id="quiz-options" class="flex flex-col gap-3"></div>
-      <p id="quiz-feedback" class="mt-4 font-body-medium text-body-medium hidden" aria-live="polite"></p>
+      <div id="quiz-feedback" class="mt-4 flex flex-col gap-1 hidden" aria-live="polite"></div>
       <div class="flex items-center justify-between gap-3 mt-space-xl pt-space-lg border-t border-border-subtle">
         <button id="quiz-back" type="button" class="px-5 py-2.5 rounded-xl font-label-md text-label-md text-text-secondary hover:bg-surface-subdued transition-all" title="Quizet börjar om när du kommer tillbaka">← Tillbaka till lektionen</button>
         <button id="quiz-next" class="invisible px-6 py-3 rounded-xl bg-primary-container hover:bg-primary-deep text-on-primary font-label-md text-label-md transition-all shadow-sm">${quizIndex === quiz.length - 1 ? 'Se resultat' : 'Nästa fråga'}</button>
@@ -498,11 +498,16 @@ async function initLessonPage(ctx) {
           else if (i === idx) { b.style.borderColor = '#DC2626'; b.style.background = '#ffdad6'; }
         });
         const fb = document.getElementById('quiz-feedback');
+        // Verdict on its own line (green/red), right answer in green below, explanation in grey
+        const line = (cls, text) => { const p = document.createElement('p'); p.className = cls; p.textContent = text; return p; };
         const why = explanation(q.feedback);
-        fb.textContent = correct
-          ? `✓ Rätt! ${why}`
-          : `✗ Inte riktigt. Rätt svar: ${q.options[q.correct_index]}. ${why}`;
-        fb.className = 'mt-4 font-body-medium text-body-medium ' + (correct ? 'text-positive-spruce' : 'text-critical-danger');
+        fb.replaceChildren(
+          correct
+            ? line('font-label-md text-label-md text-positive-spruce', '✓ Rätt!')
+            : line('font-label-md text-label-md text-critical-danger', '✗ Inte riktigt.'),
+          ...(correct ? [] : [line('font-body-medium text-body-medium text-positive-spruce', `Rätt svar: ${q.options[q.correct_index]}`)]),
+          ...(why ? [line('font-body-regular text-body-regular text-text-secondary', why)] : []),
+        );
         fb.classList.remove('hidden');
         document.getElementById('quiz-next').classList.remove('invisible');
       });
