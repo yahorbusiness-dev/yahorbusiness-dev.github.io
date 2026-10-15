@@ -270,18 +270,7 @@ async function initLessonPage(ctx) {
     return;
   }
 
-  // Previous/next lesson within the same category, ordered by order_index
-  const sameCategory = lessons.filter(l => l.category === lesson.category).sort((a, b) => a.order_index - b.order_index);
-  const posInCat = sameCategory.findIndex(l => l.id === lessonId);
-  const prevCandidate = posInCat > 0 ? sameCategory[posInCat - 1] : null;
-  const nextCandidate = posInCat >= 0 && posInCat < sameCategory.length - 1 ? sameCategory[posInCat + 1] : null;
-  const prevLesson = isLessonOpen(prevCandidate, lessons) ? prevCandidate : null;
-  const nextLesson = isLessonOpen(nextCandidate, lessons) ? nextCandidate : null;
-
   const catMeta = CATEGORY_META[lesson.category] || CATEGORY_META.aktier;
-
-  const crumb = document.getElementById('lesson-crumb');
-  if (crumb) crumb.textContent = `${catMeta.label} • ${lesson.title}`;
 
   const steps = lesson.content.steps;
   const quiz = lesson.content.quiz;
@@ -458,7 +447,7 @@ async function initLessonPage(ctx) {
       if (stepIndex < steps.length - 1) {
         stepIndex++;
         maxStep = Math.max(maxStep, stepIndex);
-        if (!alreadyCompleted) saveInBackground('in_progress', stepIndex);
+        if (!alreadyCompleted) saveInBackground('in_progress', maxStep);
         renderStep();
       } else {
         if (!alreadyCompleted) saveInBackground('in_progress', steps.length);
