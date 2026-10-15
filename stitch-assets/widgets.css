@@ -4,6 +4,13 @@
 .uw{--uw-blue:#2563EB;--uw-blue-deep:#1E40AF;--uw-tint:#EFF6FF;--uw-fixed:#DBE1FF;--uw-green:#10B981;--uw-green-wash:#ECFDF5;--uw-red:#DC2626;--uw-red-wash:#FEF2F2;--uw-ink:#0F172A;--uw-ink-2:#475569;--uw-ink-3:#94A3B8;--uw-line:#E2E8F0;--uw-subdued:#F3F4F6;
   margin:24px 0 8px;border:1px solid var(--uw-line);border-radius:16px;background:#fff;overflow:hidden}
 .uw *{box-sizing:border-box}
+.uw{position:relative}
+.uw-close{position:absolute;top:14px;right:14px;z-index:1;display:inline-flex;align-items:center;gap:4px;appearance:none;border:0;border-radius:10px;background:var(--uw-subdued);color:var(--uw-ink-2);padding:6px 10px;font:600 13px inherit;cursor:pointer}
+.uw-close:hover{background:var(--uw-line);color:var(--uw-ink)}
+.uw-close .material-symbols-outlined{font-size:16px}
+.uw-has-close .uw-head{padding-right:80px}
+.uw-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between}
+.uw-bar[hidden],.uw-close[hidden],.uw-body[hidden]{display:none}
 .uw-pad{padding:20px}
 .uw-head{display:flex;align-items:center;gap:12px}
 .uw-icon{width:44px;height:44px;border-radius:12px;background:var(--uw-tint);color:var(--uw-blue-deep);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:22px}

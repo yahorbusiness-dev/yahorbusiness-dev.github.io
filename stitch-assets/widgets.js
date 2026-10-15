@@ -12,8 +12,33 @@
   const pct = n => (n > 0 ? '+' : '') + n.toLocaleString('sv-SE', { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + ' %';
   const round2 = n => Math.round(n * 100) / 100;
 
-  // Opt-in wrapper: question first, widget only after "Ja, testa!"
+  // Opt-in wrapper: question first, widget only after "Ja, testa!". Once running,
+  // "Dölj" collapses it to a one-line bar; "Visa igen" brings it back as it was.
   function optIn(host, { icon, title, text, start }) {
+    const frame = host.parentElement;
+    const bar = frame.querySelector('.uw-bar');
+    const closeBtn = frame.querySelector('.uw-close');
+    let started = false;
+
+    function showBar(message, action, onClick) {
+      host.hidden = true;
+      closeBtn.hidden = true;
+      frame.classList.remove('uw-has-close');
+      bar.innerHTML = `<span class="uw-muted">${message}</span><button type="button" class="uw-link">${action} →</button>`;
+      bar.querySelector('button').addEventListener('click', onClick);
+      bar.hidden = false;
+    }
+
+    function open() {
+      bar.hidden = true;
+      host.hidden = false;
+      closeBtn.hidden = false;
+      frame.classList.add('uw-has-close');
+      if (!started) { started = true; start(); }
+    }
+
+    closeBtn.addEventListener('click', () => showBar('Verktyget är dolt.', 'Visa igen', open));
+
     function ask() {
       host.innerHTML = `
         <div class="uw-pad">
@@ -26,12 +51,8 @@
             <button type="button" class="uw-btn uw-btn-ghost" data-no>Nej tack</button>
           </div>
         </div>`;
-      host.querySelector('[data-yes]').addEventListener('click', start);
-      host.querySelector('[data-no]').addEventListener('click', declined);
-    }
-    function declined() {
-      host.innerHTML = `<div class="uw-pad uw-row" style="justify-content:space-between"><span class="uw-muted">Du kan testa när du vill.</span><button type="button" class="uw-link" data-open>${title.replace(/\?$/, '')} →</button></div>`;
-      host.querySelector('[data-open]').addEventListener('click', start);
+      host.querySelector('[data-yes]').addEventListener('click', open);
+      host.querySelector('[data-no]').addEventListener('click', () => showBar('Du kan testa när du vill.', title.replace(/\?$/, ''), open));
     }
     ask();
   }
@@ -267,11 +288,16 @@
   function create(name) {
     const fn = WIDGETS[name];
     if (!fn) return null;
-    const host = document.createElement('div');
-    host.className = 'uw';
-    host.dataset.widgetRoot = name;
-    fn(host);
-    return host;
+    // Frame: "Dölj" button + widget body + collapsed bar; widgets render into the body
+    const frame = document.createElement('div');
+    frame.className = 'uw';
+    frame.dataset.widgetRoot = name;
+    frame.innerHTML = `
+      <button type="button" class="uw-close" hidden><span class="material-symbols-outlined">visibility_off</span>Dölj</button>
+      <div class="uw-body"></div>
+      <div class="uw-bar uw-pad" hidden></div>`;
+    fn(frame.querySelector('.uw-body'));
+    return frame;
   }
 
   window.LessonWidgets = {
