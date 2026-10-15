@@ -283,7 +283,9 @@ async function initLessonPage(ctx) {
 
   const steps = lesson.content.steps;
   const quiz = lesson.content.quiz;
-  const alreadyCompleted = existingProgress?.status === 'completed';
+  // Mutable: becomes true once this visit completes, so retakes never award XP twice
+  let alreadyCompleted = existingProgress?.status === 'completed';
+  let saving = false;
   let stepIndex = alreadyCompleted ? 0 : Math.min(existingProgress?.current_step || 0, steps.length - 1);
   // Furthest step reached; step dots let you jump back to any of these
   let maxStep = alreadyCompleted ? steps.length - 1 : stepIndex;
@@ -373,7 +375,29 @@ async function initLessonPage(ctx) {
       payload.quiz_score = quizScore;
       payload.completed_at = new Date().toISOString();
     }
-    await sb.from('user_lesson_progress').upsert(payload);
+    const { error } = await sb.from('user_lesson_progress').upsert(payload);
+    if (error) throw error;
+  }
+
+  // Step progress is saved in the background so "Nästa" never waits on the network
+  function saveInBackground(status, currentStep) {
+    saveProgress(status, currentStep).catch(() => toast('Kunde inte spara ditt framsteg – kontrollera din uppkoppling.'));
+  }
+
+  function toast(message) {
+    let el = document.getElementById('lesson-toast');
+    if (!el) {
+      el = document.createElement('div');
+      el.id = 'lesson-toast';
+      el.setAttribute('role', 'status');
+      el.className = 'fixed z-50 px-4 py-3 rounded-xl bg-text-primary text-on-primary font-label-md text-label-md shadow-lg';
+      el.style.cssText = 'left:50%;bottom:24px;transform:translateX(-50%);max-width:calc(100% - 32px)';
+      document.body.appendChild(el);
+    }
+    el.textContent = message;
+    el.hidden = false;
+    clearTimeout(el._t);
+    el._t = setTimeout(() => { el.hidden = true; }, 5000);
   }
 
   async function awardCompletion(score) {
@@ -381,14 +405,18 @@ async function initLessonPage(ctx) {
     const today = new Date().toISOString().slice(0, 10);
     const sameDay = profile.last_active_date === today;
     const newStreak = sameDay ? profile.streak_days : (isYesterday(profile.last_active_date) ? profile.streak_days + 1 : 1);
-    await sb.from('profiles').update({
+    const update = {
       xp: profile.xp + lesson.xp_reward,
       streak_days: newStreak,
       best_streak_days: Math.max(profile.best_streak_days || 0, newStreak),
       last_active_date: today,
       minutes_today: sameDay ? profile.minutes_today + lesson.estimated_minutes : lesson.estimated_minutes,
       updated_at: new Date().toISOString(),
-    }).eq('id', user.id);
+    };
+    const { error } = await sb.from('profiles').update(update).eq('id', user.id);
+    if (error) throw error;
+    Object.assign(profile, update);
+    renderSidebarChrome(profile); // refresh XP / streak in the header right away
   }
 
   // Legacy lesson bodies link onward via onclick="openLektion('id')"; disable
@@ -428,10 +456,10 @@ async function initLessonPage(ctx) {
       if (stepIndex < steps.length - 1) {
         stepIndex++;
         maxStep = Math.max(maxStep, stepIndex);
-        if (!alreadyCompleted) await saveProgress('in_progress', stepIndex);
+        if (!alreadyCompleted) saveInBackground('in_progress', stepIndex);
         renderStep();
       } else {
-        if (!alreadyCompleted) await saveProgress('in_progress', steps.length);
+        if (!alreadyCompleted) saveInBackground('in_progress', steps.length);
         resetQuiz();
         renderQuiz();
       }
@@ -490,15 +518,30 @@ async function initLessonPage(ctx) {
       optionsEl.appendChild(btn);
     });
     const goNext = async () => {
-      if (!answered) return;
+      if (!answered || saving) return;
       if (quizIndex < quiz.length - 1) {
         quizIndex++;
         renderQuiz();
       } else {
         const score = Math.round((correctCount / quiz.length) * 100);
-        await saveProgress('completed', steps.length, score);
-        await awardCompletion(score);
-        renderDone(score);
+        const btn = document.getElementById('quiz-next');
+        btn.disabled = true;
+        btn.textContent = 'Sparar…';
+        saving = true;
+        try {
+          await saveProgress('completed', steps.length, score);
+          await awardCompletion(score);
+        } catch (err) {
+          saving = false;
+          btn.disabled = false;
+          btn.textContent = 'Försök igen';
+          toast('Kunde inte spara resultatet. Kontrollera din uppkoppling och försök igen.');
+          return;
+        }
+        saving = false;
+        const earnedXp = !alreadyCompleted;
+        alreadyCompleted = true;
+        renderDone(score, earnedXp);
       }
     };
     document.getElementById('quiz-next').addEventListener('click', goNext);
@@ -510,7 +553,7 @@ async function initLessonPage(ctx) {
     };
   }
 
-  function renderDone(score) {
+  function renderDone(score, earnedXp) {
     root.innerHTML = `
       <div class="text-center py-space-xl">
         <div class="flex items-center justify-center gap-2 mb-6">
@@ -520,7 +563,7 @@ async function initLessonPage(ctx) {
           <span class="material-symbols-outlined text-[40px]">celebration</span>
         </div>
         <h2 class="font-headline-1 text-headline-1 text-text-primary mb-2">Lektion slutförd!</h2>
-        <p class="font-body-regular text-body-regular text-text-secondary mb-6">Du fick ${correctCount} av ${quiz.length} rätt (${score}%)${alreadyCompleted ? '' : ` och tjänade <strong>+${lesson.xp_reward} XP</strong>`}.</p>
+        <p class="font-body-regular text-body-regular text-text-secondary mb-6">Du fick ${correctCount} av ${quiz.length} rätt (${score}%)${earnedXp ? ` och tjänade <strong>+${lesson.xp_reward} XP</strong>` : ''}.</p>
         <div class="flex items-center justify-center gap-3">
           ${nextLesson
             ? `<a href="lektion.html?id=${encodeURIComponent(nextLesson.id)}" class="px-6 py-3 rounded-xl bg-primary-container hover:bg-primary-deep text-on-primary font-label-md text-label-md transition-all shadow-sm flex items-center gap-2"><span>Nästa: ${nextLesson.title}</span><span class="material-symbols-outlined text-[18px]">arrow_forward</span></a>`
