@@ -68,7 +68,7 @@ window.openLektion = function (id) {
 
 // Legacy lesson content ("Du har klarat allt!") calls this to return home.
 window.goHome = function () {
-  location.href = 'kurser.html';
+  location.href = 'oversikt.html';
 };
 
 function renderSidebarChrome(profile) {
@@ -101,137 +101,129 @@ function renderSidebarChrome(profile) {
 // ---------------------------------------------------------------------
 async function renderDashboard(data) {
   const { profile, lessons, progress } = data;
+  const root = document.getElementById('dashboard-root');
   const progressByLesson = new Map(progress.map(p => [p.lesson_id, p]));
+  const statusOf = l => progressByLesson.get(l.id)?.status;
 
-  const totalLessons = lessons.length;
-  const completedLessons = progress.filter(p => p.status === 'completed').length;
-  const pct = totalLessons ? Math.round((completedLessons / totalLessons) * 100) : 0;
-  const { level, xpToNext, next: nextLevel } = levelFromXp(profile.xp);
+  // MVP: all progress numbers are relative to the open lessons only
+  const openLessons = lessons.filter(l => isLessonOpen(l, lessons));
+  const openCompleted = openLessons.filter(l => statusOf(l) === 'completed').length;
+  const pct = openLessons.length ? Math.round((openCompleted / openLessons.length) * 100) : 0;
+  const { level, title: levelTitle, xpToNext, next: nextLevel } = levelFromXp(profile.xp);
+  const scored = progress.filter(p => p.quiz_score !== null && p.quiz_score !== undefined && openLessons.some(l => l.id === p.lesson_id));
+  const avgQuiz = scored.length ? Math.round(scored.reduce((s, p) => s + p.quiz_score, 0) / scored.length) : null;
 
-  const scored = progress.filter(p => p.quiz_score !== null && p.quiz_score !== undefined);
-  const avgQuizScore = scored.length ? Math.round(scored.reduce((s, p) => s + p.quiz_score, 0) / scored.length) : null;
+  const hour = new Date().getHours();
+  const greeting = hour < 10 ? 'God morgon' : hour < 18 ? 'Hej' : 'God kväll';
 
-  const greetingName = document.getElementById('greeting-name');
-  if (greetingName) greetingName.textContent = `God morgon, ${profile.display_name} 👋`;
+  // Continue card: latest in-progress open lesson, else first open lesson not yet completed
+  const inProgress = openLessons
+    .filter(l => statusOf(l) === 'in_progress')
+    .sort((a, b) => new Date(progressByLesson.get(b.id).updated_at) - new Date(progressByLesson.get(a.id).updated_at))[0];
+  const nextUp = inProgress || openLessons.find(l => statusOf(l) !== 'completed');
 
-  const journeyBadge = document.getElementById('journey-pct-badge');
-  if (journeyBadge) journeyBadge.textContent = `${pct}% klart`;
-  const journeyCenter = document.getElementById('journey-pct-center');
-  if (journeyCenter) journeyCenter.textContent = `${pct}%`;
-  const ring = document.getElementById('journey-donut-ring');
-  if (ring) {
-    const circumference = 251.2;
-    ring.setAttribute('stroke-dashoffset', String(circumference * (1 - pct / 100)));
-  }
-  const journeyCount = document.getElementById('journey-count');
-  if (journeyCount) journeyCount.textContent = `${completedLessons} av ${totalLessons}`;
-  const journeyXpNext = document.getElementById('journey-xp-next');
-  if (journeyXpNext) journeyXpNext.innerHTML = nextLevel
-    ? `Nivå ${level} · ${xpToNext} XP kvar till <strong>Nivå ${nextLevel.level}: ${nextLevel.title}</strong>`
-    : `Nivå ${level} · <strong>Högsta nivån uppnådd</strong>`;
-  const journeyQuizScore = document.getElementById('journey-quiz-score');
-  const journeyQuizLabel = document.getElementById('journey-quiz-label');
-  if (journeyQuizScore) journeyQuizScore.textContent = avgQuizScore === null ? '–' : `${avgQuizScore}%`;
-  if (journeyQuizLabel) journeyQuizLabel.textContent = avgQuizScore === null ? 'Gör ett quiz för att se resultat' : (avgQuizScore >= 80 ? 'Hög precision' : 'Fortsätt öva');
-  const journeyXpTotal = document.getElementById('journey-xp-total');
-  if (journeyXpTotal) journeyXpTotal.textContent = profile.xp.toLocaleString('sv-SE');
-
-  // Continue card: prefer an in-progress lesson, else the first not-started lesson
-  const inProgress = lessons
-    .map(l => ({ lesson: l, p: progressByLesson.get(l.id) }))
-    .filter(x => x.p && x.p.status === 'in_progress')
-    .sort((a, b) => new Date(b.p.updated_at) - new Date(a.p.updated_at))[0];
-  const nextUp = inProgress || lessons.map(l => ({ lesson: l, p: progressByLesson.get(l.id) })).find(x => !x.p || x.p.status === 'not_started');
-
-  const continueTop = document.getElementById('continue-top');
-  const continueSubtitle = document.getElementById('continue-subtitle');
-  const continueCta = document.getElementById('continue-cta');
-  if (nextUp && continueTop) {
-    const meta = CATEGORY_META[nextUp.lesson.category] || CATEGORY_META.aktier;
-    const isResume = !!inProgress;
-    continueTop.innerHTML = `
-      <div class="flex items-center justify-between">
-        <div class="flex items-center gap-2">
-          <span class="px-2.5 py-1 rounded-full bg-primary-tint text-primary-deep font-label-md text-label-md uppercase tracking-wider">${meta.label}</span>
-          <span class="inline-flex items-center text-text-tertiary font-caption-micro text-caption-micro">
-            <span class="material-symbols-outlined text-[15px] mr-1">schedule</span> ~${nextUp.lesson.estimated_minutes} minuter
-          </span>
+  let continueCard;
+  if (nextUp) {
+    const meta = CATEGORY_META[nextUp.category] || CATEGORY_META.aktier;
+    continueCard = `
+      <div class="relative overflow-hidden bg-primary-container rounded-3xl p-space-xl md:p-12 flex flex-col md:flex-row md:items-center justify-between gap-space-lg">
+        <div class="absolute -right-16 -top-16 w-64 h-64 rounded-full bg-white/10 pointer-events-none"></div>
+        <div class="relative flex flex-col gap-2 max-w-xl">
+          <span class="font-label-md text-label-md text-primary-fixed uppercase tracking-wider">${inProgress ? 'Fortsätt där du slutade' : 'Nästa lektion'} · ${meta.label}</span>
+          <h2 class="font-headline-1 text-headline-1 text-on-primary tracking-tight">${nextUp.title}</h2>
+          <p class="font-body-regular text-body-regular text-primary-fixed">${nextUp.description || ''}</p>
+          <span class="inline-flex items-center gap-1 font-caption-micro text-caption-micro text-primary-fixed"><span class="material-symbols-outlined text-[15px]">schedule</span>~${nextUp.estimated_minutes} min · ${nextUp.xp_reward} XP</span>
         </div>
-        <span class="font-label-md text-label-md text-text-tertiary">${isResume ? 'Fortsätt där du slutade' : 'Nästa lektion'}</span>
-      </div>
-      <div class="flex flex-col gap-2 max-w-xl">
-        <h3 class="font-headline-1 text-headline-1 text-text-primary leading-tight">${nextUp.lesson.title}</h3>
-        <p class="font-body-regular text-body-regular text-text-secondary">${nextUp.lesson.description}</p>
+        <a href="lektion.html?id=${encodeURIComponent(nextUp.id)}" class="relative inline-flex items-center justify-center gap-1.5 shrink-0 bg-surface-card hover:bg-primary-tint text-primary-deep font-label-md text-label-md px-space-lg py-3 rounded-xl transition-all shadow-sm">${inProgress ? 'Fortsätt' : 'Starta lektion'}<span class="material-symbols-outlined text-[16px]">arrow_forward</span></a>
       </div>`;
-    if (continueSubtitle) continueSubtitle.textContent = `Delkurs: ${meta.label}`;
-    if (continueCta) {
-      continueCta.href = `lektion.html?id=${encodeURIComponent(nextUp.lesson.id)}`;
-      continueCta.innerHTML = `<span>${isResume ? 'Fortsätt lära' : 'Starta lektion'}</span><span class="material-symbols-outlined text-[18px]">arrow_forward</span>`;
-    }
-  } else if (continueTop) {
-    continueTop.innerHTML = `<p class="font-body-regular text-body-regular text-text-secondary">Alla lektioner klara – grymt jobbat! 🎉</p>`;
+  } else {
+    continueCard = `
+      <div class="bg-positive-wash rounded-3xl p-space-xl md:p-12 flex items-center gap-space-md">
+        <span class="material-symbols-outlined text-[36px] text-positive-spruce">celebration</span>
+        <div>
+          <h2 class="font-headline-2 text-headline-2 text-text-primary">Alla öppna lektioner klara – grymt jobbat!</h2>
+          <p class="font-body-regular text-body-regular text-text-secondary mt-1">Fler lektioner är under utveckling. Du kan alltid göra om en lektion i Kurser.</p>
+        </div>
+      </div>`;
   }
 
-  // Subject cards, one per category, computed from real lesson/progress data
-  const grid = document.getElementById('subjects-grid');
-  if (grid) {
-    const byCategory = {};
-    for (const l of lessons) {
-      (byCategory[l.category] ||= []).push(l);
-    }
-    grid.innerHTML = Object.entries(CATEGORY_META).map(([key, meta]) => {
-      const catLessons = byCategory[key] || [];
-      const catCompleted = catLessons.filter(l => progressByLesson.get(l.id)?.status === 'completed').length;
-      const catTotal = catLessons.length;
-      const catPct = catTotal ? Math.round((catCompleted / catTotal) * 100) : 0;
-      const done = catTotal > 0 && catCompleted === catTotal;
-      const firstLesson = catLessons[0];
-      const href = firstLesson ? `lektion.html?id=${encodeURIComponent(firstLesson.id)}` : 'kurser.html';
+  const circumference = 251.2;
+  const stat = (icon, value, label, sub) => `
+      <div class="bg-surface-card rounded-2xl p-space-lg shadow-sm flex flex-col gap-1">
+        <span class="material-symbols-outlined text-[22px] text-primary-container">${icon}</span>
+        <span class="font-headline-1 text-headline-1 text-text-primary mt-1">${value}</span>
+        <span class="font-label-md text-label-md text-text-primary">${label}</span>
+        <span class="font-caption-micro text-caption-micro text-text-tertiary">${sub}</span>
+      </div>`;
+
+  const stats = `
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div class="bg-surface-card rounded-2xl p-space-lg shadow-sm flex items-center gap-space-md">
+        <svg class="w-20 h-20 shrink-0 -rotate-90" viewBox="0 0 100 100">
+          <circle cx="50" cy="50" r="40" fill="none" stroke="#E2E8F0" stroke-width="10"></circle>
+          <circle cx="50" cy="50" r="40" fill="none" stroke="#2563EB" stroke-width="10" stroke-linecap="round" stroke-dasharray="${circumference}" stroke-dashoffset="${circumference * (1 - pct / 100)}"></circle>
+        </svg>
+        <div class="flex flex-col">
+          <span class="font-headline-1 text-headline-1 text-text-primary">${pct}%</span>
+          <span class="font-label-md text-label-md text-text-primary">${openCompleted} av ${openLessons.length} lektioner</span>
+          <span class="font-caption-micro text-caption-micro text-text-tertiary">av de öppna lektionerna</span>
+        </div>
+      </div>
+      ${stat('bolt', profile.xp.toLocaleString('sv-SE'), `XP · Nivå ${level}`, nextLevel ? `${xpToNext} XP till ${nextLevel.title}` : levelTitle)}
+      ${stat('local_fire_department', profile.streak_days, profile.streak_days === 1 ? 'dag i rad' : 'dagar i rad', `Bästa: ${profile.best_streak_days || 0}`)}
+      ${stat('quiz', avgQuiz === null ? '–' : `${avgQuiz}%`, 'Quizsnitt', avgQuiz === null ? 'Gör ett quiz för att se resultat' : (avgQuiz >= 80 ? 'Hög precision' : 'Fortsätt öva'))}
+    </div>`;
+
+  const byCategory = {};
+  for (const l of lessons) (byCategory[l.category] ||= []).push(l);
+  for (const cat in byCategory) byCategory[cat].sort((a, b) => a.order_index - b.order_index);
+  const categoryKeys = Object.keys(CATEGORY_META).filter(k => (byCategory[k] || []).length)
+    .sort((a, b) => PAUSED_CATEGORIES.has(a) - PAUSED_CATEGORIES.has(b));
+
+  const subjects = categoryKeys.map(key => {
+    const meta = CATEGORY_META[key];
+    const first = byCategory[key].find(l => isLessonOpen(l, lessons));
+    if (!first) {
       return `
-        <a href="${href}" class="bg-surface-card rounded-2xl p-space-lg shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between group cursor-pointer">
-          <div class="flex flex-col gap-space-md">
-            <div class="flex items-center justify-between">
-              <div class="w-11 h-11 rounded-xl ${meta.iconBg} ${meta.iconColor} flex items-center justify-center">
-                <span class="material-symbols-outlined text-[24px]">${meta.icon}</span>
-              </div>
-              <span class="px-2.5 py-0.5 rounded-full ${done ? 'bg-positive-wash text-secondary' : 'bg-surface-subdued text-text-secondary'} font-caption-micro text-caption-micro flex items-center gap-1">
-                ${done ? '<span class="material-symbols-outlined text-[14px]">check</span> Avklarad' : `${catTotal} lektioner`}
-              </span>
-            </div>
-            <div class="flex flex-col gap-1">
-              <h3 class="font-headline-3 text-headline-3 text-text-primary group-hover:text-primary-deep transition-colors">${meta.label}</h3>
-              <p class="font-body-regular text-[14px] leading-relaxed text-text-secondary">${meta.desc}</p>
-            </div>
+        <div class="bg-surface-card rounded-2xl p-space-lg flex flex-col gap-space-md opacity-60">
+          <div class="flex items-center justify-between">
+            <div class="w-11 h-11 rounded-xl ${meta.iconBg} ${meta.iconColor} flex items-center justify-center"><span class="material-symbols-outlined text-[24px]">${meta.icon}</span></div>
+            <span class="inline-flex items-center px-2 py-0.5 rounded-full bg-surface-subdued text-text-tertiary text-[11px] font-semibold uppercase tracking-wide">Under utveckling</span>
           </div>
-          <div class="mt-6 flex flex-col gap-1.5">
-            <div class="flex justify-between text-caption-micro font-caption-micro text-text-tertiary">
-              <span>${catTotal ? `${catCompleted} av ${catTotal} lektioner` : 'Kommer snart'}</span>
-              <span class="font-medium ${done ? 'text-positive-spruce' : 'text-text-primary'}">${catPct}%</span>
-            </div>
-            <div class="w-full h-1.5 bg-surface-subdued rounded-full overflow-hidden">
-              <div class="h-full ${done ? 'bg-positive-spruce' : 'bg-primary-container'} rounded-full" style="width:${catPct}%"></div>
-            </div>
-          </div>
-        </a>`;
-    }).join('');
-  }
+          <h3 class="font-headline-3 text-headline-3 text-text-secondary">${meta.label}</h3>
+        </div>`;
+    }
+    const done = statusOf(first) === 'completed';
+    return `
+      <a href="lektion.html?id=${encodeURIComponent(first.id)}" class="bg-surface-card rounded-2xl p-space-lg shadow-sm hover:shadow-md transition-all flex flex-col gap-space-md group">
+        <div class="flex items-center justify-between">
+          <div class="w-11 h-11 rounded-xl ${meta.iconBg} ${meta.iconColor} flex items-center justify-center"><span class="material-symbols-outlined text-[24px]">${meta.icon}</span></div>
+          <span class="px-2.5 py-0.5 rounded-full ${done ? 'bg-positive-wash text-secondary' : 'bg-primary-tint text-primary-deep'} font-caption-micro text-caption-micro flex items-center gap-1">${done ? '<span class="material-symbols-outlined text-[14px]">check</span> Klar' : 'Lektion 1'}</span>
+        </div>
+        <div class="flex flex-col gap-1">
+          <h3 class="font-headline-3 text-headline-3 text-text-primary group-hover:text-primary-deep transition-colors">${meta.label}</h3>
+          <p class="font-body-regular text-[14px] leading-relaxed text-text-secondary">${first.title}</p>
+        </div>
+      </a>`;
+  }).join('');
 
-  const articlesGrid = document.getElementById('dashboard-articles-grid');
-  if (articlesGrid) {
-    sb.from('articles').select('id, category, title, intro, read_minutes').order('order_index').limit(3).then(({ data: articles }) => {
-      if (!articles || !articles.length) return;
-      articlesGrid.innerHTML = articles.map(a => `
-        <a href="stitch-preview-artikel.html?id=${encodeURIComponent(a.id)}" class="bg-surface-card rounded-2xl p-space-lg shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 flex flex-col gap-2 group">
-          <span class="self-start px-2.5 py-1 rounded-full bg-primary-tint text-primary-deep font-label-md text-label-md">${ARTICLE_CATEGORY_LABELS[a.category] || a.category}</span>
-          <h3 class="font-headline-3 text-headline-3 text-text-primary group-hover:text-primary-deep transition-colors leading-snug mt-2">${a.title}</h3>
-          <p class="font-body-regular text-[14px] leading-relaxed text-text-secondary line-clamp-2">${a.intro}</p>
-          <div class="flex items-center text-primary-deep font-label-md text-label-md gap-1 pt-2">
-            <span>Läs artikel</span>
-            <span class="material-symbols-outlined text-[16px] group-hover:translate-x-1 transition-transform">arrow_forward</span>
-          </div>
-        </a>`).join('');
-    });
-  }
+  root.innerHTML = `
+    <div class="mb-space-xl">
+      <span class="font-label-md text-label-md text-primary-deep uppercase tracking-wider">Översikt</span>
+      <h1 class="font-display-xl text-display-xl text-text-primary tracking-tight mt-2">${greeting}, ${profile.display_name} 👋</h1>
+    </div>
+    ${continueCard}
+    <div class="mt-12">
+      <h2 class="font-headline-2 text-headline-2 text-text-primary mb-space-md">Din resa</h2>
+      ${stats}
+    </div>
+    <div class="mt-12">
+      <div class="flex items-end justify-between mb-space-md">
+        <h2 class="font-headline-2 text-headline-2 text-text-primary">Ämnen</h2>
+        <a href="kurser.html" class="inline-flex items-center gap-1 font-label-md text-label-md text-primary-container hover:underline">Alla kurser<span class="material-symbols-outlined text-[18px]">arrow_forward</span></a>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">${subjects}</div>
+    </div>`;
 }
 
 // ---------------------------------------------------------------------
@@ -460,7 +452,7 @@ async function initLessonPage(ctx) {
         <div class="flex items-center justify-center gap-3">
           ${nextLesson
             ? `<a href="lektion.html?id=${encodeURIComponent(nextLesson.id)}" class="px-6 py-3 rounded-xl bg-primary-container hover:bg-primary-deep text-on-primary font-label-md text-label-md transition-all shadow-sm flex items-center gap-2"><span>Nästa: ${nextLesson.title}</span><span class="material-symbols-outlined text-[18px]">arrow_forward</span></a>`
-            : `<span class="px-4 py-3 rounded-xl bg-surface-subdued text-text-tertiary font-label-md text-label-md">Fler lektioner kommer snart</span>`}
+            : `<a href="oversikt.html" class="px-6 py-3 rounded-xl bg-primary-container hover:bg-primary-deep text-on-primary font-label-md text-label-md transition-all shadow-sm">Till översikten</a>`}
           <a href="kurser.html" class="px-6 py-3 rounded-xl bg-surface-subdued hover:bg-surface-container text-text-primary font-label-md text-label-md transition-all">Fler lektioner</a>
         </div>
       </div>`;
@@ -1143,7 +1135,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   const ctx = { user, profile: safeProfile, lessons: lessons || [], progress: progress || [] };
 
-  if (document.getElementById('subjects-grid')) renderDashboard(ctx);
+  if (document.getElementById('dashboard-root')) renderDashboard(ctx);
   else if (document.getElementById('lesson-root')) initLessonPage(ctx);
   else if (document.getElementById('courses-root')) initCoursesPage(ctx);
   else if (document.getElementById('journey-root')) initJourneyPage(ctx);
