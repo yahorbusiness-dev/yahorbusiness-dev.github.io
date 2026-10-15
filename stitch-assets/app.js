@@ -281,22 +281,63 @@ async function initLessonPage(ctx) {
   const crumb = document.getElementById('lesson-crumb');
   if (crumb) crumb.textContent = `${catMeta.label} • ${lesson.title}`;
 
-  const navEl = document.getElementById('lesson-nav');
-  if (navEl) {
-    navEl.innerHTML = `
-      ${prevLesson
-        ? `<a href="lektion.html?id=${encodeURIComponent(prevLesson.id)}" class="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-surface-card hover:bg-surface-subdued shadow-sm font-label-md text-label-md text-text-secondary transition-all"><span class="material-symbols-outlined text-[16px]">arrow_back</span><span>${prevLesson.title}</span></a>`
-        : '<span></span>'}
-      ${nextLesson
-        ? `<a href="lektion.html?id=${encodeURIComponent(nextLesson.id)}" class="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-surface-card hover:bg-surface-subdued shadow-sm font-label-md text-label-md text-text-secondary transition-all"><span>${nextLesson.title}</span><span class="material-symbols-outlined text-[16px]">arrow_forward</span></a>`
-        : '<a href="kurser.html" class="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-surface-card hover:bg-surface-subdued shadow-sm font-label-md text-label-md text-text-secondary transition-all"><span>Till kurser</span><span class="material-symbols-outlined text-[16px]">arrow_forward</span></a>'}
-    `;
-  }
-
   const steps = lesson.content.steps;
   const quiz = lesson.content.quiz;
   const alreadyCompleted = existingProgress?.status === 'completed';
   let stepIndex = alreadyCompleted ? 0 : Math.min(existingProgress?.current_step || 0, steps.length - 1);
+  // Furthest step reached; step dots let you jump back to any of these
+  let maxStep = alreadyCompleted ? steps.length - 1 : stepIndex;
+
+  // One key handler for the page; each view swaps in its own behaviour
+  let onKey = null;
+  document.addEventListener('keydown', e => {
+    if (!onKey || e.metaKey || e.ctrlKey || e.altKey) return;
+    const tag = document.activeElement?.tagName;
+    if (/^(INPUT|TEXTAREA|SELECT)$/.test(tag)) return;
+    // Enter on a focused button/link already clicks it natively
+    if (e.key === 'Enter' && /^(BUTTON|A)$/.test(tag)) return;
+    onKey(e);
+  });
+
+  function toTop() {
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' });
+  }
+
+  // Shared header: subject chip, label, counter and a bar covering steps + quiz
+  function lessonHeader(label, counter, position) {
+    const total = steps.length + quiz.length;
+    const dots = steps.map((_, i) => {
+      const state = i === stepIndex && position < steps.length ? 'bg-primary-container' : i <= maxStep ? 'bg-primary-fixed hover:bg-primary-deep' : 'bg-surface-subdued';
+      return `<button type="button" class="step-dot w-2.5 h-2.5 rounded-full ${state} transition-all" data-step="${i}" aria-label="Steg ${i + 1}" ${i > maxStep ? 'disabled' : ''}></button>`;
+    }).join('');
+    return `
+      <div class="mb-space-lg">
+        <div class="flex items-center justify-between gap-2 mb-3">
+          <div class="flex items-center gap-2 min-w-0">
+            <span class="px-2.5 py-1 rounded-full ${catMeta.iconBg} ${catMeta.iconColor} font-label-md text-label-md shrink-0">${catMeta.label}</span>
+            <span class="font-body-regular text-body-regular text-text-secondary truncate">${lesson.title}</span>
+          </div>
+          <div class="flex items-center gap-1.5 shrink-0">${dots}</div>
+        </div>
+        <div class="flex items-center justify-between mb-2">
+          <span class="font-caption-micro text-caption-micro text-primary uppercase tracking-wider">${label}</span>
+          <span class="font-caption-micro text-caption-micro text-text-tertiary">${counter}</span>
+        </div>
+        <div class="w-full h-1.5 bg-surface-subdued rounded-full overflow-hidden">
+          <div class="h-full bg-primary-container rounded-full transition-all duration-300" style="width:${((position + 1) / total) * 100}%"></div>
+        </div>
+      </div>`;
+  }
+
+  function bindStepDots() {
+    root.querySelectorAll('.step-dot').forEach(dot => dot.addEventListener('click', () => {
+      const i = Number(dot.dataset.step);
+      if (i > maxStep) return;
+      stepIndex = i;
+      renderStep();
+    }));
+  }
   let quizIndex = 0;
   let correctCount = 0;
   let answers = []; // per question: { chosen, correct } in original option indexes
@@ -369,19 +410,7 @@ async function initLessonPage(ctx) {
     const s = steps[stepIndex];
     const stepLabel = (s.label || '').replace(/^Steg \d+ av \d+\s*[–-]\s*/, '');
     root.innerHTML = `
-      <div class="mb-space-lg">
-        <div class="flex items-center gap-2 mb-3">
-          <span class="px-2.5 py-1 rounded-full ${catMeta.iconBg} ${catMeta.iconColor} font-label-md text-label-md">${catMeta.label}</span>
-          <span class="font-body-regular text-body-regular text-text-secondary truncate">${lesson.title}</span>
-        </div>
-        <div class="flex items-center justify-between mb-2">
-          <span class="font-caption-micro text-caption-micro text-primary uppercase tracking-wider">${stepLabel}</span>
-          <span class="font-caption-micro text-caption-micro text-text-tertiary">Steg ${stepIndex + 1} av ${steps.length}</span>
-        </div>
-        <div class="w-full h-1.5 bg-surface-subdued rounded-full overflow-hidden">
-          <div class="h-full bg-primary-container rounded-full transition-all duration-300" style="width:${((stepIndex + 1) / (steps.length + 1)) * 100}%"></div>
-        </div>
-      </div>
+      ${lessonHeader(stepLabel, `Steg ${stepIndex + 1} av ${steps.length}`, stepIndex)}
       <h1 class="font-headline-1 text-headline-1 text-text-primary mb-4">${s.title}</h1>
       <div class="prose-lesson">${s.body}</div>
       <div class="flex items-center justify-between mt-space-xl pt-space-lg border-t border-border-subtle">
@@ -392,42 +421,44 @@ async function initLessonPage(ctx) {
         </button>
       </div>`;
     lockClosedLinks();
-    document.getElementById('lesson-back').addEventListener('click', () => { stepIndex--; renderStep(); });
-    document.getElementById('lesson-next').addEventListener('click', async () => {
+    bindStepDots();
+    toTop();
+    const back = () => { if (stepIndex > 0) { stepIndex--; renderStep(); } };
+    const next = async () => {
       if (stepIndex < steps.length - 1) {
         stepIndex++;
+        maxStep = Math.max(maxStep, stepIndex);
         if (!alreadyCompleted) await saveProgress('in_progress', stepIndex);
         renderStep();
       } else {
         if (!alreadyCompleted) await saveProgress('in_progress', steps.length);
+        resetQuiz();
         renderQuiz();
       }
-    });
+    };
+    document.getElementById('lesson-back').addEventListener('click', back);
+    document.getElementById('lesson-next').addEventListener('click', next);
+    onKey = e => {
+      if (e.key === 'ArrowRight') { e.preventDefault(); next(); }
+      else if (e.key === 'ArrowLeft') { e.preventDefault(); back(); }
+    };
   }
 
   function renderQuiz() {
     let answered = false;
     const q = quiz[quizIndex];
     root.innerHTML = `
-      <div class="mb-space-lg">
-        <div class="flex items-center gap-2 mb-3">
-          <span class="px-2.5 py-1 rounded-full ${catMeta.iconBg} ${catMeta.iconColor} font-label-md text-label-md">${catMeta.label}</span>
-          <span class="font-body-regular text-body-regular text-text-secondary truncate">${lesson.title}</span>
-        </div>
-        <div class="flex items-center justify-between mb-2">
-          <span class="font-caption-micro text-caption-micro text-primary uppercase tracking-wider">Quiz</span>
-          <span class="font-caption-micro text-caption-micro text-text-tertiary">Fråga ${quizIndex + 1} av ${quiz.length}</span>
-        </div>
-        <div class="w-full h-1.5 bg-surface-subdued rounded-full overflow-hidden">
-          <div class="h-full bg-primary-container rounded-full" style="width:100%"></div>
-        </div>
-      </div>
+      ${lessonHeader('Quiz', `Fråga ${quizIndex + 1} av ${quiz.length}`, steps.length + quizIndex)}
       <h2 class="font-headline-2 text-headline-2 text-text-primary mb-6">${q.question}</h2>
       <div id="quiz-options" class="flex flex-col gap-3"></div>
       <p id="quiz-feedback" class="mt-4 font-body-medium text-body-medium hidden" aria-live="polite"></p>
-      <div class="flex justify-end mt-space-xl">
-        <button id="quiz-next" class="hidden px-6 py-3 rounded-xl bg-primary-container hover:bg-primary-deep text-on-primary font-label-md text-label-md transition-all shadow-sm">${quizIndex === quiz.length - 1 ? 'Se resultat' : 'Nästa fråga'}</button>
+      <div class="flex items-center justify-between gap-3 mt-space-xl pt-space-lg border-t border-border-subtle">
+        <button id="quiz-back" type="button" class="px-5 py-2.5 rounded-xl font-label-md text-label-md text-text-secondary hover:bg-surface-subdued transition-all" title="Quizet börjar om när du kommer tillbaka">← Tillbaka till lektionen</button>
+        <button id="quiz-next" class="invisible px-6 py-3 rounded-xl bg-primary-container hover:bg-primary-deep text-on-primary font-label-md text-label-md transition-all shadow-sm">${quizIndex === quiz.length - 1 ? 'Se resultat' : 'Nästa fråga'}</button>
       </div>`;
+    bindStepDots();
+    toTop();
+    document.getElementById('quiz-back').addEventListener('click', () => { stepIndex = steps.length - 1; renderStep(); });
     const optionsEl = document.getElementById('quiz-options');
     quizOrders[quizIndex].forEach(idx => {
       const opt = q.options[idx];
@@ -454,11 +485,12 @@ async function initLessonPage(ctx) {
           : `✗ Inte riktigt. Rätt svar: ${q.options[q.correct_index]}. ${why}`;
         fb.className = 'mt-4 font-body-medium text-body-medium ' + (correct ? 'text-positive-spruce' : 'text-critical-danger');
         fb.classList.remove('hidden');
-        document.getElementById('quiz-next').classList.remove('hidden');
+        document.getElementById('quiz-next').classList.remove('invisible');
       });
       optionsEl.appendChild(btn);
     });
-    document.getElementById('quiz-next').addEventListener('click', async () => {
+    const goNext = async () => {
+      if (!answered) return;
       if (quizIndex < quiz.length - 1) {
         quizIndex++;
         renderQuiz();
@@ -468,7 +500,14 @@ async function initLessonPage(ctx) {
         await awardCompletion(score);
         renderDone(score);
       }
-    });
+    };
+    document.getElementById('quiz-next').addEventListener('click', goNext);
+    // 1–4 picks an answer, Enter / → moves on once answered
+    onKey = e => {
+      const n = Number(e.key);
+      if (n >= 1 && n <= optionsEl.children.length) { e.preventDefault(); optionsEl.children[n - 1].click(); }
+      else if ((e.key === 'Enter' || e.key === 'ArrowRight') && answered) { e.preventDefault(); goNext(); }
+    };
   }
 
   function renderDone(score) {
