@@ -299,6 +299,32 @@ async function initLessonPage(ctx) {
   let stepIndex = alreadyCompleted ? 0 : Math.min(existingProgress?.current_step || 0, steps.length - 1);
   let quizIndex = 0;
   let correctCount = 0;
+  let answers = []; // per question: { chosen, correct } in original option indexes
+  let quizOrders = []; // per question: shuffled display order of option indexes
+
+  function shuffled(n) {
+    const a = [...Array(n).keys()];
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  // Feedback strings in the content are written as if the answer was right
+  // ("Rätt! …", "Precis – …"); strip that so it reads as a plain explanation.
+  function explanation(text) {
+    const t = (text || '').replace(/^(Helt rätt|Rätt|Precis|Korrekt|Exakt)\s*[!.]?\s*[–-]?\s*/i, '');
+    return t.charAt(0).toUpperCase() + t.slice(1);
+  }
+
+  function resetQuiz() {
+    quizIndex = 0;
+    correctCount = 0;
+    answers = [];
+    quizOrders = quiz.map(q => shuffled(q.options.length));
+  }
+  resetQuiz();
 
   async function saveProgress(status, currentStep, quizScore) {
     const payload = { user_id: user.id, lesson_id: lessonId, status, current_step: currentStep, updated_at: new Date().toISOString() };
@@ -398,27 +424,34 @@ async function initLessonPage(ctx) {
       </div>
       <h2 class="font-headline-2 text-headline-2 text-text-primary mb-6">${q.question}</h2>
       <div id="quiz-options" class="flex flex-col gap-3"></div>
-      <p id="quiz-feedback" class="mt-4 font-body-medium text-body-medium hidden"></p>
+      <p id="quiz-feedback" class="mt-4 font-body-medium text-body-medium hidden" aria-live="polite"></p>
       <div class="flex justify-end mt-space-xl">
         <button id="quiz-next" class="hidden px-6 py-3 rounded-xl bg-primary-container hover:bg-primary-deep text-on-primary font-label-md text-label-md transition-all shadow-sm">${quizIndex === quiz.length - 1 ? 'Se resultat' : 'Nästa fråga'}</button>
       </div>`;
     const optionsEl = document.getElementById('quiz-options');
-    q.options.forEach((opt, idx) => {
+    quizOrders[quizIndex].forEach(idx => {
+      const opt = q.options[idx];
       const btn = document.createElement('button');
       btn.className = 'text-left px-5 py-3.5 rounded-xl border border-border-subtle hover:border-primary-container hover:bg-primary-tint transition-all font-body-regular text-body-regular text-text-primary';
       btn.textContent = opt;
+      btn.dataset.idx = idx;
       btn.addEventListener('click', () => {
         if (answered) return;
         answered = true;
         const correct = idx === q.correct_index;
         if (correct) correctCount++;
-        Array.from(optionsEl.children).forEach((b, i) => {
+        answers[quizIndex] = { chosen: idx, correct };
+        Array.from(optionsEl.children).forEach(b => {
+          const i = Number(b.dataset.idx);
           b.disabled = true;
           if (i === q.correct_index) { b.style.borderColor = '#10B981'; b.style.background = '#ECFDF5'; }
           else if (i === idx) { b.style.borderColor = '#DC2626'; b.style.background = '#ffdad6'; }
         });
         const fb = document.getElementById('quiz-feedback');
-        fb.textContent = (correct ? '✓ Rätt! ' : '✗ Fel. ') + (q.feedback || '');
+        const why = explanation(q.feedback);
+        fb.textContent = correct
+          ? `✓ Rätt! ${why}`
+          : `✗ Inte riktigt. Rätt svar: ${q.options[q.correct_index]}. ${why}`;
         fb.className = 'mt-4 font-body-medium text-body-medium ' + (correct ? 'text-positive-spruce' : 'text-critical-danger');
         fb.classList.remove('hidden');
         document.getElementById('quiz-next').classList.remove('hidden');
