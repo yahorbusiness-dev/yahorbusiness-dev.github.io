@@ -16,6 +16,8 @@ const CATEGORY_META = {
 // categories are fully locked. Everything else shows "Under utveckling".
 const PAUSED_CATEGORIES = new Set(['krypto']);
 const OPEN_LESSONS_PER_CATEGORY = 1;
+// Minimum quiz score (%) to complete a lesson and earn XP. 0 = always pass.
+const PASS_THRESHOLD = 0;
 function isLessonOpen(lesson, lessons) {
   if (!lesson || PAUSED_CATEGORIES.has(lesson.category)) return false;
   const sameCategory = lessons.filter(l => l.category === lesson.category).sort((a, b) => a.order_index - b.order_index);
@@ -524,6 +526,7 @@ async function initLessonPage(ctx) {
         renderQuiz();
       } else {
         const score = Math.round((correctCount / quiz.length) * 100);
+        if (score < PASS_THRESHOLD) { renderDone(score, false); return; }
         const btn = document.getElementById('quiz-next');
         btn.disabled = true;
         btn.textContent = 'Sparar…';
@@ -553,24 +556,74 @@ async function initLessonPage(ctx) {
     };
   }
 
+  // "Vad du ska kunna" bullets from the lesson's own next-up box, reused as a recap
+  function masteryPoints() {
+    const tmp = document.createElement('div');
+    tmp.innerHTML = steps.map(s => s.body).join('');
+    const el = tmp.querySelector('.next-up-mastery');
+    return el ? el.textContent.split('·').map(t => t.trim()).filter(Boolean) : [];
+  }
+
+  // Suggest the first open, not yet completed lesson in another subject
+  function suggestedNext() {
+    const done = new Set(ctx.progress.filter(p => p.status === 'completed').map(p => p.lesson_id));
+    done.add(lesson.id);
+    const order = Object.keys(CATEGORY_META);
+    return lessons
+      .filter(l => l.category !== lesson.category && isLessonOpen(l, lessons) && !done.has(l.id))
+      .sort((a, b) => order.indexOf(a.category) - order.indexOf(b.category))[0] || null;
+  }
+
   function renderDone(score, earnedXp) {
+    onKey = null;
+    const passed = score >= PASS_THRESHOLD;
+    const points = masteryPoints();
+    const missed = quiz.map((q, i) => ({ q, a: answers[i] })).filter(x => x.a && !x.a.correct);
+    const next = suggestedNext();
+    const nextMeta = next && (CATEGORY_META[next.category] || CATEGORY_META.aktier);
+    const btnPrimary = 'inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-primary-container hover:bg-primary-deep text-on-primary font-label-md text-label-md transition-all shadow-sm';
+    const btnSecondary = 'inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-surface-subdued hover:bg-surface-container text-text-primary font-label-md text-label-md transition-all';
+
     root.innerHTML = `
-      <div class="text-center py-space-xl">
-        <div class="flex items-center justify-center gap-2 mb-6">
-          <span class="px-2.5 py-1 rounded-full ${catMeta.iconBg} ${catMeta.iconColor} font-label-md text-label-md">${catMeta.label}</span>
+      <div class="text-center pt-4">
+        <span class="px-2.5 py-1 rounded-full ${catMeta.iconBg} ${catMeta.iconColor} font-label-md text-label-md">${catMeta.label}</span>
+        <div class="w-20 h-20 rounded-full ${passed ? 'bg-positive-wash text-positive-spruce' : 'bg-primary-tint text-primary-deep'} flex items-center justify-center mx-auto mt-6 mb-4">
+          <span class="material-symbols-outlined text-[40px]">${passed ? 'celebration' : 'school'}</span>
         </div>
-        <div class="w-20 h-20 rounded-full bg-positive-wash text-positive-spruce flex items-center justify-center mx-auto mb-6">
-          <span class="material-symbols-outlined text-[40px]">celebration</span>
+        <h2 class="font-headline-1 text-headline-1 text-text-primary mb-2">${passed ? 'Lektion klar!' : 'Nästan där!'}</h2>
+        <p class="font-body-medium text-body-medium text-text-secondary">Du fick <strong>${correctCount} av ${quiz.length}</strong> rätt (${score}%)${earnedXp ? ` och tjänade <strong class="text-primary-deep">+${lesson.xp_reward} XP</strong>` : ''}.</p>
+        ${passed ? '' : `<p class="font-body-regular text-body-regular text-text-secondary mt-1">Du behöver minst ${PASS_THRESHOLD}% rätt för att klara lektionen.</p>`}
+      </div>
+      ${points.length ? `
+      <div class="mt-space-xl bg-positive-wash rounded-2xl p-space-lg">
+        <p class="font-label-md text-label-md text-positive-spruce uppercase tracking-wider mb-2">Det här kan du nu</p>
+        <ul class="flex flex-col gap-1.5">
+          ${points.map(p => `<li class="flex items-start gap-2 font-body-regular text-body-regular text-text-primary"><span class="material-symbols-outlined text-[20px] text-positive-spruce">check_circle</span>${p}</li>`).join('')}
+        </ul>
+      </div>` : ''}
+      ${missed.length ? `
+      <div class="mt-space-lg">
+        <p class="font-label-md text-label-md text-text-primary mb-3">Frågor att titta på igen</p>
+        <div class="flex flex-col gap-3">
+          ${missed.map(({ q, a }) => `
+          <div class="border border-border-subtle rounded-xl p-space-md">
+            <p class="font-label-md text-label-md text-text-primary">${q.question}</p>
+            <p class="font-body-regular text-[14px] text-critical-danger mt-1">Ditt svar: ${q.options[a.chosen]}</p>
+            <p class="font-body-regular text-[14px] text-positive-spruce">Rätt svar: ${q.options[q.correct_index]}</p>
+            ${q.feedback ? `<p class="font-body-regular text-[14px] text-text-secondary mt-1">${explanation(q.feedback)}</p>` : ''}
+          </div>`).join('')}
         </div>
-        <h2 class="font-headline-1 text-headline-1 text-text-primary mb-2">Lektion slutförd!</h2>
-        <p class="font-body-regular text-body-regular text-text-secondary mb-6">Du fick ${correctCount} av ${quiz.length} rätt (${score}%)${earnedXp ? ` och tjänade <strong>+${lesson.xp_reward} XP</strong>` : ''}.</p>
-        <div class="flex items-center justify-center gap-3">
-          ${nextLesson
-            ? `<a href="lektion.html?id=${encodeURIComponent(nextLesson.id)}" class="px-6 py-3 rounded-xl bg-primary-container hover:bg-primary-deep text-on-primary font-label-md text-label-md transition-all shadow-sm flex items-center gap-2"><span>Nästa: ${nextLesson.title}</span><span class="material-symbols-outlined text-[18px]">arrow_forward</span></a>`
-            : `<a href="oversikt.html" class="px-6 py-3 rounded-xl bg-primary-container hover:bg-primary-deep text-on-primary font-label-md text-label-md transition-all shadow-sm">Till översikten</a>`}
-          <a href="kurser.html" class="px-6 py-3 rounded-xl bg-surface-subdued hover:bg-surface-container text-text-primary font-label-md text-label-md transition-all">Fler lektioner</a>
-        </div>
-      </div>`;
+      </div>` : ''}
+      <div class="mt-space-xl pt-space-lg border-t border-border-subtle flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center justify-center gap-3">
+        ${passed && next
+          ? `<a href="lektion.html?id=${encodeURIComponent(next.id)}" class="${btnPrimary}"><span>Nästa: ${nextMeta.label}</span><span class="material-symbols-outlined text-[18px]">arrow_forward</span></a>`
+          : ''}
+        <button id="done-retake" type="button" class="${passed && next ? btnSecondary : btnPrimary}"><span class="material-symbols-outlined text-[18px]">replay</span><span>Gör om quizet</span></button>
+        <a href="oversikt.html" class="${btnSecondary}">Till översikten</a>
+      </div>
+      ${passed && !next ? '<p class="text-center font-body-regular text-body-regular text-text-secondary mt-space-md">Du har klarat alla öppna lektioner – fler är under utveckling!</p>' : ''}`;
+    toTop();
+    document.getElementById('done-retake').addEventListener('click', () => { resetQuiz(); renderQuiz(); });
   }
 
   if (existingProgress?.status === 'in_progress' && existingProgress.current_step >= steps.length) {
