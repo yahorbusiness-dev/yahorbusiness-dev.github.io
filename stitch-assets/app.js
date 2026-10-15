@@ -17,7 +17,7 @@ const CATEGORY_META = {
 const PAUSED_CATEGORIES = new Set(['krypto']);
 const OPEN_LESSONS_PER_CATEGORY = 1;
 // Minimum quiz score (%) to complete a lesson and earn XP. 0 = always pass.
-const PASS_THRESHOLD = 0;
+const PASS_THRESHOLD = 90;
 function isLessonOpen(lesson, lessons) {
   if (!lesson || PAUSED_CATEGORIES.has(lesson.category)) return false;
   const sameCategory = lessons.filter(l => l.category === lesson.category).sort((a, b) => a.order_index - b.order_index);
@@ -300,8 +300,12 @@ async function initLessonPage(ctx) {
   // Shared header: subject chip, label, counter and a bar covering steps + quiz
   function lessonHeader(label, counter, position) {
     const total = steps.length + quiz.length;
+    // During the quiz the dots are a static indicator; jumping back is only via
+    // "Tillbaka till lektionen", which restarts the quiz.
+    const inQuiz = position >= steps.length;
     const dots = steps.map((_, i) => {
-      const state = i === stepIndex && position < steps.length ? 'bg-primary-container' : i <= maxStep ? 'bg-primary-fixed hover:bg-primary-deep' : 'bg-surface-subdued';
+      if (inQuiz) return `<span class="w-2.5 h-2.5 rounded-full bg-primary-fixed" aria-hidden="true"></span>`;
+      const state = i === stepIndex ? 'bg-primary-container' : i <= maxStep ? 'bg-primary-fixed hover:bg-primary-deep' : 'bg-surface-subdued';
       return `<button type="button" class="step-dot w-2.5 h-2.5 rounded-full ${state} transition-all" data-step="${i}" aria-label="Steg ${i + 1}" ${i > maxStep ? 'disabled' : ''}></button>`;
     }).join('');
     return `
@@ -439,6 +443,9 @@ async function initLessonPage(ctx) {
           <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
         </button>
       </div>`;
+    // The "Vad du ska kunna / Fortsätt med" box is shown on the done screen after
+    // a passed quiz instead, so hide it while reading.
+    root.querySelectorAll('.prose-lesson .section-next-up').forEach(el => el.remove());
     lockClosedLinks();
     bindStepDots();
     toTop();
@@ -571,7 +578,7 @@ async function initLessonPage(ctx) {
   function renderDone(score, earnedXp) {
     onKey = null;
     const passed = score >= PASS_THRESHOLD;
-    const points = masteryPoints();
+    const points = passed ? masteryPoints() : [];
     const missed = quiz.map((q, i) => ({ q, a: answers[i] })).filter(x => x.a && !x.a.correct);
     const next = suggestedNext();
     const nextMeta = next && (CATEGORY_META[next.category] || CATEGORY_META.aktier);
@@ -586,7 +593,7 @@ async function initLessonPage(ctx) {
         </div>
         <h2 class="font-headline-1 text-headline-1 text-text-primary mb-2">${passed ? 'Lektion klar!' : 'Nästan där!'}</h2>
         <p class="font-body-medium text-body-medium text-text-secondary">Du fick <strong>${correctCount} av ${quiz.length}</strong> rätt (${score}%)${earnedXp ? ` och tjänade <strong class="text-primary-deep">+${lesson.xp_reward} XP</strong>` : ''}.</p>
-        ${passed ? '' : `<p class="font-body-regular text-body-regular text-text-secondary mt-1">Du behöver minst ${PASS_THRESHOLD}% rätt för att klara lektionen.</p>`}
+        ${passed ? '' : `<p class="font-body-regular text-body-regular text-text-secondary mt-1">Du behöver minst ${Math.ceil(quiz.length * PASS_THRESHOLD / 100)} av ${quiz.length} rätt för att gå vidare.</p>`}
       </div>
       ${points.length ? `
       <div class="mt-space-xl bg-positive-wash rounded-2xl p-space-lg">
@@ -613,11 +620,13 @@ async function initLessonPage(ctx) {
           ? `<a href="lektion.html?id=${encodeURIComponent(next.id)}" class="${btnPrimary}"><span>Nästa: ${nextMeta.label}</span><span class="material-symbols-outlined text-[18px]">arrow_forward</span></a>`
           : ''}
         <button id="done-retake" type="button" class="${passed && next ? btnSecondary : btnPrimary}"><span class="material-symbols-outlined text-[18px]">replay</span><span>Gör om quizet</span></button>
+        ${passed ? '' : `<button id="done-reread" type="button" class="${btnSecondary}"><span class="material-symbols-outlined text-[18px]">menu_book</span><span>Läs lektionen igen</span></button>`}
         <a href="oversikt.html" class="${btnSecondary}">Till översikten</a>
       </div>
       ${passed && !next ? '<p class="text-center font-body-regular text-body-regular text-text-secondary mt-space-md">Du har klarat alla öppna lektioner – fler är under utveckling!</p>' : ''}`;
     toTop();
     document.getElementById('done-retake').addEventListener('click', () => { resetQuiz(); renderQuiz(); });
+    document.getElementById('done-reread')?.addEventListener('click', () => { stepIndex = 0; renderStep(); });
   }
 
   if (existingProgress?.status === 'in_progress' && existingProgress.current_step >= steps.length) {
