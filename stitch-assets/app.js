@@ -12,6 +12,17 @@ const CATEGORY_META = {
   ranta: { label: 'Ränta på ränta', icon: 'auto_graph', iconBg: 'bg-positive-wash', iconColor: 'text-secondary', desc: 'Matematiken bakom exponentiell förmögenhetstillväxt över tid.' },
 };
 
+// MVP scope: only the first lesson in each category is open; paused
+// categories are fully locked. Everything else shows "Under utveckling".
+const PAUSED_CATEGORIES = new Set(['krypto']);
+const OPEN_LESSONS_PER_CATEGORY = 1;
+function isLessonOpen(lesson, lessons) {
+  if (!lesson || PAUSED_CATEGORIES.has(lesson.category)) return false;
+  const sameCategory = lessons.filter(l => l.category === lesson.category).sort((a, b) => a.order_index - b.order_index);
+  const pos = sameCategory.findIndex(l => l.id === lesson.id);
+  return pos >= 0 && pos < OPEN_LESSONS_PER_CATEGORY;
+}
+
 function initialsFromName(name) {
   if (!name) return '–';
   const parts = name.trim().split(/\s+/);
@@ -52,12 +63,12 @@ async function signOut() {
 // Legacy lesson content ("next-up-links") calls this inline via onclick to
 // jump straight to another lesson id.
 window.openLektion = function (id) {
-  location.href = 'stitch-preview-lektion.html?id=' + encodeURIComponent(id);
+  location.href = 'lektion.html?id=' + encodeURIComponent(id);
 };
 
 // Legacy lesson content ("Du har klarat allt!") calls this to return home.
 window.goHome = function () {
-  location.href = 'index-stitch-preview.html';
+  location.href = 'oversikt.html';
 };
 
 function renderSidebarChrome(profile) {
@@ -70,6 +81,8 @@ function renderSidebarChrome(profile) {
   if (sbLevelXp) sbLevelXp.textContent = `Nivå ${level} • ${title}`;
   const hdrXp = document.getElementById('hdr-xp');
   if (hdrXp) hdrXp.textContent = `${profile.xp.toLocaleString('sv-SE')} XP`;
+  const hdrStreak = document.getElementById('hdr-streak');
+  if (hdrStreak) hdrStreak.textContent = profile.streak_days;
   const sbStreak = document.getElementById('sb-streak-days');
   if (sbStreak) sbStreak.textContent = `${profile.streak_days} dagars streak`;
   const goalPct = profile.daily_goal_minutes ? Math.min(100, Math.round((profile.minutes_today / profile.daily_goal_minutes) * 100)) : 0;
@@ -88,137 +101,129 @@ function renderSidebarChrome(profile) {
 // ---------------------------------------------------------------------
 async function renderDashboard(data) {
   const { profile, lessons, progress } = data;
+  const root = document.getElementById('dashboard-root');
   const progressByLesson = new Map(progress.map(p => [p.lesson_id, p]));
+  const statusOf = l => progressByLesson.get(l.id)?.status;
 
-  const totalLessons = lessons.length;
-  const completedLessons = progress.filter(p => p.status === 'completed').length;
-  const pct = totalLessons ? Math.round((completedLessons / totalLessons) * 100) : 0;
-  const { level, xpToNext, next: nextLevel } = levelFromXp(profile.xp);
+  // MVP: all progress numbers are relative to the open lessons only
+  const openLessons = lessons.filter(l => isLessonOpen(l, lessons));
+  const openCompleted = openLessons.filter(l => statusOf(l) === 'completed').length;
+  const pct = openLessons.length ? Math.round((openCompleted / openLessons.length) * 100) : 0;
+  const { level, title: levelTitle, xpToNext, next: nextLevel } = levelFromXp(profile.xp);
+  const scored = progress.filter(p => p.quiz_score !== null && p.quiz_score !== undefined && openLessons.some(l => l.id === p.lesson_id));
+  const avgQuiz = scored.length ? Math.round(scored.reduce((s, p) => s + p.quiz_score, 0) / scored.length) : null;
 
-  const scored = progress.filter(p => p.quiz_score !== null && p.quiz_score !== undefined);
-  const avgQuizScore = scored.length ? Math.round(scored.reduce((s, p) => s + p.quiz_score, 0) / scored.length) : null;
+  const hour = new Date().getHours();
+  const greeting = hour < 10 ? 'God morgon' : hour < 18 ? 'Hej' : 'God kväll';
 
-  const greetingName = document.getElementById('greeting-name');
-  if (greetingName) greetingName.textContent = `God morgon, ${profile.display_name} 👋`;
+  // Continue card: latest in-progress open lesson, else first open lesson not yet completed
+  const inProgress = openLessons
+    .filter(l => statusOf(l) === 'in_progress')
+    .sort((a, b) => new Date(progressByLesson.get(b.id).updated_at) - new Date(progressByLesson.get(a.id).updated_at))[0];
+  const nextUp = inProgress || openLessons.find(l => statusOf(l) !== 'completed');
 
-  const journeyBadge = document.getElementById('journey-pct-badge');
-  if (journeyBadge) journeyBadge.textContent = `${pct}% klart`;
-  const journeyCenter = document.getElementById('journey-pct-center');
-  if (journeyCenter) journeyCenter.textContent = `${pct}%`;
-  const ring = document.getElementById('journey-donut-ring');
-  if (ring) {
-    const circumference = 251.2;
-    ring.setAttribute('stroke-dashoffset', String(circumference * (1 - pct / 100)));
-  }
-  const journeyCount = document.getElementById('journey-count');
-  if (journeyCount) journeyCount.textContent = `${completedLessons} av ${totalLessons}`;
-  const journeyXpNext = document.getElementById('journey-xp-next');
-  if (journeyXpNext) journeyXpNext.innerHTML = nextLevel
-    ? `Nivå ${level} · ${xpToNext} XP kvar till <strong>Nivå ${nextLevel.level}: ${nextLevel.title}</strong>`
-    : `Nivå ${level} · <strong>Högsta nivån uppnådd</strong>`;
-  const journeyQuizScore = document.getElementById('journey-quiz-score');
-  const journeyQuizLabel = document.getElementById('journey-quiz-label');
-  if (journeyQuizScore) journeyQuizScore.textContent = avgQuizScore === null ? '–' : `${avgQuizScore}%`;
-  if (journeyQuizLabel) journeyQuizLabel.textContent = avgQuizScore === null ? 'Gör ett quiz för att se resultat' : (avgQuizScore >= 80 ? 'Hög precision' : 'Fortsätt öva');
-  const journeyXpTotal = document.getElementById('journey-xp-total');
-  if (journeyXpTotal) journeyXpTotal.textContent = profile.xp.toLocaleString('sv-SE');
-
-  // Continue card: prefer an in-progress lesson, else the first not-started lesson
-  const inProgress = lessons
-    .map(l => ({ lesson: l, p: progressByLesson.get(l.id) }))
-    .filter(x => x.p && x.p.status === 'in_progress')
-    .sort((a, b) => new Date(b.p.updated_at) - new Date(a.p.updated_at))[0];
-  const nextUp = inProgress || lessons.map(l => ({ lesson: l, p: progressByLesson.get(l.id) })).find(x => !x.p || x.p.status === 'not_started');
-
-  const continueTop = document.getElementById('continue-top');
-  const continueSubtitle = document.getElementById('continue-subtitle');
-  const continueCta = document.getElementById('continue-cta');
-  if (nextUp && continueTop) {
-    const meta = CATEGORY_META[nextUp.lesson.category] || CATEGORY_META.aktier;
-    const isResume = !!inProgress;
-    continueTop.innerHTML = `
-      <div class="flex items-center justify-between">
-        <div class="flex items-center gap-2">
-          <span class="px-2.5 py-1 rounded-full bg-primary-tint text-primary-deep font-label-md text-label-md uppercase tracking-wider">${meta.label}</span>
-          <span class="inline-flex items-center text-text-tertiary font-caption-micro text-caption-micro">
-            <span class="material-symbols-outlined text-[15px] mr-1">schedule</span> ~${nextUp.lesson.estimated_minutes} minuter
-          </span>
+  let continueCard;
+  if (nextUp) {
+    const meta = CATEGORY_META[nextUp.category] || CATEGORY_META.aktier;
+    continueCard = `
+      <div class="relative overflow-hidden bg-primary-container rounded-3xl p-space-xl md:p-12 flex flex-col md:flex-row md:items-center justify-between gap-space-lg">
+        <div class="absolute -right-16 -top-16 w-64 h-64 rounded-full bg-white/10 pointer-events-none"></div>
+        <div class="relative flex flex-col gap-2 max-w-xl">
+          <span class="font-label-md text-label-md text-primary-fixed uppercase tracking-wider">${inProgress ? 'Fortsätt där du slutade' : 'Nästa lektion'} · ${meta.label}</span>
+          <h2 class="font-headline-1 text-headline-1 text-on-primary tracking-tight">${nextUp.title}</h2>
+          <p class="font-body-regular text-body-regular text-primary-fixed">${nextUp.description || ''}</p>
+          <span class="inline-flex items-center gap-1 font-caption-micro text-caption-micro text-primary-fixed"><span class="material-symbols-outlined text-[15px]">schedule</span>~${nextUp.estimated_minutes} min · ${nextUp.xp_reward} XP</span>
         </div>
-        <span class="font-label-md text-label-md text-text-tertiary">${isResume ? 'Fortsätt där du slutade' : 'Nästa lektion'}</span>
-      </div>
-      <div class="flex flex-col gap-2 max-w-xl">
-        <h3 class="font-headline-1 text-headline-1 text-text-primary leading-tight">${nextUp.lesson.title}</h3>
-        <p class="font-body-regular text-body-regular text-text-secondary">${nextUp.lesson.description}</p>
+        <a href="lektion.html?id=${encodeURIComponent(nextUp.id)}" class="relative inline-flex items-center justify-center gap-1.5 shrink-0 bg-surface-card hover:bg-primary-tint text-primary-deep font-label-md text-label-md px-space-lg py-3 rounded-xl transition-all shadow-sm">${inProgress ? 'Fortsätt' : 'Starta lektion'}<span class="material-symbols-outlined text-[16px]">arrow_forward</span></a>
       </div>`;
-    if (continueSubtitle) continueSubtitle.textContent = `Delkurs: ${meta.label}`;
-    if (continueCta) {
-      continueCta.href = `stitch-preview-lektion.html?id=${encodeURIComponent(nextUp.lesson.id)}`;
-      continueCta.innerHTML = `<span>${isResume ? 'Fortsätt lära' : 'Starta lektion'}</span><span class="material-symbols-outlined text-[18px]">arrow_forward</span>`;
-    }
-  } else if (continueTop) {
-    continueTop.innerHTML = `<p class="font-body-regular text-body-regular text-text-secondary">Alla lektioner klara – grymt jobbat! 🎉</p>`;
+  } else {
+    continueCard = `
+      <div class="bg-positive-wash rounded-3xl p-space-xl md:p-12 flex items-center gap-space-md">
+        <span class="material-symbols-outlined text-[36px] text-positive-spruce">celebration</span>
+        <div>
+          <h2 class="font-headline-2 text-headline-2 text-text-primary">Alla öppna lektioner klara – grymt jobbat!</h2>
+          <p class="font-body-regular text-body-regular text-text-secondary mt-1">Fler lektioner är under utveckling. Du kan alltid göra om en lektion i Kurser.</p>
+        </div>
+      </div>`;
   }
 
-  // Subject cards, one per category, computed from real lesson/progress data
-  const grid = document.getElementById('subjects-grid');
-  if (grid) {
-    const byCategory = {};
-    for (const l of lessons) {
-      (byCategory[l.category] ||= []).push(l);
-    }
-    grid.innerHTML = Object.entries(CATEGORY_META).map(([key, meta]) => {
-      const catLessons = byCategory[key] || [];
-      const catCompleted = catLessons.filter(l => progressByLesson.get(l.id)?.status === 'completed').length;
-      const catTotal = catLessons.length;
-      const catPct = catTotal ? Math.round((catCompleted / catTotal) * 100) : 0;
-      const done = catTotal > 0 && catCompleted === catTotal;
-      const firstLesson = catLessons[0];
-      const href = firstLesson ? `stitch-preview-lektion.html?id=${encodeURIComponent(firstLesson.id)}` : 'stitch-preview-kurser.html';
+  const circumference = 251.2;
+  const stat = (icon, value, label, sub) => `
+      <div class="bg-surface-card rounded-2xl p-space-lg shadow-sm flex flex-col gap-1">
+        <span class="material-symbols-outlined text-[22px] text-primary-container">${icon}</span>
+        <span class="font-headline-1 text-headline-1 text-text-primary mt-1">${value}</span>
+        <span class="font-label-md text-label-md text-text-primary">${label}</span>
+        <span class="font-caption-micro text-caption-micro text-text-tertiary">${sub}</span>
+      </div>`;
+
+  const stats = `
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div class="bg-surface-card rounded-2xl p-space-lg shadow-sm flex items-center gap-space-md">
+        <svg class="w-20 h-20 shrink-0 -rotate-90" viewBox="0 0 100 100">
+          <circle cx="50" cy="50" r="40" fill="none" stroke="#E2E8F0" stroke-width="10"></circle>
+          <circle cx="50" cy="50" r="40" fill="none" stroke="#2563EB" stroke-width="10" stroke-linecap="round" stroke-dasharray="${circumference}" stroke-dashoffset="${circumference * (1 - pct / 100)}"></circle>
+        </svg>
+        <div class="flex flex-col">
+          <span class="font-headline-1 text-headline-1 text-text-primary">${pct}%</span>
+          <span class="font-label-md text-label-md text-text-primary">${openCompleted} av ${openLessons.length} lektioner</span>
+          <span class="font-caption-micro text-caption-micro text-text-tertiary">av de öppna lektionerna</span>
+        </div>
+      </div>
+      ${stat('bolt', profile.xp.toLocaleString('sv-SE'), `XP · Nivå ${level}`, nextLevel ? `${xpToNext} XP till ${nextLevel.title}` : levelTitle)}
+      ${stat('local_fire_department', profile.streak_days, profile.streak_days === 1 ? 'dag i rad' : 'dagar i rad', `Bästa: ${profile.best_streak_days || 0}`)}
+      ${stat('quiz', avgQuiz === null ? '–' : `${avgQuiz}%`, 'Quizsnitt', avgQuiz === null ? 'Gör ett quiz för att se resultat' : (avgQuiz >= 80 ? 'Hög precision' : 'Fortsätt öva'))}
+    </div>`;
+
+  const byCategory = {};
+  for (const l of lessons) (byCategory[l.category] ||= []).push(l);
+  for (const cat in byCategory) byCategory[cat].sort((a, b) => a.order_index - b.order_index);
+  const categoryKeys = Object.keys(CATEGORY_META).filter(k => (byCategory[k] || []).length)
+    .sort((a, b) => PAUSED_CATEGORIES.has(a) - PAUSED_CATEGORIES.has(b));
+
+  const subjects = categoryKeys.map(key => {
+    const meta = CATEGORY_META[key];
+    const first = byCategory[key].find(l => isLessonOpen(l, lessons));
+    if (!first) {
       return `
-        <a href="${href}" class="bg-surface-card rounded-2xl p-space-lg shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between group cursor-pointer">
-          <div class="flex flex-col gap-space-md">
-            <div class="flex items-center justify-between">
-              <div class="w-11 h-11 rounded-xl ${meta.iconBg} ${meta.iconColor} flex items-center justify-center">
-                <span class="material-symbols-outlined text-[24px]">${meta.icon}</span>
-              </div>
-              <span class="px-2.5 py-0.5 rounded-full ${done ? 'bg-positive-wash text-secondary' : 'bg-surface-subdued text-text-secondary'} font-caption-micro text-caption-micro flex items-center gap-1">
-                ${done ? '<span class="material-symbols-outlined text-[14px]">check</span> Avklarad' : `${catTotal} lektioner`}
-              </span>
-            </div>
-            <div class="flex flex-col gap-1">
-              <h3 class="font-headline-3 text-headline-3 text-text-primary group-hover:text-primary-deep transition-colors">${meta.label}</h3>
-              <p class="font-body-regular text-[14px] leading-relaxed text-text-secondary">${meta.desc}</p>
-            </div>
+        <div class="bg-surface-card rounded-2xl p-space-lg flex flex-col gap-space-md opacity-60">
+          <div class="flex items-center justify-between">
+            <div class="w-11 h-11 rounded-xl ${meta.iconBg} ${meta.iconColor} flex items-center justify-center"><span class="material-symbols-outlined text-[24px]">${meta.icon}</span></div>
+            <span class="inline-flex items-center px-2 py-0.5 rounded-full bg-surface-subdued text-text-tertiary text-[11px] font-semibold uppercase tracking-wide">Under utveckling</span>
           </div>
-          <div class="mt-6 flex flex-col gap-1.5">
-            <div class="flex justify-between text-caption-micro font-caption-micro text-text-tertiary">
-              <span>${catTotal ? `${catCompleted} av ${catTotal} lektioner` : 'Kommer snart'}</span>
-              <span class="font-medium ${done ? 'text-positive-spruce' : 'text-text-primary'}">${catPct}%</span>
-            </div>
-            <div class="w-full h-1.5 bg-surface-subdued rounded-full overflow-hidden">
-              <div class="h-full ${done ? 'bg-positive-spruce' : 'bg-primary-container'} rounded-full" style="width:${catPct}%"></div>
-            </div>
-          </div>
-        </a>`;
-    }).join('');
-  }
+          <h3 class="font-headline-3 text-headline-3 text-text-secondary">${meta.label}</h3>
+        </div>`;
+    }
+    const done = statusOf(first) === 'completed';
+    return `
+      <a href="lektion.html?id=${encodeURIComponent(first.id)}" class="bg-surface-card rounded-2xl p-space-lg shadow-sm hover:shadow-md transition-all flex flex-col gap-space-md group">
+        <div class="flex items-center justify-between">
+          <div class="w-11 h-11 rounded-xl ${meta.iconBg} ${meta.iconColor} flex items-center justify-center"><span class="material-symbols-outlined text-[24px]">${meta.icon}</span></div>
+          <span class="px-2.5 py-0.5 rounded-full ${done ? 'bg-positive-wash text-secondary' : 'bg-primary-tint text-primary-deep'} font-caption-micro text-caption-micro flex items-center gap-1">${done ? '<span class="material-symbols-outlined text-[14px]">check</span> Klar' : 'Lektion 1'}</span>
+        </div>
+        <div class="flex flex-col gap-1">
+          <h3 class="font-headline-3 text-headline-3 text-text-primary group-hover:text-primary-deep transition-colors">${meta.label}</h3>
+          <p class="font-body-regular text-[14px] leading-relaxed text-text-secondary">${first.title}</p>
+        </div>
+      </a>`;
+  }).join('');
 
-  const articlesGrid = document.getElementById('dashboard-articles-grid');
-  if (articlesGrid) {
-    sb.from('articles').select('id, category, title, intro, read_minutes').order('order_index').limit(3).then(({ data: articles }) => {
-      if (!articles || !articles.length) return;
-      articlesGrid.innerHTML = articles.map(a => `
-        <a href="stitch-preview-artikel.html?id=${encodeURIComponent(a.id)}" class="bg-surface-card rounded-2xl p-space-lg shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 flex flex-col gap-2 group">
-          <span class="self-start px-2.5 py-1 rounded-full bg-primary-tint text-primary-deep font-label-md text-label-md">${ARTICLE_CATEGORY_LABELS[a.category] || a.category}</span>
-          <h3 class="font-headline-3 text-headline-3 text-text-primary group-hover:text-primary-deep transition-colors leading-snug mt-2">${a.title}</h3>
-          <p class="font-body-regular text-[14px] leading-relaxed text-text-secondary line-clamp-2">${a.intro}</p>
-          <div class="flex items-center text-primary-deep font-label-md text-label-md gap-1 pt-2">
-            <span>Läs artikel</span>
-            <span class="material-symbols-outlined text-[16px] group-hover:translate-x-1 transition-transform">arrow_forward</span>
-          </div>
-        </a>`).join('');
-    });
-  }
+  root.innerHTML = `
+    <div class="mb-space-xl">
+      <span class="font-label-md text-label-md text-primary-deep uppercase tracking-wider">Översikt</span>
+      <h1 class="font-display-xl text-display-xl text-text-primary tracking-tight mt-2">${greeting}, ${profile.display_name} 👋</h1>
+    </div>
+    ${continueCard}
+    <div class="mt-12">
+      <h2 class="font-headline-2 text-headline-2 text-text-primary mb-space-md">Din resa</h2>
+      ${stats}
+    </div>
+    <div class="mt-12">
+      <div class="flex items-end justify-between mb-space-md">
+        <h2 class="font-headline-2 text-headline-2 text-text-primary">Ämnen</h2>
+        <a href="kurser.html" class="inline-flex items-center gap-1 font-label-md text-label-md text-primary-container hover:underline">Alla kurser<span class="material-symbols-outlined text-[18px]">arrow_forward</span></a>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">${subjects}</div>
+    </div>`;
 }
 
 // ---------------------------------------------------------------------
@@ -236,7 +241,7 @@ async function initLessonPage(ctx) {
   const root = document.getElementById('lesson-root');
   const lessonId = new URLSearchParams(location.search).get('id');
   if (!lessonId) {
-    root.innerHTML = '<p class="font-body-regular text-body-regular text-text-secondary">Ingen lektion vald. <a class="text-primary underline" href="stitch-preview-kurser.html">Gå till kurser →</a></p>';
+    root.innerHTML = '<p class="font-body-regular text-body-regular text-text-secondary">Ingen lektion vald. <a class="text-primary underline" href="kurser.html">Gå till kurser →</a></p>';
     return;
   }
 
@@ -250,11 +255,26 @@ async function initLessonPage(ctx) {
     return;
   }
 
+  if (!isLessonOpen(lesson, lessons)) {
+    root.innerHTML = `
+      <div class="text-center py-space-xl">
+        <div class="w-16 h-16 rounded-full bg-surface-subdued text-text-tertiary flex items-center justify-center mx-auto mb-4">
+          <span class="material-symbols-outlined text-[32px]">lock</span>
+        </div>
+        <h1 class="font-headline-1 text-headline-1 text-text-primary mb-2">Under utveckling</h1>
+        <p class="font-body-regular text-body-regular text-text-secondary mb-6">Den här lektionen är inte klar än. Börja med första lektionen i ett ämne så länge.</p>
+        <a href="kurser.html" class="inline-flex px-6 py-3 rounded-xl bg-primary-container hover:bg-primary-deep text-on-primary font-label-md text-label-md transition-all shadow-sm">Till kurser</a>
+      </div>`;
+    return;
+  }
+
   // Previous/next lesson within the same category, ordered by order_index
   const sameCategory = lessons.filter(l => l.category === lesson.category).sort((a, b) => a.order_index - b.order_index);
   const posInCat = sameCategory.findIndex(l => l.id === lessonId);
-  const prevLesson = posInCat > 0 ? sameCategory[posInCat - 1] : null;
-  const nextLesson = posInCat >= 0 && posInCat < sameCategory.length - 1 ? sameCategory[posInCat + 1] : null;
+  const prevCandidate = posInCat > 0 ? sameCategory[posInCat - 1] : null;
+  const nextCandidate = posInCat >= 0 && posInCat < sameCategory.length - 1 ? sameCategory[posInCat + 1] : null;
+  const prevLesson = isLessonOpen(prevCandidate, lessons) ? prevCandidate : null;
+  const nextLesson = isLessonOpen(nextCandidate, lessons) ? nextCandidate : null;
 
   const catMeta = CATEGORY_META[lesson.category] || CATEGORY_META.aktier;
 
@@ -265,11 +285,11 @@ async function initLessonPage(ctx) {
   if (navEl) {
     navEl.innerHTML = `
       ${prevLesson
-        ? `<a href="stitch-preview-lektion.html?id=${encodeURIComponent(prevLesson.id)}" class="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-surface-card hover:bg-surface-subdued shadow-sm font-label-md text-label-md text-text-secondary transition-all"><span class="material-symbols-outlined text-[16px]">arrow_back</span><span>${prevLesson.title}</span></a>`
+        ? `<a href="lektion.html?id=${encodeURIComponent(prevLesson.id)}" class="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-surface-card hover:bg-surface-subdued shadow-sm font-label-md text-label-md text-text-secondary transition-all"><span class="material-symbols-outlined text-[16px]">arrow_back</span><span>${prevLesson.title}</span></a>`
         : '<span></span>'}
       ${nextLesson
-        ? `<a href="stitch-preview-lektion.html?id=${encodeURIComponent(nextLesson.id)}" class="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-surface-card hover:bg-surface-subdued shadow-sm font-label-md text-label-md text-text-secondary transition-all"><span>${nextLesson.title}</span><span class="material-symbols-outlined text-[16px]">arrow_forward</span></a>`
-        : '<a href="stitch-preview-kurser.html" class="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-surface-card hover:bg-surface-subdued shadow-sm font-label-md text-label-md text-text-secondary transition-all"><span>Till kurser</span><span class="material-symbols-outlined text-[16px]">arrow_forward</span></a>'}
+        ? `<a href="lektion.html?id=${encodeURIComponent(nextLesson.id)}" class="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-surface-card hover:bg-surface-subdued shadow-sm font-label-md text-label-md text-text-secondary transition-all"><span>${nextLesson.title}</span><span class="material-symbols-outlined text-[16px]">arrow_forward</span></a>`
+        : '<a href="kurser.html" class="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-surface-card hover:bg-surface-subdued shadow-sm font-label-md text-label-md text-text-secondary transition-all"><span>Till kurser</span><span class="material-symbols-outlined text-[16px]">arrow_forward</span></a>'}
     `;
   }
 
@@ -304,8 +324,24 @@ async function initLessonPage(ctx) {
     }).eq('id', user.id);
   }
 
+  // Legacy lesson bodies link onward via onclick="openLektion('id')"; disable
+  // links to lessons that are still locked in the MVP.
+  function lockClosedLinks() {
+    root.querySelectorAll('[onclick*="openLektion"]').forEach(el => {
+      const m = el.getAttribute('onclick').match(/openLektion\(\s*['"]([^'"]+)/);
+      const target = m && lessons.find(l => l.id === m[1]);
+      if (isLessonOpen(target, lessons)) return;
+      el.removeAttribute('onclick');
+      el.disabled = true;
+      el.style.opacity = '.55';
+      el.style.cursor = 'default';
+      el.textContent += ' · under utveckling';
+    });
+  }
+
   function renderStep() {
     const s = steps[stepIndex];
+    const stepLabel = (s.label || '').replace(/^Steg \d+ av \d+\s*[–-]\s*/, '');
     root.innerHTML = `
       <div class="mb-space-lg">
         <div class="flex items-center gap-2 mb-3">
@@ -313,7 +349,7 @@ async function initLessonPage(ctx) {
           <span class="font-body-regular text-body-regular text-text-secondary truncate">${lesson.title}</span>
         </div>
         <div class="flex items-center justify-between mb-2">
-          <span class="font-caption-micro text-caption-micro text-primary uppercase tracking-wider">${s.label}</span>
+          <span class="font-caption-micro text-caption-micro text-primary uppercase tracking-wider">${stepLabel}</span>
           <span class="font-caption-micro text-caption-micro text-text-tertiary">Steg ${stepIndex + 1} av ${steps.length}</span>
         </div>
         <div class="w-full h-1.5 bg-surface-subdued rounded-full overflow-hidden">
@@ -329,6 +365,7 @@ async function initLessonPage(ctx) {
           <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
         </button>
       </div>`;
+    lockClosedLinks();
     document.getElementById('lesson-back').addEventListener('click', () => { stepIndex--; renderStep(); });
     document.getElementById('lesson-next').addEventListener('click', async () => {
       if (stepIndex < steps.length - 1) {
@@ -414,9 +451,9 @@ async function initLessonPage(ctx) {
         <p class="font-body-regular text-body-regular text-text-secondary mb-6">Du fick ${correctCount} av ${quiz.length} rätt (${score}%)${alreadyCompleted ? '' : ` och tjänade <strong>+${lesson.xp_reward} XP</strong>`}.</p>
         <div class="flex items-center justify-center gap-3">
           ${nextLesson
-            ? `<a href="stitch-preview-lektion.html?id=${encodeURIComponent(nextLesson.id)}" class="px-6 py-3 rounded-xl bg-primary-container hover:bg-primary-deep text-on-primary font-label-md text-label-md transition-all shadow-sm flex items-center gap-2"><span>Nästa: ${nextLesson.title}</span><span class="material-symbols-outlined text-[18px]">arrow_forward</span></a>`
-            : `<a href="index-stitch-preview.html" class="px-6 py-3 rounded-xl bg-primary-container hover:bg-primary-deep text-on-primary font-label-md text-label-md transition-all shadow-sm">Till Hem</a>`}
-          <a href="stitch-preview-kurser.html" class="px-6 py-3 rounded-xl bg-surface-subdued hover:bg-surface-container text-text-primary font-label-md text-label-md transition-all">Fler lektioner</a>
+            ? `<a href="lektion.html?id=${encodeURIComponent(nextLesson.id)}" class="px-6 py-3 rounded-xl bg-primary-container hover:bg-primary-deep text-on-primary font-label-md text-label-md transition-all shadow-sm flex items-center gap-2"><span>Nästa: ${nextLesson.title}</span><span class="material-symbols-outlined text-[18px]">arrow_forward</span></a>`
+            : `<a href="oversikt.html" class="px-6 py-3 rounded-xl bg-primary-container hover:bg-primary-deep text-on-primary font-label-md text-label-md transition-all shadow-sm">Till översikten</a>`}
+          <a href="kurser.html" class="px-6 py-3 rounded-xl bg-surface-subdued hover:bg-surface-container text-text-primary font-label-md text-label-md transition-all">Fler lektioner</a>
         </div>
       </div>`;
   }
@@ -446,92 +483,88 @@ function initCoursesPage(ctx) {
   for (const l of lessons) (byCategory[l.category] ||= []).push(l);
   for (const cat in byCategory) byCategory[cat].sort((a, b) => a.order_index - b.order_index);
 
-  const totalLessons = lessons.length;
-  const totalCompleted = progress.filter(p => p.status === 'completed').length;
+  // Open categories first, paused ones last
+  const categoryKeys = Object.keys(CATEGORY_META).filter(k => (byCategory[k] || []).length)
+    .sort((a, b) => PAUSED_CATEGORIES.has(a) - PAUSED_CATEGORIES.has(b));
 
+  const openLessons = lessons.filter(l => isLessonOpen(l, lessons));
+  const openCompleted = openLessons.filter(l => progressByLesson.get(l.id)?.status === 'completed').length;
+  const underDev = '<span class="inline-flex items-center px-2 py-0.5 rounded-full bg-surface-subdued text-text-tertiary text-[11px] font-semibold uppercase tracking-wide">Under utveckling</span>';
+
+  const chipBase = 'filter-chip px-3.5 py-1.5 rounded-full font-label-md text-label-md transition-all shadow-sm';
+  const chipIdle = `${chipBase} bg-surface-card text-text-secondary hover:bg-surface-subdued`;
+  const chipActive = `${chipBase} bg-primary-deep text-on-primary`;
   const filterBar = `
-    <div class="flex flex-wrap gap-2 mb-space-lg" id="courses-filter">
-      <button data-filter="alla" class="filter-chip px-3.5 py-1.5 rounded-full bg-primary-deep text-on-primary font-label-md text-label-md transition-all shadow-sm">Alla ämnen</button>
-      ${Object.entries(CATEGORY_META).map(([key, meta]) => `<button data-filter="${key}" class="filter-chip px-3.5 py-1.5 rounded-full bg-surface-card text-text-secondary hover:bg-surface-subdued font-label-md text-label-md transition-all shadow-sm">${meta.label} (${(byCategory[key] || []).length})</button>`).join('')}
-      <button data-filter="video" class="filter-chip px-3.5 py-1.5 rounded-full bg-surface-card text-text-secondary hover:bg-surface-subdued font-label-md text-label-md transition-all shadow-sm">Video lektioner (1)</button>
+    <div class="flex flex-wrap gap-2 mb-space-xl" id="courses-filter">
+      <button data-filter="alla" class="${chipActive}">Alla ämnen</button>
+      ${categoryKeys.map(key => `<button data-filter="${key}" class="${chipIdle}">${CATEGORY_META[key].label}</button>`).join('')}
     </div>`;
 
-  const sections = Object.entries(CATEGORY_META).map(([key, meta]) => {
-    const catLessons = byCategory[key] || [];
-    if (!catLessons.length) return '';
+  const sections = categoryKeys.map(key => {
+    const meta = CATEGORY_META[key];
+    const paused = PAUSED_CATEGORIES.has(key);
     return `
-      <section class="course-section mb-space-xl" data-category="${key}">
+      <section class="course-section mb-12" data-category="${key}">
         <div class="flex items-center gap-3 mb-space-md">
           <div class="w-10 h-10 rounded-xl ${meta.iconBg} ${meta.iconColor} flex items-center justify-center">
             <span class="material-symbols-outlined text-[22px]">${meta.icon}</span>
           </div>
           <h2 class="font-headline-2 text-headline-2 text-text-primary">${meta.label}</h2>
+          ${paused ? underDev : ''}
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-          ${catLessons.map(l => {
-            const p = progressByLesson.get(l.id);
-            const badge = lessonStatusBadge(p?.status);
+          ${byCategory[key].map(l => {
+            if (!isLessonOpen(l, lessons)) {
+              return `
+            <div class="flex items-center justify-between gap-3 bg-surface-card rounded-xl p-space-md opacity-60" title="Under utveckling">
+              <div class="flex items-center gap-3 min-w-0">
+                <span class="material-symbols-outlined text-[22px] text-text-tertiary">lock</span>
+                <div class="flex flex-col min-w-0">
+                  <span class="font-label-md text-label-md text-text-secondary truncate">${l.title}</span>
+                  <span class="font-caption-micro text-caption-micro text-text-tertiary">Under utveckling</span>
+                </div>
+              </div>
+            </div>`;
+            }
+            const badge = lessonStatusBadge(progressByLesson.get(l.id)?.status);
             return `
-            <a href="stitch-preview-lektion.html?id=${encodeURIComponent(l.id)}" class="flex items-center justify-between gap-3 bg-surface-card rounded-xl p-space-md shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all">
+            <a href="lektion.html?id=${encodeURIComponent(l.id)}" class="flex items-center justify-between gap-3 bg-surface-card rounded-xl p-space-md shadow-sm hover:shadow-md transition-all">
               <div class="flex items-center gap-3 min-w-0">
                 <span class="material-symbols-outlined text-[22px] ${badge.cls}">${badge.icon}</span>
                 <div class="flex flex-col min-w-0">
                   <span class="font-label-md text-label-md text-text-primary truncate">${l.title}</span>
-                  <span class="font-caption-micro text-caption-micro text-text-tertiary">${l.estimated_minutes} min · ${l.xp_reward} XP</span>
+                  <span class="font-caption-micro text-caption-micro text-text-tertiary">${l.estimated_minutes} min · ${l.xp_reward} XP${badge.label ? ' · ' + badge.label : ''}</span>
                 </div>
               </div>
-              <span class="material-symbols-outlined text-[18px] text-text-tertiary shrink-0">chevron_right</span>
+              <span class="material-symbols-outlined text-[18px] text-primary-container shrink-0">chevron_right</span>
             </a>`;
           }).join('')}
         </div>
       </section>`;
   }).join('');
 
-  const videoSection = `
-    <section class="course-section mb-space-xl" data-category="video">
-      <div class="flex items-center gap-3 mb-space-md">
-        <div class="w-10 h-10 rounded-xl bg-surface-subdued text-text-primary flex items-center justify-center">
-          <span class="material-symbols-outlined text-[22px]">play_circle</span>
-        </div>
-        <h2 class="font-headline-2 text-headline-2 text-text-primary">Video lektioner</h2>
-      </div>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-        <a href="stitch-preview-video.html" class="flex items-center justify-between gap-3 bg-surface-card rounded-xl p-space-md shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all">
-          <div class="flex items-center gap-3 min-w-0">
-            <span class="material-symbols-outlined text-[22px] text-text-tertiary">play_circle</span>
-            <div class="flex flex-col min-w-0">
-              <span class="font-label-md text-label-md text-text-primary truncate">Video-lektioner</span>
-              <span class="font-caption-micro text-caption-micro text-text-tertiary">Kommer snart</span>
-            </div>
-          </div>
-          <span class="material-symbols-outlined text-[18px] text-text-tertiary shrink-0">chevron_right</span>
-        </a>
-      </div>
-    </section>`;
-
   root.innerHTML = `
     <div class="flex flex-col md:flex-row md:items-end justify-between gap-space-md mb-space-lg">
       <div>
-        <span class="font-label-md text-label-md text-primary uppercase tracking-wide">Kurskatalog</span>
-        <h1 class="font-headline-1 text-headline-1 text-text-primary tracking-tight mt-1">Lär dig ekonomi</h1>
+        <span class="font-label-md text-label-md text-primary-deep uppercase tracking-wider">Kurser</span>
+        <h1 class="font-display-xl text-display-xl text-text-primary tracking-tight mt-2">Lär dig ekonomi</h1>
+        <p class="font-body-medium text-body-medium text-text-secondary mt-2 max-w-2xl">Första lektionen i varje ämne är öppen. Fler lektioner är under utveckling.</p>
       </div>
-      <div class="flex items-center gap-2 bg-surface-card px-4 py-2.5 rounded-xl shadow-sm">
+      <div class="flex items-center gap-2 bg-surface-card px-4 py-2.5 rounded-xl shadow-sm shrink-0">
         <span class="material-symbols-outlined text-positive-spruce text-[20px]">task_alt</span>
-        <span class="font-label-md text-label-md text-text-primary">${totalCompleted} av ${totalLessons} lektioner klara</span>
+        <span class="font-label-md text-label-md text-text-primary">${openCompleted} av ${openLessons.length} lektioner klara</span>
       </div>
     </div>
     ${filterBar}
-    <div id="courses-sections">${sections}${videoSection}</div>`;
+    <div id="courses-sections">${sections}</div>`;
 
   document.querySelectorAll('#courses-filter .filter-chip').forEach(btn => {
     btn.addEventListener('click', () => {
       const filter = btn.dataset.filter;
-      document.querySelectorAll('#courses-filter .filter-chip').forEach(b => {
-        b.className = 'filter-chip px-3.5 py-1.5 rounded-full bg-surface-card text-text-secondary hover:bg-surface-subdued font-label-md text-label-md transition-all shadow-sm';
-      });
-      btn.className = 'filter-chip px-3.5 py-1.5 rounded-full bg-primary-deep text-on-primary font-label-md text-label-md transition-all shadow-sm';
+      document.querySelectorAll('#courses-filter .filter-chip').forEach(b => { b.className = chipIdle; });
+      btn.className = chipActive;
       document.querySelectorAll('.course-section').forEach(sec => {
-        sec.style.display = (filter === 'alla' || sec.dataset.category === filter) ? '' : 'none';
+        sec.hidden = !(filter === 'alla' || sec.dataset.category === filter);
       });
     });
   });
@@ -577,13 +610,13 @@ function initJourneyPage(ctx) {
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-space-md mb-space-xl">${catCards}</div>
     <h2 class="font-headline-2 text-headline-2 text-text-primary mb-space-md">Avklarade lektioner</h2>
     ${completedList.length ? `<div class="flex flex-col gap-2">${completedList.map(({ p, lesson }) => `
-      <a href="stitch-preview-lektion.html?id=${encodeURIComponent(lesson.id)}" class="flex items-center justify-between gap-3 bg-surface-card rounded-xl p-space-md shadow-sm hover:shadow-md transition-all">
+      <a href="lektion.html?id=${encodeURIComponent(lesson.id)}" class="flex items-center justify-between gap-3 bg-surface-card rounded-xl p-space-md shadow-sm hover:shadow-md transition-all">
         <div class="flex items-center gap-3">
           <span class="material-symbols-outlined text-[20px] text-positive-spruce">check_circle</span>
           <span class="font-label-md text-label-md text-text-primary">${lesson.title}</span>
         </div>
         <span class="font-caption-micro text-caption-micro text-text-tertiary">Quiz: ${p.quiz_score ?? '–'}%</span>
-      </a>`).join('')}</div>` : `<p class="font-body-regular text-body-regular text-text-secondary">Du har inte slutfört någon lektion än. <a class="text-primary underline" href="stitch-preview-kurser.html">Börja här →</a></p>`}
+      </a>`).join('')}</div>` : `<p class="font-body-regular text-body-regular text-text-secondary">Du har inte slutfört någon lektion än. <a class="text-primary underline" href="kurser.html">Börja här →</a></p>`}
   `;
 }
 
@@ -734,7 +767,7 @@ async function initProfilePage(ctx) {
     const steps = lesson.content?.steps?.length || 1;
     const pct = p ? Math.round(((p.current_step || 0) / steps) * 100) : 0;
     return `
-      <a href="stitch-preview-lektion.html?id=${encodeURIComponent(lesson.id)}" class="bg-surface-card rounded-2xl p-space-lg shadow-sm hover:shadow-md transition-all flex flex-col gap-space-sm">
+      <a href="lektion.html?id=${encodeURIComponent(lesson.id)}" class="bg-surface-card rounded-2xl p-space-lg shadow-sm hover:shadow-md transition-all flex flex-col gap-space-sm">
         <div class="flex items-center gap-space-xs">
           <span class="${meta.iconBg} ${meta.iconColor} font-caption-micro text-caption-micro px-2 py-0.5 rounded-full font-medium">${meta.label}</span>
           <span class="text-text-tertiary text-caption-micro font-caption-micro">• ${lesson.estimated_minutes} min</span>
@@ -888,7 +921,7 @@ async function initProfilePage(ctx) {
       <div class="flex flex-col">
         <div class="flex items-center justify-between mb-space-md">
           <div><h2 class="font-headline-2 text-headline-2 text-text-primary tracking-tight">Pågående kurser &amp; Nästa steg</h2><p class="font-body-regular text-body-regular text-text-secondary">Fortsätt där du slutade senast för att behålla din streak</p></div>
-          <a class="hidden sm:inline-flex items-center gap-space-xs font-label-md text-label-md text-primary-container hover:text-primary-deep" href="stitch-preview-kurser.html"><span>Se alla kurser</span><span class="material-symbols-outlined text-[18px]">chevron_right</span></a>
+          <a class="hidden sm:inline-flex items-center gap-space-xs font-label-md text-label-md text-primary-container hover:text-primary-deep" href="kurser.html"><span>Se alla kurser</span><span class="material-symbols-outlined text-[18px]">chevron_right</span></a>
         </div>
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-space-md">${nextStepsHtml}</div>
       </div>` : ''}
@@ -1083,6 +1116,7 @@ async function initArticleReaderPage(ctx) {
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
+  document.querySelectorAll('[data-signout]').forEach(btn => btn.addEventListener('click', signOut));
   const { data: { session } } = await sb.auth.getSession();
   if (!session) {
     location.href = 'auth.html';
@@ -1101,7 +1135,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   const ctx = { user, profile: safeProfile, lessons: lessons || [], progress: progress || [] };
 
-  if (document.getElementById('subjects-grid')) renderDashboard(ctx);
+  if (document.getElementById('dashboard-root')) renderDashboard(ctx);
   else if (document.getElementById('lesson-root')) initLessonPage(ctx);
   else if (document.getElementById('courses-root')) initCoursesPage(ctx);
   else if (document.getElementById('journey-root')) initJourneyPage(ctx);
