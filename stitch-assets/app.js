@@ -16,6 +16,8 @@ const CATEGORY_META = {
 // categories are fully locked. Everything else shows "Under utveckling".
 const PAUSED_CATEGORIES = new Set(['krypto']);
 const OPEN_LESSONS_PER_CATEGORY = 1;
+// Minimum quiz score (%) to complete a lesson and earn XP. 0 = always pass.
+const PASS_THRESHOLD = 90;
 function isLessonOpen(lesson, lessons) {
   if (!lesson || PAUSED_CATEGORIES.has(lesson.category)) return false;
   const sameCategory = lessons.filter(l => l.category === lesson.category).sort((a, b) => a.order_index - b.order_index);
@@ -268,37 +270,99 @@ async function initLessonPage(ctx) {
     return;
   }
 
-  // Previous/next lesson within the same category, ordered by order_index
-  const sameCategory = lessons.filter(l => l.category === lesson.category).sort((a, b) => a.order_index - b.order_index);
-  const posInCat = sameCategory.findIndex(l => l.id === lessonId);
-  const prevCandidate = posInCat > 0 ? sameCategory[posInCat - 1] : null;
-  const nextCandidate = posInCat >= 0 && posInCat < sameCategory.length - 1 ? sameCategory[posInCat + 1] : null;
-  const prevLesson = isLessonOpen(prevCandidate, lessons) ? prevCandidate : null;
-  const nextLesson = isLessonOpen(nextCandidate, lessons) ? nextCandidate : null;
-
   const catMeta = CATEGORY_META[lesson.category] || CATEGORY_META.aktier;
-
-  const crumb = document.getElementById('lesson-crumb');
-  if (crumb) crumb.textContent = `${catMeta.label} • ${lesson.title}`;
-
-  const navEl = document.getElementById('lesson-nav');
-  if (navEl) {
-    navEl.innerHTML = `
-      ${prevLesson
-        ? `<a href="lektion.html?id=${encodeURIComponent(prevLesson.id)}" class="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-surface-card hover:bg-surface-subdued shadow-sm font-label-md text-label-md text-text-secondary transition-all"><span class="material-symbols-outlined text-[16px]">arrow_back</span><span>${prevLesson.title}</span></a>`
-        : '<span></span>'}
-      ${nextLesson
-        ? `<a href="lektion.html?id=${encodeURIComponent(nextLesson.id)}" class="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-surface-card hover:bg-surface-subdued shadow-sm font-label-md text-label-md text-text-secondary transition-all"><span>${nextLesson.title}</span><span class="material-symbols-outlined text-[16px]">arrow_forward</span></a>`
-        : '<a href="kurser.html" class="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-surface-card hover:bg-surface-subdued shadow-sm font-label-md text-label-md text-text-secondary transition-all"><span>Till kurser</span><span class="material-symbols-outlined text-[16px]">arrow_forward</span></a>'}
-    `;
-  }
 
   const steps = lesson.content.steps;
   const quiz = lesson.content.quiz;
-  const alreadyCompleted = existingProgress?.status === 'completed';
+  // Mutable: becomes true once this visit completes, so retakes never award XP twice
+  let alreadyCompleted = existingProgress?.status === 'completed';
+  let saving = false;
   let stepIndex = alreadyCompleted ? 0 : Math.min(existingProgress?.current_step || 0, steps.length - 1);
+  // Furthest step reached; step dots let you jump back to any of these
+  let maxStep = alreadyCompleted ? steps.length - 1 : stepIndex;
+
+  // One key handler for the page; each view swaps in its own behaviour
+  let onKey = null;
+  document.addEventListener('keydown', e => {
+    if (!onKey || e.metaKey || e.ctrlKey || e.altKey) return;
+    const tag = document.activeElement?.tagName;
+    if (/^(INPUT|TEXTAREA|SELECT)$/.test(tag)) return;
+    // Enter on a focused button/link already clicks it natively
+    if (e.key === 'Enter' && /^(BUTTON|A)$/.test(tag)) return;
+    onKey(e);
+  });
+
+  function toTop() {
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' });
+  }
+
+  // Shared header: subject chip, label, counter and a bar covering steps + quiz
+  function lessonHeader(label, counter, position) {
+    const total = steps.length + quiz.length;
+    // During the quiz the dots are a static indicator; jumping back is only via
+    // "Tillbaka till lektionen", which restarts the quiz.
+    const inQuiz = position >= steps.length;
+    const dots = steps.map((_, i) => {
+      if (inQuiz) return `<span class="w-2.5 h-2.5 rounded-full bg-primary-fixed" aria-hidden="true"></span>`;
+      const state = i === stepIndex ? 'bg-primary-container' : i <= maxStep ? 'bg-primary-fixed hover:bg-primary-deep' : 'bg-surface-subdued';
+      return `<button type="button" class="step-dot w-2.5 h-2.5 rounded-full ${state} transition-all" data-step="${i}" aria-label="Steg ${i + 1}" ${i > maxStep ? 'disabled' : ''}></button>`;
+    }).join('');
+    return `
+      <div class="mb-space-lg">
+        <div class="flex items-center justify-between gap-2 mb-3">
+          <div class="flex items-center gap-2 min-w-0">
+            <span class="px-2.5 py-1 rounded-full ${catMeta.iconBg} ${catMeta.iconColor} font-label-md text-label-md shrink-0">${catMeta.label}</span>
+            <span class="font-body-regular text-body-regular text-text-secondary truncate">${lesson.title}</span>
+          </div>
+          <div class="flex items-center gap-1.5 shrink-0">${dots}</div>
+        </div>
+        <div class="flex items-center justify-between mb-2">
+          <span class="font-caption-micro text-caption-micro text-primary uppercase tracking-wider">${label}</span>
+          <span class="font-caption-micro text-caption-micro text-text-tertiary">${counter}</span>
+        </div>
+        <div class="w-full h-1.5 bg-surface-subdued rounded-full overflow-hidden">
+          <div class="h-full bg-primary-container rounded-full transition-all duration-300" style="width:${((position + 1) / total) * 100}%"></div>
+        </div>
+      </div>`;
+  }
+
+  function bindStepDots() {
+    root.querySelectorAll('.step-dot').forEach(dot => dot.addEventListener('click', () => {
+      const i = Number(dot.dataset.step);
+      if (i > maxStep) return;
+      stepIndex = i;
+      renderStep();
+    }));
+  }
   let quizIndex = 0;
   let correctCount = 0;
+  let answers = []; // per question: { chosen, correct } in original option indexes
+  let quizOrders = []; // per question: shuffled display order of option indexes
+
+  function shuffled(n) {
+    const a = [...Array(n).keys()];
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  // Feedback strings in the content are written as if the answer was right
+  // ("Rätt! …", "Precis – …"); strip that so it reads as a plain explanation.
+  function explanation(text) {
+    const t = (text || '').replace(/^(Helt rätt|Rätt|Precis|Korrekt|Exakt)\s*[!.]?\s*[–-]?\s*/i, '');
+    return t.charAt(0).toUpperCase() + t.slice(1);
+  }
+
+  function resetQuiz() {
+    quizIndex = 0;
+    correctCount = 0;
+    answers = [];
+    quizOrders = quiz.map(q => shuffled(q.options.length));
+  }
+  resetQuiz();
 
   async function saveProgress(status, currentStep, quizScore) {
     const payload = { user_id: user.id, lesson_id: lessonId, status, current_step: currentStep, updated_at: new Date().toISOString() };
@@ -306,7 +370,29 @@ async function initLessonPage(ctx) {
       payload.quiz_score = quizScore;
       payload.completed_at = new Date().toISOString();
     }
-    await sb.from('user_lesson_progress').upsert(payload);
+    const { error } = await sb.from('user_lesson_progress').upsert(payload);
+    if (error) throw error;
+  }
+
+  // Step progress is saved in the background so "Nästa" never waits on the network
+  function saveInBackground(status, currentStep) {
+    saveProgress(status, currentStep).catch(() => toast('Kunde inte spara ditt framsteg – kontrollera din uppkoppling.'));
+  }
+
+  function toast(message) {
+    let el = document.getElementById('lesson-toast');
+    if (!el) {
+      el = document.createElement('div');
+      el.id = 'lesson-toast';
+      el.setAttribute('role', 'status');
+      el.className = 'fixed z-50 px-4 py-3 rounded-xl bg-text-primary text-on-primary font-label-md text-label-md shadow-lg';
+      el.style.cssText = 'left:50%;bottom:24px;transform:translateX(-50%);max-width:calc(100% - 32px)';
+      document.body.appendChild(el);
+    }
+    el.textContent = message;
+    el.hidden = false;
+    clearTimeout(el._t);
+    el._t = setTimeout(() => { el.hidden = true; }, 5000);
   }
 
   async function awardCompletion(score) {
@@ -314,14 +400,18 @@ async function initLessonPage(ctx) {
     const today = new Date().toISOString().slice(0, 10);
     const sameDay = profile.last_active_date === today;
     const newStreak = sameDay ? profile.streak_days : (isYesterday(profile.last_active_date) ? profile.streak_days + 1 : 1);
-    await sb.from('profiles').update({
+    const update = {
       xp: profile.xp + lesson.xp_reward,
       streak_days: newStreak,
       best_streak_days: Math.max(profile.best_streak_days || 0, newStreak),
       last_active_date: today,
       minutes_today: sameDay ? profile.minutes_today + lesson.estimated_minutes : lesson.estimated_minutes,
       updated_at: new Date().toISOString(),
-    }).eq('id', user.id);
+    };
+    const { error } = await sb.from('profiles').update(update).eq('id', user.id);
+    if (error) throw error;
+    Object.assign(profile, update);
+    renderSidebarChrome(profile); // refresh XP / streak in the header right away
   }
 
   // Legacy lesson bodies link onward via onclick="openLektion('id')"; disable
@@ -343,19 +433,7 @@ async function initLessonPage(ctx) {
     const s = steps[stepIndex];
     const stepLabel = (s.label || '').replace(/^Steg \d+ av \d+\s*[–-]\s*/, '');
     root.innerHTML = `
-      <div class="mb-space-lg">
-        <div class="flex items-center gap-2 mb-3">
-          <span class="px-2.5 py-1 rounded-full ${catMeta.iconBg} ${catMeta.iconColor} font-label-md text-label-md">${catMeta.label}</span>
-          <span class="font-body-regular text-body-regular text-text-secondary truncate">${lesson.title}</span>
-        </div>
-        <div class="flex items-center justify-between mb-2">
-          <span class="font-caption-micro text-caption-micro text-primary uppercase tracking-wider">${stepLabel}</span>
-          <span class="font-caption-micro text-caption-micro text-text-tertiary">Steg ${stepIndex + 1} av ${steps.length}</span>
-        </div>
-        <div class="w-full h-1.5 bg-surface-subdued rounded-full overflow-hidden">
-          <div class="h-full bg-primary-container rounded-full transition-all duration-300" style="width:${((stepIndex + 1) / (steps.length + 1)) * 100}%"></div>
-        </div>
-      </div>
+      ${lessonHeader(stepLabel, `Steg ${stepIndex + 1} av ${steps.length}`, stepIndex)}
       <h1 class="font-headline-1 text-headline-1 text-text-primary mb-4">${s.title}</h1>
       <div class="prose-lesson">${s.body}</div>
       <div class="flex items-center justify-between mt-space-xl pt-space-lg border-t border-border-subtle">
@@ -365,97 +443,190 @@ async function initLessonPage(ctx) {
           <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
         </button>
       </div>`;
+    // The "Vad du ska kunna / Fortsätt med" box is shown on the done screen after
+    // a passed quiz instead, so hide it while reading.
+    root.querySelectorAll('.prose-lesson .section-next-up').forEach(el => el.remove());
     lockClosedLinks();
-    document.getElementById('lesson-back').addEventListener('click', () => { stepIndex--; renderStep(); });
-    document.getElementById('lesson-next').addEventListener('click', async () => {
+    bindStepDots();
+    toTop();
+    const back = () => { if (stepIndex > 0) { stepIndex--; renderStep(); } };
+    const next = async () => {
       if (stepIndex < steps.length - 1) {
         stepIndex++;
-        if (!alreadyCompleted) await saveProgress('in_progress', stepIndex);
+        maxStep = Math.max(maxStep, stepIndex);
+        if (!alreadyCompleted) saveInBackground('in_progress', maxStep);
         renderStep();
       } else {
-        if (!alreadyCompleted) await saveProgress('in_progress', steps.length);
+        if (!alreadyCompleted) saveInBackground('in_progress', steps.length);
+        resetQuiz();
         renderQuiz();
       }
-    });
+    };
+    document.getElementById('lesson-back').addEventListener('click', back);
+    document.getElementById('lesson-next').addEventListener('click', next);
+    onKey = e => {
+      if (e.key === 'ArrowRight') { e.preventDefault(); next(); }
+      else if (e.key === 'ArrowLeft') { e.preventDefault(); back(); }
+    };
   }
 
   function renderQuiz() {
     let answered = false;
     const q = quiz[quizIndex];
     root.innerHTML = `
-      <div class="mb-space-lg">
-        <div class="flex items-center gap-2 mb-3">
-          <span class="px-2.5 py-1 rounded-full ${catMeta.iconBg} ${catMeta.iconColor} font-label-md text-label-md">${catMeta.label}</span>
-          <span class="font-body-regular text-body-regular text-text-secondary truncate">${lesson.title}</span>
-        </div>
-        <div class="flex items-center justify-between mb-2">
-          <span class="font-caption-micro text-caption-micro text-primary uppercase tracking-wider">Quiz</span>
-          <span class="font-caption-micro text-caption-micro text-text-tertiary">Fråga ${quizIndex + 1} av ${quiz.length}</span>
-        </div>
-        <div class="w-full h-1.5 bg-surface-subdued rounded-full overflow-hidden">
-          <div class="h-full bg-primary-container rounded-full" style="width:100%"></div>
-        </div>
-      </div>
+      ${lessonHeader('Quiz', `Fråga ${quizIndex + 1} av ${quiz.length}`, steps.length + quizIndex)}
       <h2 class="font-headline-2 text-headline-2 text-text-primary mb-6">${q.question}</h2>
       <div id="quiz-options" class="flex flex-col gap-3"></div>
-      <p id="quiz-feedback" class="mt-4 font-body-medium text-body-medium hidden"></p>
-      <div class="flex justify-end mt-space-xl">
-        <button id="quiz-next" class="hidden px-6 py-3 rounded-xl bg-primary-container hover:bg-primary-deep text-on-primary font-label-md text-label-md transition-all shadow-sm">${quizIndex === quiz.length - 1 ? 'Se resultat' : 'Nästa fråga'}</button>
+      <div id="quiz-feedback" class="mt-4 flex flex-col gap-1 hidden" aria-live="polite"></div>
+      <div class="flex items-center justify-between gap-3 mt-space-xl pt-space-lg border-t border-border-subtle">
+        <button id="quiz-back" type="button" class="px-5 py-2.5 rounded-xl font-label-md text-label-md text-text-secondary hover:bg-surface-subdued transition-all" title="Quizet börjar om när du kommer tillbaka">← Tillbaka till lektionen</button>
+        <button id="quiz-next" class="invisible px-6 py-3 rounded-xl bg-primary-container hover:bg-primary-deep text-on-primary font-label-md text-label-md transition-all shadow-sm">${quizIndex === quiz.length - 1 ? 'Se resultat' : 'Nästa fråga'}</button>
       </div>`;
+    bindStepDots();
+    toTop();
+    document.getElementById('quiz-back').addEventListener('click', () => { stepIndex = steps.length - 1; renderStep(); });
     const optionsEl = document.getElementById('quiz-options');
-    q.options.forEach((opt, idx) => {
+    quizOrders[quizIndex].forEach(idx => {
+      const opt = q.options[idx];
       const btn = document.createElement('button');
       btn.className = 'text-left px-5 py-3.5 rounded-xl border border-border-subtle hover:border-primary-container hover:bg-primary-tint transition-all font-body-regular text-body-regular text-text-primary';
       btn.textContent = opt;
+      btn.dataset.idx = idx;
       btn.addEventListener('click', () => {
         if (answered) return;
         answered = true;
         const correct = idx === q.correct_index;
         if (correct) correctCount++;
-        Array.from(optionsEl.children).forEach((b, i) => {
+        answers[quizIndex] = { chosen: idx, correct };
+        Array.from(optionsEl.children).forEach(b => {
+          const i = Number(b.dataset.idx);
           b.disabled = true;
           if (i === q.correct_index) { b.style.borderColor = '#10B981'; b.style.background = '#ECFDF5'; }
           else if (i === idx) { b.style.borderColor = '#DC2626'; b.style.background = '#ffdad6'; }
         });
         const fb = document.getElementById('quiz-feedback');
-        fb.textContent = (correct ? '✓ Rätt! ' : '✗ Fel. ') + (q.feedback || '');
-        fb.className = 'mt-4 font-body-medium text-body-medium ' + (correct ? 'text-positive-spruce' : 'text-critical-danger');
+        // Verdict on its own line (green/red), right answer in green below, explanation in grey
+        const line = (cls, text) => { const p = document.createElement('p'); p.className = cls; p.textContent = text; return p; };
+        const why = explanation(q.feedback);
+        fb.replaceChildren(
+          correct
+            ? line('font-label-md text-label-md text-positive-spruce', '✓ Rätt!')
+            : line('font-label-md text-label-md text-critical-danger', '✗ Inte riktigt.'),
+          ...(correct ? [] : [line('font-body-medium text-body-medium text-positive-spruce', `Rätt svar: ${q.options[q.correct_index]}`)]),
+          ...(why ? [line('font-body-regular text-body-regular text-text-secondary', why)] : []),
+        );
         fb.classList.remove('hidden');
-        document.getElementById('quiz-next').classList.remove('hidden');
+        document.getElementById('quiz-next').classList.remove('invisible');
       });
       optionsEl.appendChild(btn);
     });
-    document.getElementById('quiz-next').addEventListener('click', async () => {
+    const goNext = async () => {
+      if (!answered || saving) return;
       if (quizIndex < quiz.length - 1) {
         quizIndex++;
         renderQuiz();
       } else {
         const score = Math.round((correctCount / quiz.length) * 100);
-        await saveProgress('completed', steps.length, score);
-        await awardCompletion(score);
-        renderDone(score);
+        if (score < PASS_THRESHOLD) { renderDone(score, false); return; }
+        const btn = document.getElementById('quiz-next');
+        btn.disabled = true;
+        btn.textContent = 'Sparar…';
+        saving = true;
+        try {
+          await saveProgress('completed', steps.length, score);
+          await awardCompletion(score);
+        } catch (err) {
+          saving = false;
+          btn.disabled = false;
+          btn.textContent = 'Försök igen';
+          toast('Kunde inte spara resultatet. Kontrollera din uppkoppling och försök igen.');
+          return;
+        }
+        saving = false;
+        const earnedXp = !alreadyCompleted;
+        alreadyCompleted = true;
+        renderDone(score, earnedXp);
       }
-    });
+    };
+    document.getElementById('quiz-next').addEventListener('click', goNext);
+    // 1–4 picks an answer, Enter / → moves on once answered
+    onKey = e => {
+      const n = Number(e.key);
+      if (n >= 1 && n <= optionsEl.children.length) { e.preventDefault(); optionsEl.children[n - 1].click(); }
+      else if ((e.key === 'Enter' || e.key === 'ArrowRight') && answered) { e.preventDefault(); goNext(); }
+    };
   }
 
-  function renderDone(score) {
+  // "Vad du ska kunna" bullets from the lesson's own next-up box, reused as a recap
+  function masteryPoints() {
+    const tmp = document.createElement('div');
+    tmp.innerHTML = steps.map(s => s.body).join('');
+    const el = tmp.querySelector('.next-up-mastery');
+    return el ? el.textContent.split('·').map(t => t.trim()).filter(Boolean) : [];
+  }
+
+  // Suggest the first open, not yet completed lesson in another subject
+  function suggestedNext() {
+    const done = new Set(ctx.progress.filter(p => p.status === 'completed').map(p => p.lesson_id));
+    done.add(lesson.id);
+    const order = Object.keys(CATEGORY_META);
+    return lessons
+      .filter(l => l.category !== lesson.category && isLessonOpen(l, lessons) && !done.has(l.id))
+      .sort((a, b) => order.indexOf(a.category) - order.indexOf(b.category))[0] || null;
+  }
+
+  function renderDone(score, earnedXp) {
+    onKey = null;
+    const passed = score >= PASS_THRESHOLD;
+    const points = passed ? masteryPoints() : [];
+    const missed = quiz.map((q, i) => ({ q, a: answers[i] })).filter(x => x.a && !x.a.correct);
+    const next = suggestedNext();
+    const nextMeta = next && (CATEGORY_META[next.category] || CATEGORY_META.aktier);
+    const btnPrimary = 'inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-primary-container hover:bg-primary-deep text-on-primary font-label-md text-label-md transition-all shadow-sm';
+    const btnSecondary = 'inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-surface-subdued hover:bg-surface-container text-text-primary font-label-md text-label-md transition-all';
+
     root.innerHTML = `
-      <div class="text-center py-space-xl">
-        <div class="flex items-center justify-center gap-2 mb-6">
-          <span class="px-2.5 py-1 rounded-full ${catMeta.iconBg} ${catMeta.iconColor} font-label-md text-label-md">${catMeta.label}</span>
+      <div class="text-center pt-4">
+        <span class="px-2.5 py-1 rounded-full ${catMeta.iconBg} ${catMeta.iconColor} font-label-md text-label-md">${catMeta.label}</span>
+        <div class="w-20 h-20 rounded-full ${passed ? 'bg-positive-wash text-positive-spruce' : 'bg-primary-tint text-primary-deep'} flex items-center justify-center mx-auto mt-6 mb-4">
+          <span class="material-symbols-outlined text-[40px]">${passed ? 'celebration' : 'school'}</span>
         </div>
-        <div class="w-20 h-20 rounded-full bg-positive-wash text-positive-spruce flex items-center justify-center mx-auto mb-6">
-          <span class="material-symbols-outlined text-[40px]">celebration</span>
+        <h2 class="font-headline-1 text-headline-1 text-text-primary mb-2">${passed ? 'Lektion klar!' : 'Nästan där!'}</h2>
+        <p class="font-body-medium text-body-medium text-text-secondary">Du fick <strong>${correctCount} av ${quiz.length}</strong> rätt (${score}%)${earnedXp ? ` och tjänade <strong class="text-primary-deep">+${lesson.xp_reward} XP</strong>` : ''}.</p>
+        ${passed ? '' : `<p class="font-body-regular text-body-regular text-text-secondary mt-1">Du behöver minst ${Math.ceil(quiz.length * PASS_THRESHOLD / 100)} av ${quiz.length} rätt för att gå vidare.</p>`}
+      </div>
+      ${points.length ? `
+      <div class="mt-space-xl bg-positive-wash rounded-2xl p-space-lg">
+        <p class="font-label-md text-label-md text-positive-spruce uppercase tracking-wider mb-2">Det här kan du nu</p>
+        <ul class="flex flex-col gap-1.5">
+          ${points.map(p => `<li class="flex items-start gap-2 font-body-regular text-body-regular text-text-primary"><span class="material-symbols-outlined text-[20px] text-positive-spruce">check_circle</span>${p}</li>`).join('')}
+        </ul>
+      </div>` : ''}
+      ${missed.length ? `
+      <div class="mt-space-lg">
+        <p class="font-label-md text-label-md text-text-primary mb-3">Frågor att titta på igen</p>
+        <div class="flex flex-col gap-3">
+          ${missed.map(({ q, a }) => `
+          <div class="border border-border-subtle rounded-xl p-space-md">
+            <p class="font-label-md text-label-md text-text-primary">${q.question}</p>
+            <p class="font-body-regular text-[14px] text-critical-danger mt-1">Ditt svar: ${q.options[a.chosen]}</p>
+            <p class="font-body-regular text-[14px] text-positive-spruce">Rätt svar: ${q.options[q.correct_index]}</p>
+            ${q.feedback ? `<p class="font-body-regular text-[14px] text-text-secondary mt-1">${explanation(q.feedback)}</p>` : ''}
+          </div>`).join('')}
         </div>
-        <h2 class="font-headline-1 text-headline-1 text-text-primary mb-2">Lektion slutförd!</h2>
-        <p class="font-body-regular text-body-regular text-text-secondary mb-6">Du fick ${correctCount} av ${quiz.length} rätt (${score}%)${alreadyCompleted ? '' : ` och tjänade <strong>+${lesson.xp_reward} XP</strong>`}.</p>
-        <div class="flex items-center justify-center gap-3">
-          ${nextLesson
-            ? `<a href="lektion.html?id=${encodeURIComponent(nextLesson.id)}" class="px-6 py-3 rounded-xl bg-primary-container hover:bg-primary-deep text-on-primary font-label-md text-label-md transition-all shadow-sm flex items-center gap-2"><span>Nästa: ${nextLesson.title}</span><span class="material-symbols-outlined text-[18px]">arrow_forward</span></a>`
-            : `<a href="oversikt.html" class="px-6 py-3 rounded-xl bg-primary-container hover:bg-primary-deep text-on-primary font-label-md text-label-md transition-all shadow-sm">Till översikten</a>`}
-          <a href="kurser.html" class="px-6 py-3 rounded-xl bg-surface-subdued hover:bg-surface-container text-text-primary font-label-md text-label-md transition-all">Fler lektioner</a>
-        </div>
-      </div>`;
+      </div>` : ''}
+      <div class="mt-space-xl pt-space-lg border-t border-border-subtle flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center justify-center gap-3">
+        ${passed && next
+          ? `<a href="lektion.html?id=${encodeURIComponent(next.id)}" class="${btnPrimary}"><span>Nästa: ${nextMeta.label}</span><span class="material-symbols-outlined text-[18px]">arrow_forward</span></a>`
+          : ''}
+        <button id="done-retake" type="button" class="${passed && next ? btnSecondary : btnPrimary}"><span class="material-symbols-outlined text-[18px]">replay</span><span>Gör om quizet</span></button>
+        ${passed ? '' : `<button id="done-reread" type="button" class="${btnSecondary}"><span class="material-symbols-outlined text-[18px]">menu_book</span><span>Läs lektionen igen</span></button>`}
+        <a href="oversikt.html" class="${btnSecondary}">Till översikten</a>
+      </div>
+      ${passed && !next ? '<p class="text-center font-body-regular text-body-regular text-text-secondary mt-space-md">Du har klarat alla öppna lektioner – fler är under utveckling!</p>' : ''}`;
+    toTop();
+    document.getElementById('done-retake').addEventListener('click', () => { resetQuiz(); renderQuiz(); });
+    document.getElementById('done-reread')?.addEventListener('click', () => { stepIndex = 0; renderStep(); });
   }
 
   if (existingProgress?.status === 'in_progress' && existingProgress.current_step >= steps.length) {
