@@ -18,6 +18,73 @@ const PAUSED_CATEGORIES = new Set(['krypto']);
 const OPEN_LESSONS_PER_CATEGORY = 1;
 // Minimum quiz score (%) to complete a lesson and earn XP. 0 = always pass.
 const PASS_THRESHOLD = 90;
+
+// Prototype test round: feedback button (Google Form) and a one-time welcome
+// guide. Clicking the "Prototyp" badge in the header reopens the guide.
+const FEEDBACK_URL = 'https://forms.gle/nERKE46Ng4DuKrsGA'; // Google Forms; the button stays hidden while empty
+
+function renderPrototypeChrome(user) {
+  // Feedback button sits right next to the "Prototyp" badge, top left
+  const badge = document.querySelector('header [data-prototype-guide]');
+  if (FEEDBACK_URL && badge && !document.querySelector('[data-feedback]')) {
+    const a = document.createElement('a');
+    a.href = FEEDBACK_URL;
+    a.target = '_blank';
+    a.rel = 'noopener';
+    a.dataset.feedback = '';
+    a.className = 'inline-flex items-center gap-1 bg-primary-container hover:bg-primary-deep text-on-primary px-2.5 py-1 rounded-full font-label-md text-[12px] transition-all';
+    a.innerHTML = '<span class="material-symbols-outlined text-[15px]">rate_review</span><span class="hidden sm:inline">Ge feedback</span>';
+    a.title = 'Ge feedback (öppnas i ny flik)';
+    badge.insertAdjacentElement('afterend', a);
+  }
+  document.querySelectorAll('[data-prototype-guide]').forEach(b => b.addEventListener('click', showPrototypeGuide));
+
+  const key = `ue-guide-seen-${user.id}`;
+  let seen = false;
+  try { seen = localStorage.getItem(key) === '1'; } catch (e) { seen = true; }
+  if (!seen && document.getElementById('dashboard-root')) {
+    showPrototypeGuide();
+    try { localStorage.setItem(key, '1'); } catch (e) { /* private mode: show again next time */ }
+  }
+}
+
+function showPrototypeGuide() {
+  if (document.getElementById('prototype-guide')) return;
+  const item = (n, title, text) => `
+    <li class="flex gap-3">
+      <span class="w-7 h-7 shrink-0 rounded-full bg-primary-container text-on-primary flex items-center justify-center font-label-md text-label-md">${n}</span>
+      <div><p class="font-label-md text-label-md text-text-primary">${title}</p><p class="font-body-regular text-[14px] text-text-secondary">${text}</p></div>
+    </li>`;
+  const overlay = document.createElement('div');
+  overlay.id = 'prototype-guide';
+  overlay.setAttribute('role', 'dialog');
+  overlay.setAttribute('aria-modal', 'true');
+  overlay.setAttribute('aria-labelledby', 'prototype-guide-title');
+  overlay.style.cssText = 'position:fixed;inset:0;z-index:60;background:rgba(15,23,42,.45);display:flex;align-items:center;justify-content:center;padding:16px';
+  overlay.innerHTML = `
+    <div class="bg-surface-card rounded-2xl shadow-lg w-full p-space-lg md:p-space-xl" style="max-width:480px;max-height:calc(100vh - 32px);overflow:auto">
+      <span class="inline-flex items-center px-2 py-0.5 rounded-full bg-primary-tint text-primary-deep text-[11px] font-semibold uppercase tracking-wide">Prototyp</span>
+      <h2 class="font-headline-2 text-headline-2 text-text-primary mt-3" id="prototype-guide-title">Välkommen till UngEkonom! 👋</h2>
+      <p class="font-body-regular text-body-regular text-text-secondary mt-1">Tack för att du testar vår första prototyp. Så här hjälper du oss mest:</p>
+      <ol class="flex flex-col gap-4 mt-space-lg">
+        ${item(1, 'Gör de fem lektionerna', 'En per ämne. Du behöver nästan alla rätt på quizet för att klara en lektion.')}
+        ${item(2, 'Testa aktiesimulatorn', 'Den finns i sista steget av lektionen om aktier – köp en aktie med låtsaspengar.')}
+        ${item(3, 'Säg vad du tycker', FEEDBACK_URL ? 'Klicka på "Ge feedback" uppe i menyn när du vill – allt hjälper, även små saker.' : 'Berätta för oss vad som var bra, krångligt eller otydligt – allt hjälper, även små saker.')}
+      </ol>
+      <p class="font-caption-micro text-caption-micro text-text-tertiary mt-space-lg">Det här är en tidig version, så saker kan ändras eller strula. Klicka på "Prototyp" i menyn för att se den här rutan igen.</p>
+      <div class="flex flex-wrap gap-3 mt-space-lg">
+        <button type="button" data-guide-close class="px-6 py-3 rounded-xl bg-primary-container hover:bg-primary-deep text-on-primary font-label-md text-label-md transition-all shadow-sm">Kom igång</button>
+        ${FEEDBACK_URL ? `<a href="${FEEDBACK_URL}" target="_blank" rel="noopener" class="px-6 py-3 rounded-xl bg-surface-subdued hover:bg-surface-container text-text-primary font-label-md text-label-md transition-all">Öppna feedbackformuläret</a>` : ''}
+      </div>
+    </div>`;
+  const close = () => { overlay.remove(); document.removeEventListener('keydown', onEsc); };
+  const onEsc = e => { if (e.key === 'Escape') close(); };
+  overlay.addEventListener('click', e => { if (e.target === overlay) close(); });
+  overlay.querySelector('[data-guide-close]').addEventListener('click', close);
+  document.addEventListener('keydown', onEsc);
+  document.body.appendChild(overlay);
+  overlay.querySelector('[data-guide-close]').focus();
+}
 function isLessonOpen(lesson, lessons) {
   if (!lesson || PAUSED_CATEGORIES.has(lesson.category)) return false;
   const sameCategory = lessons.filter(l => l.category === lesson.category).sort((a, b) => a.order_index - b.order_index);
@@ -1305,6 +1372,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   const safeProfile = profile || { display_name: user.email?.split('@')[0] || 'Medlem', xp: 0, streak_days: 0, best_streak_days: 0, daily_goal_minutes: 15, minutes_today: 0, last_active_date: null, created_at: new Date().toISOString() };
   renderSidebarChrome(safeProfile);
+  renderPrototypeChrome(user);
 
   const ctx = { user, profile: safeProfile, lessons: lessons || [], progress: progress || [] };
 
