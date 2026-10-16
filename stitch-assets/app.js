@@ -21,20 +21,21 @@ const PASS_THRESHOLD = 90;
 
 // Prototype test round: feedback button (Google Form) and a one-time welcome
 // guide. Clicking the "Prototyp" badge in the header reopens the guide.
-const FEEDBACK_URL = ''; // Google Forms link; the button stays hidden while empty
+const FEEDBACK_URL = 'https://forms.gle/nERKE46Ng4DuKrsGA'; // Google Forms; the button stays hidden while empty
 
 function renderPrototypeChrome(user) {
-  const actions = document.getElementById('hdr-actions');
-  if (FEEDBACK_URL && actions && !document.querySelector('[data-feedback]')) {
+  // Feedback button sits right next to the "Prototyp" badge, top left
+  const badge = document.querySelector('header [data-prototype-guide]');
+  if (FEEDBACK_URL && badge && !document.querySelector('[data-feedback]')) {
     const a = document.createElement('a');
     a.href = FEEDBACK_URL;
     a.target = '_blank';
     a.rel = 'noopener';
     a.dataset.feedback = '';
-    a.className = 'inline-flex items-center gap-1.5 bg-primary-container hover:bg-primary-deep text-on-primary px-3 py-1.5 rounded-full font-label-md text-label-md transition-all';
-    a.innerHTML = '<span class="material-symbols-outlined text-[16px]">rate_review</span><span class="hidden sm:inline">Ge feedback</span>';
-    a.title = 'Ge feedback';
-    actions.prepend(a);
+    a.className = 'inline-flex items-center gap-1 bg-primary-container hover:bg-primary-deep text-on-primary px-2.5 py-1 rounded-full font-label-md text-[12px] transition-all';
+    a.innerHTML = '<span class="material-symbols-outlined text-[15px]">rate_review</span><span class="hidden sm:inline">Ge feedback</span>';
+    a.title = 'Ge feedback (öppnas i ny flik)';
+    badge.insertAdjacentElement('afterend', a);
   }
   document.querySelectorAll('[data-prototype-guide]').forEach(b => b.addEventListener('click', showPrototypeGuide));
 
