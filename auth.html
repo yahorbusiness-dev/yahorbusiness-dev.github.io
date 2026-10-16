@@ -55,10 +55,10 @@ const SUPABASE_URL = 'https://psvjlxqdqcuhmafqorlv.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_yuBvIFJ1sU3sfLpC0P3rmA_lNdgxITd';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// Sign-ups are closed until launch: hides the register tab and shows a notice
-// to visitors coming from "Skapa gratis konto". Also turn off "Allow new users
-// to sign up" in Supabase so the API refuses sign-ups too.
-const REGISTRATION_OPEN = false;
+// Prototype test round: sign-ups are open and need no email confirmation
+// (Supabase: "Confirm email" off). Set to false to hide the register tab and show
+// "Registreringen öppnar snart" instead; also turn off sign-ups in Supabase then.
+const REGISTRATION_OPEN = true;
 
 let mode = 'login'; // 'login' | 'register'
 
