@@ -287,6 +287,7 @@ async function initLessonPage(ctx) {
     if (!onKey || e.metaKey || e.ctrlKey || e.altKey) return;
     const tag = document.activeElement?.tagName;
     if (/^(INPUT|TEXTAREA|SELECT)$/.test(tag)) return;
+    if (document.activeElement?.closest('[data-widget-root]')) return; // widgets own their keys
     // Enter on a focused button/link already clicks it natively
     if (e.key === 'Enter' && /^(BUTTON|A)$/.test(tag)) return;
     onKey(e);
@@ -446,6 +447,7 @@ async function initLessonPage(ctx) {
     // The "Vad du ska kunna / Fortsätt med" box is shown on the done screen after
     // a passed quiz instead, so hide it while reading.
     root.querySelectorAll('.prose-lesson .section-next-up').forEach(el => el.remove());
+    if (window.LessonWidgets) LessonWidgets.mount(root, lesson.id, stepIndex);
     lockClosedLinks();
     bindStepDots();
     toTop();

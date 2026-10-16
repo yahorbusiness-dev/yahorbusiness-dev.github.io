@@ -1,0 +1,72 @@
+/* Interactive lesson widgets (lektion.html). Pair with widgets.js.
+   Own classes instead of Tailwind, since stitch-assets/tailwind.css is precompiled. */
+
+.uw{--uw-blue:#2563EB;--uw-blue-deep:#1E40AF;--uw-tint:#EFF6FF;--uw-fixed:#DBE1FF;--uw-green:#10B981;--uw-green-wash:#ECFDF5;--uw-red:#DC2626;--uw-red-wash:#FEF2F2;--uw-ink:#0F172A;--uw-ink-2:#475569;--uw-ink-3:#94A3B8;--uw-line:#E2E8F0;--uw-subdued:#F3F4F6;
+  margin:24px 0 8px;border:1px solid var(--uw-line);border-radius:16px;background:#fff;overflow:hidden}
+.uw *{box-sizing:border-box}
+.uw{position:relative}
+.uw-close{position:absolute;top:14px;right:14px;z-index:1;display:inline-flex;align-items:center;gap:4px;appearance:none;border:0;border-radius:10px;background:var(--uw-subdued);color:var(--uw-ink-2);padding:6px 10px;font:600 13px inherit;cursor:pointer}
+.uw-close:hover{background:var(--uw-line);color:var(--uw-ink)}
+.uw-close .material-symbols-outlined{font-size:16px}
+.uw-has-close .uw-head{padding-right:80px}
+.uw-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between}
+.uw-bar[hidden],.uw-close[hidden],.uw-body[hidden]{display:none}
+.uw-pad{padding:20px}
+.uw-head{display:flex;align-items:center;gap:12px}
+.uw-icon{width:44px;height:44px;border-radius:12px;background:var(--uw-tint);color:var(--uw-blue-deep);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:22px}
+.uw-title{font-weight:700;font-size:16px;color:var(--uw-ink);margin:0}
+.uw-sub{font-size:14px;color:var(--uw-ink-2);margin:2px 0 0}
+.uw-row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.uw-btn{appearance:none;border:0;border-radius:12px;padding:10px 18px;font:600 14px/1.2 inherit;cursor:pointer;transition:background .15s,transform .15s}
+.uw-btn:active{transform:scale(.97)}
+.uw-btn:disabled{opacity:.5;cursor:not-allowed}
+.uw-btn-primary{background:var(--uw-blue);color:#fff}
+.uw-btn-primary:hover{background:var(--uw-blue-deep)}
+.uw-btn-ghost{background:var(--uw-subdued);color:var(--uw-ink)}
+.uw-btn-ghost:hover{background:var(--uw-line)}
+.uw-link{appearance:none;border:0;background:none;padding:0;color:var(--uw-blue);font:600 14px inherit;cursor:pointer}
+.uw-link:hover{text-decoration:underline}
+.uw-note{font-size:12px;color:var(--uw-ink-3);margin:12px 0 0}
+.uw-muted{color:var(--uw-ink-2);font-size:14px}
+
+/* Stock card */
+.uw-stock{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;background:var(--uw-subdued);border-radius:12px;padding:14px 16px;margin:16px 0}
+.uw-stock-name{font-weight:700;color:var(--uw-ink)}
+.uw-stock-meta{font-size:12px;color:var(--uw-ink-3)}
+.uw-price{font-size:22px;font-weight:700;color:var(--uw-ink);text-align:right;font-variant-numeric:tabular-nums}
+.uw-quotes{display:flex;gap:14px;font-size:12px;color:var(--uw-ink-2);justify-content:flex-end;font-variant-numeric:tabular-nums}
+
+/* Controls */
+.uw-label{font-size:13px;font-weight:600;color:var(--uw-ink-2);margin:0 0 6px}
+.uw-field{margin:14px 0}
+.uw-stepper{display:inline-flex;align-items:center;border:1px solid var(--uw-line);border-radius:12px;overflow:hidden}
+.uw-stepper button{appearance:none;border:0;background:#fff;width:40px;height:40px;font-size:20px;color:var(--uw-ink);cursor:pointer}
+.uw-stepper button:hover{background:var(--uw-subdued)}
+.uw-stepper button:disabled{color:var(--uw-ink-3);cursor:not-allowed;background:#fff}
+.uw-stepper output{min-width:56px;text-align:center;font-weight:700;font-variant-numeric:tabular-nums}
+.uw-seg{display:inline-flex;background:var(--uw-subdued);border-radius:12px;padding:4px;gap:4px}
+.uw-seg button{appearance:none;border:0;background:none;border-radius:9px;padding:8px 14px;font:600 13px inherit;color:var(--uw-ink-2);cursor:pointer}
+.uw-seg button[aria-pressed="true"]{background:#fff;color:var(--uw-ink);box-shadow:0 1px 2px rgba(15,23,42,.08)}
+.uw-range{width:100%;accent-color:var(--uw-blue)}
+.uw-hint{font-size:13px;color:var(--uw-ink-2);margin:6px 0 0}
+
+/* Summary + messages */
+.uw-sum{border-top:1px solid var(--uw-line);margin-top:16px;padding-top:12px;font-size:14px;color:var(--uw-ink-2);font-variant-numeric:tabular-nums}
+.uw-sum div{display:flex;justify-content:space-between;padding:3px 0}
+.uw-sum .uw-total{color:var(--uw-ink);font-weight:700}
+.uw-msg{border-radius:12px;padding:12px 14px;margin:14px 0 0;font-size:14px;line-height:1.5}
+.uw-msg-info{background:var(--uw-tint);color:var(--uw-blue-deep)}
+.uw-msg-ok{background:var(--uw-green-wash);color:#047857}
+.uw-msg-bad{background:var(--uw-red-wash);color:#B91C1C}
+.uw-msg strong{font-weight:700}
+
+/* Result */
+.uw-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:14px 0}
+.uw-stat{background:var(--uw-subdued);border-radius:12px;padding:10px 12px}
+.uw-stat span{display:block;font-size:12px;color:var(--uw-ink-3)}
+.uw-stat b{display:block;font-size:16px;color:var(--uw-ink);font-variant-numeric:tabular-nums}
+.uw-up{color:var(--uw-green)!important}
+.uw-down{color:var(--uw-red)!important}
+.uw-chart{width:100%;height:120px;display:block;margin:6px 0}
+@media (max-width:480px){.uw-stats{grid-template-columns:1fr 1fr}.uw-stock{flex-direction:column}.uw-price,.uw-quotes{text-align:left;justify-content:flex-start}}
+@media (prefers-reduced-motion:reduce){.uw-btn{transition:none}.uw-btn:active{transform:none}}
