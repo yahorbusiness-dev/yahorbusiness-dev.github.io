@@ -130,6 +130,209 @@
 </div>
 </div>
 </section>
+<!-- 2b. PLATTFORMSFÖRHANDSVISNING -->
+<style>
+.uep{--b:#2563EB;--bd:#1E40AF;--bt:#004AC6;--tint:#EFF6FF;--g:#10B981;--gt:#006C4A;--gw:#ECFDF5;--ink:#0F172A;--ink2:#475569;--mut:#64748B;--line:#E2E8F0;--sub:#F3F4F6;--root:#F9FAFB}
+.uep-top{display:flex;justify-content:center;margin-bottom:20px;position:relative;z-index:2}
+.uep-try{font-size:13px;line-height:18px;font-weight:600;color:var(--ink);text-decoration:underline;text-underline-offset:4px;text-decoration-thickness:1px}
+.uep-try:hover{color:var(--bt)}
+.uep-stage{position:relative}
+.uep-buddy-top{position:absolute;right:4%;top:-74px;width:112px;z-index:3;pointer-events:none}
+.uep-frame{position:relative;border-radius:24px;overflow:hidden;padding:48px 64px;background:#14286b;isolation:isolate}
+.uep-frame:before{content:"";position:absolute;inset:-10%;z-index:-2;background:
+  radial-gradient(60% 55% at 50% 50%,rgba(180,197,255,.55),rgba(180,197,255,0) 70%),
+  radial-gradient(40% 40% at 15% 20%,rgba(16,185,129,.25),transparent 70%),
+  radial-gradient(45% 50% at 90% 85%,rgba(37,99,235,.7),transparent 70%),
+  linear-gradient(135deg,#1E40AF,#14286b 55%,#0f1f52)}
+.uep-frame:after{content:"";position:absolute;inset:0;z-index:-1;opacity:.55;mix-blend-mode:overlay;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .9 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+.uep-app{display:flex;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 30px 60px -20px rgba(2,6,23,.55),0 0 0 6px rgba(255,255,255,.08);min-height:500px}
+.uep-side{width:200px;flex:none;background:var(--root);border-right:1px solid var(--line);padding:18px 12px;display:flex;flex-direction:column;gap:2px}
+.uep-side img{height:24px;width:auto;margin:0 6px 14px;align-self:flex-start}
+.uep-search{display:flex;align-items:center;gap:6px;background:#fff;box-shadow:inset 0 0 0 1px var(--line);border-radius:10px;padding:6px 8px;font-size:11px;color:var(--mut);margin-bottom:10px}
+.uep-search kbd{margin-left:auto;font:inherit;font-size:10px;color:var(--mut)}
+.uep-nav{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:8px;font-size:12px;line-height:16px;font-weight:600;color:var(--ink2)}
+.uep-nav .material-symbols-outlined{font-size:16px}
+.uep-nav.on{background:var(--tint);color:var(--bd)}
+.uep-sec{font-size:10px;line-height:14px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--mut);padding:12px 8px 4px}
+.uep-dot{width:8px;height:8px;border-radius:3px;flex:none}
+.uep-me{margin-top:auto;display:flex;align-items:center;gap:8px;padding:8px;border-radius:12px;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.05)}
+.uep-av{width:26px;height:26px;border-radius:999px;background:var(--b);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center}
+.uep-main{flex:1;min-width:0;position:relative;padding:20px 28px 104px;display:flex;flex-direction:column}
+.uep-crumb{display:flex;align-items:center;gap:6px;font-size:11px;line-height:16px;color:var(--mut)}
+.uep-crumb b{color:var(--ink);font-weight:600}
+.uep-prog{margin-left:auto;display:flex;gap:4px}
+.uep-prog i{width:18px;height:4px;border-radius:99px;background:var(--line)}
+.uep-prog i.on{background:var(--b)}
+.uep-title{text-align:center;font-size:30px;line-height:36px;font-weight:600;letter-spacing:-.025em;color:var(--ink);margin:26px 0 4px}
+.uep-lead{text-align:center;font-size:12px;line-height:18px;color:var(--ink2);margin:0}
+.uep-chart{position:relative;margin:14px auto 0;width:100%;max-width:520px}
+.uep-chart svg{display:block;width:100%;height:auto;overflow:visible}
+.uep-cap{position:relative;height:14px;font-size:10px;line-height:14px;color:var(--mut);margin-top:4px}.uep-cap span{position:absolute;top:0}
+.uep-toggle{display:inline-flex;align-self:center;margin-top:12px;background:var(--sub);border-radius:12px;padding:3px;gap:2px}
+.uep-toggle button{font:inherit;font-size:12px;line-height:16px;font-weight:600;border:0;background:none;color:var(--ink2);padding:7px 12px;border-radius:9px;cursor:pointer;transition:all .15s}
+.uep-toggle button[aria-pressed="true"]{background:#fff;color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.08)}
+.uep-toggle button:focus-visible,.uep-tools button:focus-visible{outline:2px solid var(--b);outline-offset:2px}
+.uep-bubble{position:absolute;left:100px;bottom:22px;max-width:250px;background:#fff;border-radius:12px;padding:10px 12px;font-size:11px;line-height:16px;color:var(--ink);box-shadow:0 10px 15px -3px rgba(0,0,0,.1),0 4px 6px -4px rgba(0,0,0,.1),0 0 0 1px var(--line);transition:opacity .2s}
+.uep-bubble b{color:var(--gt)}
+.uep-buddy-in{position:absolute;left:18px;bottom:12px;width:76px}
+.uep-tools{position:absolute;right:20px;bottom:18px;display:flex;gap:2px;background:#fff;border-radius:12px;padding:4px;box-shadow:0 1px 2px rgba(0,0,0,.05),0 0 0 1px var(--line)}
+.uep-tools button{width:32px;height:32px;border:0;background:none;border-radius:8px;color:var(--bt);cursor:pointer;display:flex;align-items:center;justify-content:center}
+.uep-tools button:hover{background:var(--tint)}
+.uep-tools .material-symbols-outlined{font-size:18px}
+.uep-proof{text-align:center;margin-top:40px}
+.uep-wave{transform-origin:20px 62px;animation:uep-wave 2.4s ease-in-out infinite}
+@keyframes uep-wave{0%,60%,100%{transform:rotate(0)}70%{transform:rotate(-14deg)}80%{transform:rotate(8deg)}90%{transform:rotate(-8deg)}}
+.uep-blink{animation:uep-blink 5s infinite;transform-origin:center 44px}
+@keyframes uep-blink{0%,94%,100%{transform:scaleY(1)}97%{transform:scaleY(.1)}}
+.uep-line{transition:d .5s ease}
+@media (prefers-reduced-motion:reduce){.uep-wave,.uep-blink{animation:none}}
+@media (max-width:1023px){.uep-frame{padding:32px}}
+@media (max-width:767px){
+  .uep-frame{padding:20px 14px;border-radius:20px}
+  .uep-side{display:none}
+  .uep-app{min-height:0}
+  .uep-main{padding:16px 16px 20px}
+  .uep-bubble:before{content:"";display:block}
+  .uep-title{font-size:22px;line-height:28px;margin-top:18px}
+  .uep-bubble{position:static;max-width:none;margin:14px 0 0}
+  .uep-buddy-in{display:none}
+  .uep-tools{position:static;align-self:center;margin-top:14px}
+  .uep-buddy-top{width:80px;top:-54px}
+  .uep-mobile-gap{height:8px}
+}
+</style>
+<section class="max-w-[1140px] mx-auto px-margin pt-16 md:pt-24 pb-8 w-full uep" id="plattformen">
+<div class="text-center max-w-2xl mx-auto mb-12">
+<div class="inline-flex items-center gap-1.5 text-primary font-label-md text-label-md mb-2">
+<span class="material-symbols-outlined text-[18px]">devices</span>
+<span>PLATTFORMEN</span>
+</div>
+<h2 class="font-headline-1 text-headline-1 text-text-primary tracking-tight">Se själv hur det känns att lära sig</h2>
+<p class="font-body-regular text-body-regular text-text-secondary mt-3">Korta lektioner där du klickar, jämför och ser resultatet direkt. Testa diagrammet nedan.</p>
+</div>
+<div class="uep-top"><a class="uep-try" data-path="register" href="auth.html?mode=register">Testa gratis i webbläsaren</a></div>
+<div class="uep-stage">
+<!-- Maskot som tittar fram över ramen -->
+<svg aria-hidden="true" class="uep-buddy-top" viewBox="0 0 120 92">
+<g class="uep-wave"><path d="M22 60 C 12 52, 8 42, 6 34" stroke="#1E40AF" stroke-width="6" stroke-linecap="round" fill="none"/><circle cx="6" cy="32" r="5" fill="#1E40AF"/></g>
+<path d="M98 62 C 106 58, 110 56, 114 50" stroke="#1E40AF" stroke-width="6" stroke-linecap="round" fill="none"/>
+<rect x="22" y="22" width="76" height="76" rx="22" fill="#2563EB"/>
+<rect x="22" y="22" width="76" height="76" rx="22" fill="url(#uep-shine)"/>
+<path d="M60 22 C 60 14, 66 8, 74 6" stroke="#006C4A" stroke-width="3" stroke-linecap="round" fill="none"/>
+<circle cx="75" cy="6" r="5.5" fill="#10B981" stroke="#fff" stroke-width="2"/>
+<g class="uep-blink"><ellipse cx="48" cy="48" rx="5" ry="6.5" fill="#fff"/><ellipse cx="72" cy="48" rx="5" ry="6.5" fill="#fff"/><circle cx="49" cy="49.5" r="2.8" fill="#0F172A"/><circle cx="73" cy="49.5" r="2.8" fill="#0F172A"/></g>
+<path d="M52 62 Q 60 69 68 62" stroke="#fff" stroke-width="3" stroke-linecap="round" fill="none"/>
+<circle cx="40" cy="60" r="4" fill="#85F8C4" opacity=".45"/><circle cx="80" cy="60" r="4" fill="#85F8C4" opacity=".45"/>
+<defs><linearGradient id="uep-shine" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".18"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/></linearGradient></defs>
+</svg>
+<div class="uep-frame">
+<div class="uep-app" role="img" aria-label="Förhandsvisning av UngEkonoms lärplattform: en lektion om ränta på ränta">
+<aside class="uep-side" aria-hidden="true">
+<img alt="" src="stitch-assets/logo.svg"/>
+<div class="uep-search"><span class="material-symbols-outlined" style="font-size:14px">search</span>Sök lektioner…<kbd>⌘K</kbd></div>
+<div class="uep-nav"><span class="material-symbols-outlined">grid_view</span>Hem</div>
+<div class="uep-nav on"><span class="material-symbols-outlined">menu_book</span>Kurser</div>
+<div class="uep-nav"><span class="material-symbols-outlined">newspaper</span>Artiklar</div>
+<div class="uep-nav"><span class="material-symbols-outlined">calculate</span>Verktyg</div>
+<div class="uep-nav"><span class="material-symbols-outlined">explore</span>Min resa</div>
+<div class="uep-sec">Mina kurser</div>
+<div class="uep-nav"><span class="uep-dot" style="background:#2563EB"></span>Aktier</div>
+<div class="uep-nav"><span class="uep-dot" style="background:#10B981"></span>Fonder</div>
+<div class="uep-nav"><span class="uep-dot" style="background:#D97706"></span>Privatekonomi</div>
+<div class="uep-nav on"><span class="uep-dot" style="background:#006C4A"></span>Ränta på ränta</div>
+<div class="uep-me"><span class="uep-av">Du</span><span style="min-width:0"><span style="display:block;font-size:11px;font-weight:600;color:#0F172A">Nivå 3 · Spararen</span><span style="display:block;font-size:10px;color:#64748B">🔥 7 dagars streak</span></span></div>
+</aside>
+<div class="uep-main">
+<div class="uep-crumb"><b>Ränta på ränta</b><span>/</span><span>Börja tidigt</span><span class="uep-prog" aria-hidden="true"><i class="on"></i><i class="on"></i><i></i><i></i><i></i></span></div>
+<h3 class="uep-title">Samma sparande. Två resultat.</h3>
+<p class="uep-lead">1 000 kr i månaden, 7 % i snitt per år, fram till 65 år</p>
+<div class="uep-chart">
+<svg aria-hidden="true" viewBox="0 0 520 220">
+<defs>
+<pattern height="16" id="uep-grid" patternUnits="userSpaceOnUse" width="16"><circle cx="1" cy="1" fill="#CBD5E1" r="1"/></pattern>
+<linearGradient id="uep-fill" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#2563EB" stop-opacity=".18"/><stop offset="1" stop-color="#2563EB" stop-opacity="0"/></linearGradient>
+</defs>
+<rect fill="url(#uep-grid)" height="200" width="520" x="0" y="0"/>
+<line stroke="#E2E8F0" x1="0" x2="520" y1="200" y2="200"/>
+<path class="uep-line" d="" fill="url(#uep-fill)" id="uep-area"/>
+<path class="uep-line" d="" fill="none" id="uep-late" stroke="#10B981" stroke-dasharray="6 6" stroke-linecap="round" stroke-width="3"/>
+<path class="uep-line" d="" fill="none" id="uep-early" stroke="#2563EB" stroke-linecap="round" stroke-width="3.5"/>
+<g id="uep-pins"></g>
+</svg>
+<div class="uep-cap"><span style="left:0">18 år</span><span style="left:21.3%">28 år</span><span style="right:0">65 år</span></div>
+</div>
+<div class="uep-toggle" role="group" aria-label="Välj vad diagrammet visar">
+<button aria-pressed="false" data-mode="early" type="button">Börja vid 18</button>
+<button aria-pressed="false" data-mode="late" type="button">Börja vid 28</button>
+<button aria-pressed="true" data-mode="both" type="button">Jämför</button>
+</div>
+<div class="uep-mobile-gap"></div>
+<div aria-live="polite" class="uep-bubble" id="uep-bubble"></div>
+<svg aria-hidden="true" class="uep-buddy-in" viewBox="0 0 120 120">
+<path d="M24 74 C 14 80, 10 88, 8 96" stroke="#1E40AF" stroke-width="6" stroke-linecap="round" fill="none"/>
+<path d="M96 74 C 106 66, 110 58, 112 48" stroke="#1E40AF" stroke-width="6" stroke-linecap="round" fill="none"/><path d="M106 40 l3 -9 l3 9 l9 3 l-9 3 l-3 9 l-3 -9 l-9 -3z" fill="#10B981"/>
+<rect x="22" y="32" width="76" height="76" rx="22" fill="#2563EB"/>
+<path d="M60 32 C 60 24, 66 18, 74 16" stroke="#006C4A" stroke-width="3" stroke-linecap="round" fill="none"/><circle cx="75" cy="16" r="5.5" fill="#10B981" stroke="#fff" stroke-width="2"/>
+<g class="uep-blink" style="transform-origin:center 58px"><ellipse cx="48" cy="58" rx="5" ry="6.5" fill="#fff"/><ellipse cx="72" cy="58" rx="5" ry="6.5" fill="#fff"/><circle cx="49" cy="59.5" r="2.8" fill="#0F172A"/><circle cx="73" cy="59.5" r="2.8" fill="#0F172A"/></g>
+<path d="M52 74 Q 60 81 68 74" stroke="#fff" stroke-width="3" stroke-linecap="round" fill="none"/>
+</svg>
+<div class="uep-tools" aria-label="Lektionsverktyg">
+<button aria-label="Starta quiz" title="Quiz" type="button"><span class="material-symbols-outlined">quiz</span></button>
+<button aria-label="Visa tips" data-tip="" title="Tips" type="button"><span class="material-symbols-outlined">lightbulb</span></button>
+<button aria-label="Öppna kalkylatorn" title="Kalkylator" type="button"><span class="material-symbols-outlined">calculate</span></button>
+<button aria-label="Börja om" data-reset="" title="Börja om" type="button"><span class="material-symbols-outlined">replay</span></button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<p class="uep-proof font-headline-1 text-headline-1 text-text-primary tracking-tight">70+ elever lär sig redan med UngEkonom</p>
+<script>
+(function () {
+  var root = document.getElementById('plattformen'); if (!root) return;
+  var W = 520, H = 200, r = 0.07 / 12, ages = 65 - 18;
+  function fv(startAge, age) { var n = Math.max(0, (age - startAge) * 12); return n ? 1000 * (Math.pow(1 + r, n) - 1) / r : 0; }
+  var max = fv(18, 65);
+  function x(age) { return (age - 18) / ages * W; }
+  function y(v) { return H - 6 - v / max * (H - 20); }
+  function path(startAge) { var d = 'M' + x(startAge) + ' ' + y(0); for (var a = startAge; a <= 65; a += 0.5) d += ' L' + x(a).toFixed(1) + ' ' + y(fv(startAge, a)).toFixed(1); return d; }
+  function kr(v) { return Math.round(v / 10000) * 10000; }
+  function fmt(v) { return (v / 1e6).toFixed(1).replace('.', ',') + ' mn kr'; }
+  var early = path(18), late = path(28), flat = 'M0 ' + y(0) + ' L' + W + ' ' + y(0);
+  var E = fv(18, 65), L = fv(28, 65);
+  var el = function (id) { return document.getElementById(id); };
+  var bubble = el('uep-bubble');
+  var text = {
+    both: 'Ser du gapet? Tio års försprång ger <b>mer än dubbelt så mycket</b> vid 65 – fast du bara sparat 120 000 kr mer.',
+    early: 'Börjar du vid 18 har du cirka <b>' + fmt(kr(E)) + '</b> vid 65. Du har själv satt in 564 000 kr.',
+    late: 'Börjar du vid 28 blir det cirka <b>' + fmt(kr(L)) + '</b>. Tiden gör mer jobb än beloppet.',
+    tip: 'Tips: ränta på ränta betyder att även avkastningen ger avkastning. Därför böjer kurvan uppåt.'
+  };
+  function pin(age, v, color, label) {
+    return '<circle cx="' + x(age) + '" cy="' + y(v) + '" r="5" fill="' + color + '" stroke="#fff" stroke-width="2"/>' +
+      '<text x="' + (x(age) - 8) + '" y="' + (y(v) - 2) + '" text-anchor="end" font-size="12" font-weight="700" fill="#0F172A" font-family="Plus Jakarta Sans, sans-serif">' + label + '</text>';
+  }
+  function set(mode) {
+    root.querySelectorAll('.uep-toggle button').forEach(function (b) { b.setAttribute('aria-pressed', b.dataset.mode === mode); });
+    el('uep-early').setAttribute('d', mode === 'late' ? flat : early);
+    el('uep-early').style.opacity = mode === 'late' ? 0 : 1;
+    el('uep-late').setAttribute('d', mode === 'early' ? flat : late);
+    el('uep-late').style.opacity = mode === 'early' ? 0 : 1;
+    el('uep-area').setAttribute('d', mode === 'late' ? '' : early + ' L' + W + ' ' + H + ' L0 ' + H + ' Z');
+    var pins = '';
+    if (mode !== 'late') pins += pin(65, E, '#2563EB', fmt(kr(E)));
+    if (mode !== 'early') pins += pin(65, L, '#10B981', fmt(kr(L)));
+    el('uep-pins').innerHTML = pins;
+    bubble.innerHTML = text[mode];
+  }
+  root.querySelectorAll('.uep-toggle button').forEach(function (b) { b.addEventListener('click', function () { set(b.dataset.mode); }); });
+  root.querySelector('[data-tip]').addEventListener('click', function () { bubble.innerHTML = text.tip; });
+  root.querySelector('[data-reset]').addEventListener('click', function () { set('both'); });
+  root.querySelectorAll('.uep-tools button:not([data-tip]):not([data-reset])').forEach(function (b) { b.addEventListener('click', function () { location.href = 'auth.html?mode=register'; }); });
+  set('both');
+})();
+</script>
+</section>
 <!-- 3. KUNSKAPSSPÅR / ÄMNEN -->
 <section class="max-w-[1140px] mx-auto px-margin py-16 md:py-24 w-full" id="amnen">
 <div class="flex flex-col md:flex-row md:items-end justify-between mb-12">
