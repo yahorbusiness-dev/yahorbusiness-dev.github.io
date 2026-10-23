@@ -19,20 +19,11 @@
 <li>Gjord för dig som är 16–25 år</li>
 </ul>
 </div>
-<div class="lp-video">
-<video id="hero-pitch-video" playsinline="" poster="stitch-assets/img/hero-thumbnail.jpg" preload="metadata">
-<source src="stitch-assets/video/pitch.mp4" type="video/mp4"/>
-</video>
-<button aria-label="Spela upp video" class="absolute inset-0 flex items-center justify-center bg-black/20 hover:bg-black/30 transition-colors" id="hero-video-playbtn" type="button">
-<span class="w-16 h-16 rounded-full bg-white/90 flex items-center justify-center shadow-lg">
-<span class="material-symbols-outlined text-[32px] text-primary-deep">play_arrow</span>
-</span>
-</button>
-<div class="absolute bottom-3 right-3 flex items-center gap-1 bg-black/60 backdrop-blur-md rounded-full px-2 py-1.5">
-<button aria-label="Sänk volym" class="w-7 h-7 rounded-full flex items-center justify-center text-white hover:bg-white/20 transition-colors" id="hero-video-vol-down" type="button"><span class="material-symbols-outlined text-[18px]">remove</span></button>
-<button aria-label="Stäng av ljud" class="w-7 h-7 rounded-full flex items-center justify-center text-white hover:bg-white/20 transition-colors" id="hero-video-mute" type="button"><span class="material-symbols-outlined text-[18px]" id="hero-video-vol-icon">volume_up</span></button>
-<button aria-label="Höj volym" class="w-7 h-7 rounded-full flex items-center justify-center text-white hover:bg-white/20 transition-colors" id="hero-video-vol-up" type="button"><span class="material-symbols-outlined text-[18px]">add</span></button>
-</div>
+<div class="lp-shot">
+<picture>
+<source media="(max-width: 959px)" srcset="stitch-assets/img/hero-mobile.jpg" width="920" height="1636"/>
+<img alt="UngEkonom-appen: lektionen Ränta på ränta jämför att börja spara vid 18 och vid 28 år – 4,4 mn kr mot 2,1 mn kr vid 65" height="1480" src="stitch-assets/img/hero-desktop.jpg" width="2280" fetchpriority="high"/>
+</picture>
 </div>
 </div>
 </section>
@@ -359,51 +350,4 @@ Ingen bindningstid · 100% fritt
   }
 })();
 </script>
-<footer class="w-full bg-surface-card border-t border-border-subtle mt-auto"><div class="max-w-[1140px] mx-auto px-margin py-space-xl"><div class="grid grid-cols-1 md:grid-cols-2 gap-space-xl pb-space-xl border-b border-border-subtle"><div class="flex flex-col items-start gap-space-sm"><div class="flex items-center gap-space-sm"><img alt="UngEkonom Logo" class="h-7 w-auto object-contain" src="stitch-assets/logo.svg"/></div><p class="font-body-regular text-body-regular text-text-secondary max-w-sm">Ekonomi för livet. En modern utbildningsplattform som ger unga vuxna och gymnasieelever självförtroende att bemästra sin privatekonomi.</p></div><div class="grid grid-cols-2 sm:grid-cols-3 gap-space-lg"><div class="flex flex-col gap-space-sm"><span class="font-label-md text-label-md text-text-primary uppercase tracking-wider">Om oss</span><ul class="flex flex-col gap-space-xs font-body-regular text-body-regular text-text-secondary"><li class="hover:text-on-surface transition-colors"><a data-path="om-ungekonom" href="var-vision.html">Om UngEkonom</a></li><li class="hover:text-on-surface transition-colors"><a data-path="fragor-och-svar" href="fragor-och-svar.html">Frågor &amp; svar</a></li><li class="hover:text-on-surface transition-colors"><a data-path="kontakt" href="kontakt.html">Kontakt</a></li></ul></div><div class="flex flex-col gap-space-sm"><span class="font-label-md text-label-md text-text-primary uppercase tracking-wider">Samarbete</span><ul class="flex flex-col gap-space-xs font-body-regular text-body-regular text-text-secondary"><li class="hover:text-on-surface transition-colors"><a data-path="samarbete" href="samarbete.html">Bli samarbetspartner</a></li><li class="hover:text-on-surface transition-colors"><a data-path="engagera-dig" href="engagera-dig.html">Engagera dig</a></li></ul></div><div class="flex flex-col gap-space-sm"><span class="font-label-md text-label-md text-text-primary uppercase tracking-wider">UngEkonom i skolan</span><ul class="flex flex-col gap-space-xs font-body-regular text-body-regular text-text-secondary"><li class="hover:text-on-surface transition-colors"><a data-path="for-elever" href="for-elever.html">För elever</a></li><li class="hover:text-on-surface transition-colors"><a data-path="for-larare" href="for-larare.html">För lärare</a></li><li class="hover:text-on-surface transition-colors"><a data-path="for-gymnasieskolor" href="for-gymnasieskolor.html">För skolor</a></li></ul></div></div></div><div class="pt-space-lg flex flex-col md:flex-row items-center justify-between gap-space-md font-caption-micro text-caption-micro text-text-tertiary"><p>Innehållet är utbildning, inte finansiell rådgivning.</p><p>© 2026 UngEkonom · Byggd med ♥ i Sverige</p></div></div></footer><script>
-(function () {
-  var video = document.getElementById('hero-pitch-video');
-  var playBtn = document.getElementById('hero-video-playbtn');
-  var muteBtn = document.getElementById('hero-video-mute');
-  var volIcon = document.getElementById('hero-video-vol-icon');
-  var volDownBtn = document.getElementById('hero-video-vol-down');
-  var volUpBtn = document.getElementById('hero-video-vol-up');
-  if (!video) return;
-
-  video.volume = 0.5;
-  video.muted = false;
-
-  function updateVolIcon() {
-    if (video.muted || video.volume === 0) volIcon.textContent = 'volume_off';
-    else if (video.volume < 0.5) volIcon.textContent = 'volume_down';
-    else volIcon.textContent = 'volume_up';
-  }
-  updateVolIcon();
-
-  function togglePlay() {
-    if (video.paused) video.play(); else video.pause();
-  }
-  playBtn.addEventListener('click', togglePlay);
-  video.addEventListener('click', togglePlay);
-  video.addEventListener('play', function () { playBtn.classList.add('hidden'); });
-  video.addEventListener('pause', function () { playBtn.classList.remove('hidden'); });
-
-  muteBtn.addEventListener('click', function (e) {
-    e.stopPropagation();
-    video.muted = !video.muted;
-    updateVolIcon();
-  });
-  volDownBtn.addEventListener('click', function (e) {
-    e.stopPropagation();
-    video.muted = false;
-    video.volume = Math.max(0, Math.round((video.volume - 0.1) * 10) / 10);
-    updateVolIcon();
-  });
-  volUpBtn.addEventListener('click', function (e) {
-    e.stopPropagation();
-    video.muted = false;
-    video.volume = Math.min(1, Math.round((video.volume + 0.1) * 10) / 10);
-    updateVolIcon();
-  });
-})();
-</script>
-</body></html>
+<footer class="w-full bg-surface-card border-t border-border-subtle mt-auto"><div class="max-w-[1140px] mx-auto px-margin py-space-xl"><div class="grid grid-cols-1 md:grid-cols-2 gap-space-xl pb-space-xl border-b border-border-subtle"><div class="flex flex-col items-start gap-space-sm"><div class="flex items-center gap-space-sm"><img alt="UngEkonom Logo" class="h-7 w-auto object-contain" src="stitch-assets/logo.svg"/></div><p class="font-body-regular text-body-regular text-text-secondary max-w-sm">Ekonomi för livet. En modern utbildningsplattform som ger unga vuxna och gymnasieelever självförtroende att bemästra sin privatekonomi.</p></div><div class="grid grid-cols-2 sm:grid-cols-3 gap-space-lg"><div class="flex flex-col gap-space-sm"><span class="font-label-md text-label-md text-text-primary uppercase tracking-wider">Om oss</span><ul class="flex flex-col gap-space-xs font-body-regular text-body-regular text-text-secondary"><li class="hover:text-on-surface transition-colors"><a data-path="om-ungekonom" href="var-vision.html">Om UngEkonom</a></li><li class="hover:text-on-surface transition-colors"><a data-path="fragor-och-svar" href="fragor-och-svar.html">Frågor &amp; svar</a></li><li class="hover:text-on-surface transition-colors"><a data-path="kontakt" href="kontakt.html">Kontakt</a></li></ul></div><div class="flex flex-col gap-space-sm"><span class="font-label-md text-label-md text-text-primary uppercase tracking-wider">Samarbete</span><ul class="flex flex-col gap-space-xs font-body-regular text-body-regular text-text-secondary"><li class="hover:text-on-surface transition-colors"><a data-path="samarbete" href="samarbete.html">Bli samarbetspartner</a></li><li class="hover:text-on-surface transition-colors"><a data-path="engagera-dig" href="engagera-dig.html">Engagera dig</a></li></ul></div><div class="flex flex-col gap-space-sm"><span class="font-label-md text-label-md text-text-primary uppercase tracking-wider">UngEkonom i skolan</span><ul class="flex flex-col gap-space-xs font-body-regular text-body-regular text-text-secondary"><li class="hover:text-on-surface transition-colors"><a data-path="for-elever" href="for-elever.html">För elever</a></li><li class="hover:text-on-surface transition-colors"><a data-path="for-larare" href="for-larare.html">För lärare</a></li><li class="hover:text-on-surface transition-colors"><a data-path="for-gymnasieskolor" href="for-gymnasieskolor.html">För skolor</a></li></ul></div></div></div><div class="pt-space-lg flex flex-col md:flex-row items-center justify-between gap-space-md font-caption-micro text-caption-micro text-text-tertiary"><p>Innehållet är utbildning, inte finansiell rådgivning.</p><p>© 2026 UngEkonom · Byggd med ♥ i Sverige</p></div></div></footer></body></html>
