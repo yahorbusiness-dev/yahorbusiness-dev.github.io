@@ -168,4 +168,9 @@
 .lp-tl-item .lp-body { margin-top: .4rem; }
 .lp-tl-item .lp-actions { margin-top: 1.25rem; }
 @media (min-width: 768px) { .lp-stats.is-compact dl { grid-template-columns: repeat(2, minmax(0, 17rem)); } }
-.lp-article-img { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover; border-radius: 16px; background: var(--rule); margin-bottom: .75rem; color: transparent; overflow: hidden; }
+.lp-article-media { position: relative; border-radius: 16px; overflow: hidden; background: var(--rule); margin-bottom: .75rem; }
+.lp-article-img { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover; color: transparent; }
+/* On hover the image dims and says it isn't published yet */
+.lp-article-soon { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(15, 23, 42, .55); color: #fff; font-weight: 600; font-size: 1.125rem; letter-spacing: -0.01em; opacity: 0; transition: opacity .2s ease; }
+.lp-article-media:hover .lp-article-soon { opacity: 1; }
+@media (prefers-reduced-motion: reduce) { .lp-article-soon { transition: none; } }
