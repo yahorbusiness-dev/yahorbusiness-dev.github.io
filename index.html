@@ -115,9 +115,20 @@
 /* Steps: a real sequence, so numbered */
 .lp-steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 2.5rem; counter-reset: step; }
 @media (min-width: 900px) { .lp-steps { grid-template-columns: repeat(3, 1fr); gap: 3rem; } }
-.lp-step { counter-increment: step; border-top: 3px solid var(--blue); padding-top: 1.25rem; }
+.lp-step { counter-increment: step; padding-top: 1.25rem; background: linear-gradient(var(--blue), var(--blue)) top left / 100% 3px no-repeat; }
 .lp-step::before { content: counter(step); display: block; font-size: 2.4375rem; font-weight: 700; letter-spacing: -0.04em; color: var(--blue); line-height: 1; margin-bottom: 1rem; }
 .lp-step .lp-body { margin-top: .6rem; }
+/* Wave on scroll: each step's line draws left to right, then its number and text follow. --i is the step's position. */
+.motion-ok .lp-steps[data-reveal] { opacity: 1; transform: none; transition: none; }
+.motion-ok .lp-steps .lp-step { background-size: 0% 3px; transition: background-size .5s linear calc(var(--i) * .5s); }
+.motion-ok .lp-steps .lp-step::before,
+.motion-ok .lp-steps .lp-step > * { opacity: 0; transform: translateX(-20px); transition: opacity .5s ease, transform .6s cubic-bezier(.22,1,.36,1); }
+.motion-ok .lp-steps .lp-step::before { transition-delay: calc(var(--i) * .5s + .1s); }
+.motion-ok .lp-steps .lp-step > h3 { transition-delay: calc(var(--i) * .5s + .2s); }
+.motion-ok .lp-steps .lp-step > p { transition-delay: calc(var(--i) * .5s + .3s); }
+.motion-ok .lp-steps.is-revealed .lp-step { background-size: 100% 3px; }
+.motion-ok .lp-steps.is-revealed .lp-step::before,
+.motion-ok .lp-steps.is-revealed .lp-step > * { opacity: 1; transform: none; }
 
 /* Upcoming articles */
 .lp-articles { list-style: none; margin: 0; padding: 0; display: grid; gap: 0; }
@@ -283,16 +294,16 @@
 <h2 class="lp-h2">Gjort för hur du faktiskt lär dig</h2>
 <p class="lp-body">Ingen torr jargong. Varje begrepp förklaras med exempel från verkligheten, i steg som är korta nog för en bussresa.</p>
 </div>
-<ol class="lp-steps">
-<li class="lp-step">
+<ol class="lp-steps" data-reveal="wave">
+<li class="lp-step" style="--i:0">
 <h3 class="lp-h3">Välj ett ämne</h3>
 <p class="lp-body">Börja där du är. Vill du öppna ditt första ISK, göra en budget eller förstå hur aktier värderas?</p>
 </li>
-<li class="lp-step">
+<li class="lp-step" style="--i:1">
 <h3 class="lp-h3">Gå igenom en kort lektion</h3>
 <p class="lp-body">3–5 minuter med grafer och räkneexempel. Fungerar lika bra på mobilen som på datorn.</p>
 </li>
-<li class="lp-step">
+<li class="lp-step" style="--i:2">
 <h3 class="lp-h3">Svara på quizet</h3>
 <p class="lp-body">Lektionen räknas som klar när du klarat quizet. Du får svar direkt och samlar XP och en dagssvit.</p>
 </li>
