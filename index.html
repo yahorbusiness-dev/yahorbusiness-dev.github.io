@@ -93,6 +93,9 @@
 .lp-chart { width: 100%; height: auto; margin-top: 2rem; overflow: visible; }
 .lp-chart text { font: 500 11px "Plus Jakarta Sans", sans-serif; fill: #A5B4FC; }
 @media (max-width: 600px) { .lp-chart text { font-size: 20px; } }
+/* Slower draw-in than the shared default so the curve and the counting total read together */
+.motion-ok #calc-value.draw-line { transition-duration: 2.4s; }
+.motion-ok #calc-dot.draw-after { transition-delay: 2.5s; }
 .lp-note { font-size: .8125rem; color: #A5B4FC; margin-top: 1.5rem; max-width: 60ch; }
 
 /* Tracks */
@@ -191,29 +194,29 @@
 <section aria-labelledby="calc-title" class="lp-band lp-section" id="ranta-pa-ranta" style="margin-top:5.5rem">
 <div class="lp-wrap lp-band-grid">
 <div>
-<h2 class="lp-h2" id="calc-title">Vad blir <span id="calc-title-monthly">1 500 kr</span> i månaden efter <span id="calc-title-years">15 år</span>?</h2>
+<h2 class="lp-h2" id="calc-title">Vad blir <span id="calc-title-monthly">3 000 kr</span> i månaden efter <span id="calc-title-years">25 år</span>?</h2>
 <p class="lp-lead">När avkastningen själv börjar ge avkastning växer sparandet allt snabbare. Dra i reglagen och se hur mycket tiden betyder.</p>
 <div class="lp-controls">
 <div class="lp-control">
-<label for="savings-slider">Månadssparande <output for="savings-slider" id="savings-display">1 500 kr</output></label>
-<input class="lp-range" id="savings-slider" max="5000" min="500" step="250" type="range" value="1500"/>
+<label for="savings-slider">Månadssparande <output for="savings-slider" id="savings-display">3 000 kr</output></label>
+<input class="lp-range" id="savings-slider" max="5000" min="500" step="250" type="range" value="3000"/>
 <div class="lp-range-ends" aria-hidden="true"><span>500 kr</span><span>5 000 kr</span></div>
 </div>
 <div class="lp-control">
-<label for="years-slider">Antal år <output for="years-slider" id="years-display">15 år</output></label>
-<input class="lp-range" id="years-slider" max="35" min="5" step="1" type="range" value="15"/>
+<label for="years-slider">Antal år <output for="years-slider" id="years-display">25 år</output></label>
+<input class="lp-range" id="years-slider" max="35" min="5" step="1" type="range" value="25"/>
 <div class="lp-range-ends" aria-hidden="true"><span>5 år</span><span>35 år</span></div>
 </div>
 </div>
 </div>
 <div>
 <p class="lp-result-label">Ungefärligt värde</p>
-<p aria-live="polite" class="lp-result" id="result-display">475 443 kr</p>
+<p aria-live="polite" class="lp-result" id="result-display">2 430 215 kr</p>
 <div class="lp-split">
-<span><span class="lp-key" style="background:#93C5FD"></span>Du har satt in <b id="deposit-display">270 000 kr</b></span>
-<span><span class="lp-key" style="background:var(--growth)"></span>Avkastning <b id="interest-display">+205 443 kr</b></span>
+<span><span class="lp-key" style="background:#93C5FD"></span>Du har satt in <b id="deposit-display">900 000 kr</b></span>
+<span><span class="lp-key" style="background:var(--growth)"></span>Avkastning <b id="interest-display">+1 530 215 kr</b></span>
 </div>
-<div data-reveal="fade">
+<div data-reveal="fade" id="calc-chart-wrap">
 <svg aria-hidden="true" class="lp-chart" id="calc-chart" viewBox="0 0 640 280" xmlns="http://www.w3.org/2000/svg">
 <g id="calc-grid"></g>
 <path d="" fill="#93C5FD" fill-opacity=".14" id="calc-deposit-area"></path>
@@ -369,7 +372,7 @@
   // Chart area inside the 640x280 viewBox, leaving room for axis labels
   var X0 = 84, X1 = 610, Y0 = 244, Y1 = 12;
 
-  function kr(v) { return Math.round(v).toLocaleString('sv-SE') + ' kr'; }
+  function kr(v) { return Math.round(v).toLocaleString('sv-SE') + '\u00a0kr'; }
   function value(monthly, years) {
     var n = years * 12;
     return monthly * ((Math.pow(1 + RATE, n) - 1) / RATE);
@@ -433,9 +436,39 @@
     draw(monthly, years);
   }
 
-  savingsSlider.addEventListener('input', update);
-  yearsSlider.addEventListener('input', update);
+  // First time the chart is revealed, count the total up from 0 kr while the curve draws
+  var counting = 0;
+  function countUp() {
+    var el = $('result-display'), target = value(parseFloat(savingsSlider.value), parseFloat(yearsSlider.value));
+    var start = performance.now() + 200, dur = 2400;
+    el.setAttribute('aria-live', 'off');
+    (function tick(now) {
+      var t = Math.min(1, Math.max(0, (now - start) / dur));
+      var e = t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+      el.textContent = kr(target * e);
+      if (t < 1) counting = requestAnimationFrame(tick);
+      else { counting = 0; el.setAttribute('aria-live', 'polite'); }
+    })(performance.now());
+  }
+  function stopCount() {
+    if (!counting) return;
+    cancelAnimationFrame(counting); counting = 0;
+    $('result-display').setAttribute('aria-live', 'polite');
+  }
+
+  savingsSlider.addEventListener('input', function () { stopCount(); update(); });
+  yearsSlider.addEventListener('input', function () { stopCount(); update(); });
   update();
+
+  var wrap = $('calc-chart-wrap');
+  if (wrap && document.documentElement.classList.contains('motion-ok')) {
+    $('result-display').textContent = kr(0);
+    new MutationObserver(function (list, obs) {
+      if (!wrap.classList.contains('is-revealed')) return;
+      obs.disconnect();
+      countUp();
+    }).observe(wrap, { attributes: true, attributeFilter: ['class'] });
+  }
 })();
 </script>
 <footer class="w-full bg-surface-card border-t border-border-subtle mt-auto"><div class="max-w-[1140px] mx-auto px-margin py-space-xl"><div class="grid grid-cols-1 md:grid-cols-2 gap-space-xl pb-space-xl border-b border-border-subtle"><div class="flex flex-col items-start gap-space-sm"><div class="flex items-center gap-space-sm"><img alt="UngEkonom Logo" class="h-7 w-auto object-contain" src="stitch-assets/logo.svg"/></div><p class="font-body-regular text-body-regular text-text-secondary max-w-sm">Ekonomi för livet. En modern utbildningsplattform som ger unga vuxna och gymnasieelever självförtroende att bemästra sin privatekonomi.</p></div><div class="grid grid-cols-3 gap-space-lg"><div class="flex flex-col gap-space-sm"><span class="font-label-md text-label-md text-text-primary uppercase tracking-wider">Om oss</span><ul class="flex flex-col gap-space-xs font-body-regular text-body-regular text-text-secondary"><li class="hover:text-on-surface transition-colors"><a data-path="om-ungekonom" href="var-vision.html">Om UngEkonom</a></li><li class="hover:text-on-surface transition-colors"><a data-path="fragor-och-svar" href="fragor-och-svar.html">Frågor &amp; svar</a></li><li class="hover:text-on-surface transition-colors"><a data-path="kontakt" href="kontakt.html">Kontakt</a></li></ul></div><div class="flex flex-col gap-space-sm"><span class="font-label-md text-label-md text-text-primary uppercase tracking-wider">Samarbete</span><ul class="flex flex-col gap-space-xs font-body-regular text-body-regular text-text-secondary"><li class="hover:text-on-surface transition-colors"><a data-path="samarbete" href="samarbete.html">Bli samarbetspartner</a></li><li class="hover:text-on-surface transition-colors"><a data-path="engagera-dig" href="engagera-dig.html">Engagera dig</a></li></ul></div><div class="flex flex-col gap-space-sm"><span class="font-label-md text-label-md text-text-primary uppercase tracking-wider">UngEkonom i skolan</span><ul class="flex flex-col gap-space-xs font-body-regular text-body-regular text-text-secondary"><li class="hover:text-on-surface transition-colors"><a data-path="for-elever" href="for-elever.html">För elever</a></li><li class="hover:text-on-surface transition-colors"><a data-path="for-larare" href="for-larare.html">För lärare</a></li><li class="hover:text-on-surface transition-colors"><a data-path="for-gymnasieskolor" href="for-gymnasieskolor.html">För skolor</a></li></ul></div></div></div><div class="pt-space-lg flex flex-col md:flex-row items-center justify-between gap-space-md font-caption-micro text-caption-micro text-text-tertiary"><p>Innehållet är utbildning, inte finansiell rådgivning.</p><p>© 2026 UngEkonom · Byggd med ♥ i Sverige</p></div></div></footer><script>
