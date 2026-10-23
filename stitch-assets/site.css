@@ -168,3 +168,4 @@
 .lp-tl-item .lp-body { margin-top: .4rem; }
 .lp-tl-item .lp-actions { margin-top: 1.25rem; }
 @media (min-width: 768px) { .lp-stats.is-compact dl { grid-template-columns: repeat(2, minmax(0, 17rem)); } }
+.lp-article-img { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover; border-radius: 16px; background: var(--rule); margin-bottom: .75rem; color: transparent; overflow: hidden; }
