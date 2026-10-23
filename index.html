@@ -94,8 +94,7 @@
 .lp-chart text { font: 500 11px "Plus Jakarta Sans", sans-serif; fill: #A5B4FC; }
 @media (max-width: 600px) { .lp-chart text { font-size: 20px; } }
 /* Slower draw-in than the shared default so the curve and the counting total read together */
-.motion-ok #calc-value.draw-line { transition-duration: 2.4s; }
-.motion-ok #calc-dot.draw-after { transition-delay: 2.5s; }
+#calc-ghost, #calc-marker, #calc-dot { transition: opacity .4s ease; }
 .lp-note { font-size: .8125rem; color: #A5B4FC; margin-top: 1.5rem; max-width: 60ch; }
 
 /* Tracks */
@@ -219,12 +218,15 @@
 <div data-reveal="fade" id="calc-chart-wrap">
 <svg aria-hidden="true" class="lp-chart" id="calc-chart" viewBox="0 0 640 280" xmlns="http://www.w3.org/2000/svg">
 <g id="calc-grid"></g>
+<clipPath id="calc-clip"><rect height="280" id="calc-clip-rect" width="640" x="0" y="0"></rect></clipPath>
+<g clip-path="url(#calc-clip)">
 <path d="" fill="#93C5FD" fill-opacity=".14" id="calc-deposit-area"></path>
 <path d="" fill="none" id="calc-ghost" stroke="#34D399" stroke-dasharray="4 6" stroke-opacity=".45" stroke-width="2"></path>
 <path d="" fill="none" id="calc-deposit" stroke="#93C5FD" stroke-width="2"></path>
-<path class="draw-line" d="" fill="none" id="calc-value" pathLength="1" stroke="#34D399" stroke-linecap="round" stroke-width="3.5"></path>
+<path d="" fill="none" id="calc-value" stroke="#34D399" stroke-linecap="round" stroke-width="3.5"></path>
+</g>
 <line id="calc-marker" stroke="#fff" stroke-opacity=".35" stroke-width="1" x1="0" x2="0" y1="0" y2="0"></line>
-<circle class="draw-after" cx="0" cy="0" fill="#34D399" id="calc-dot" r="6" stroke="#1E3A8A" stroke-width="3"></circle>
+<circle cx="0" cy="0" fill="#34D399" id="calc-dot" r="6" stroke="#1E3A8A" stroke-width="3"></circle>
 </svg>
 </div>
 <p class="lp-note">Räknat med 7 % genomsnittlig avkastning per år. Verklig avkastning varierar från år till år och kan bli negativ. Den streckade linjen visar hur sparandet fortsätter växa om du låter det ligga kvar till 35 år.</p>
@@ -370,6 +372,7 @@
   var RATE = 0.07 / 12;
   var MAX_YEARS = 35;
   // Chart area inside the 640x280 viewBox, leaving room for axis labels
+  var scale;
   var X0 = 84, X1 = 610, Y0 = 244, Y1 = 12;
 
   function kr(v) { return Math.round(v).toLocaleString('sv-SE') + '\u00a0kr'; }
@@ -391,6 +394,7 @@
     var top = Math.ceil(value(monthly, MAX_YEARS) / step) * step;
     var x = function (y) { return X0 + (X1 - X0) * y / MAX_YEARS; };
     var y = function (v) { return Y0 - (Y0 - Y1) * v / top; };
+    scale = { x: x, y: y };
 
     var grid = '';
     for (var v = 0; v <= top + 1; v += step) {
@@ -436,37 +440,49 @@
     draw(monthly, years);
   }
 
-  // First time the chart is revealed, count the total up from 0 kr while the curve draws
-  var counting = 0;
-  function countUp() {
-    var el = $('result-display'), target = value(parseFloat(savingsSlider.value), parseFloat(yearsSlider.value));
-    var start = performance.now() + 200, dur = 2400;
+  // First time the chart is revealed, grow everything from left to right: a clip window opens
+  // across the lines, the dot rides the tip of the curve and the total shows the value at the dot.
+  var anim = 0;
+  function setReveal(yrs, monthly, done) {
+    var v = value(monthly, yrs);
+    $('calc-clip-rect').setAttribute('width', done ? 640 : scale.x(yrs));
+    $('calc-dot').setAttribute('cx', scale.x(yrs));
+    $('calc-dot').setAttribute('cy', scale.y(v));
+    ['calc-ghost', 'calc-marker'].forEach(function (id) { $(id).style.opacity = done ? '' : 0; });
+    $('result-display').textContent = kr(v);
+  }
+  function animate() {
+    var monthly = parseFloat(savingsSlider.value), years = parseFloat(yearsSlider.value);
+    var el = $('result-display'), start = performance.now() + 200, dur = 2400;
     el.setAttribute('aria-live', 'off');
+    $('calc-dot').style.opacity = '';
     (function tick(now) {
       var t = Math.min(1, Math.max(0, (now - start) / dur));
       var e = t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
-      el.textContent = kr(target * e);
-      if (t < 1) counting = requestAnimationFrame(tick);
-      else { counting = 0; el.setAttribute('aria-live', 'polite'); }
+      setReveal(years * e, monthly, t === 1);
+      if (t < 1) anim = requestAnimationFrame(tick);
+      else { anim = 0; el.setAttribute('aria-live', 'polite'); }
     })(performance.now());
   }
-  function stopCount() {
-    if (!counting) return;
-    cancelAnimationFrame(counting); counting = 0;
+  function finish() {
+    if (!anim) return;
+    cancelAnimationFrame(anim); anim = 0;
     $('result-display').setAttribute('aria-live', 'polite');
+    setReveal(0, 0, true);
   }
 
-  savingsSlider.addEventListener('input', function () { stopCount(); update(); });
-  yearsSlider.addEventListener('input', function () { stopCount(); update(); });
+  savingsSlider.addEventListener('input', function () { finish(); update(); });
+  yearsSlider.addEventListener('input', function () { finish(); update(); });
   update();
 
   var wrap = $('calc-chart-wrap');
   if (wrap && document.documentElement.classList.contains('motion-ok')) {
-    $('result-display').textContent = kr(0);
+    setReveal(0, parseFloat(savingsSlider.value), false);
+    $('calc-dot').style.opacity = 0;
     new MutationObserver(function (list, obs) {
       if (!wrap.classList.contains('is-revealed')) return;
       obs.disconnect();
-      countUp();
+      animate();
     }).observe(wrap, { attributes: true, attributeFilter: ['class'] });
   }
 })();
