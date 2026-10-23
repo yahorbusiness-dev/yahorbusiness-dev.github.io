@@ -187,3 +187,7 @@
 @media (min-width: 640px) {
   .lp-close-teacher { flex-direction: row; justify-content: space-between; text-align: left; gap: 2rem; }
 }
+
+/* Shared footer (every page): underline the subpage links on hover / keyboard focus */
+footer li a { text-underline-offset: 4px; text-decoration-thickness: 1.5px; }
+footer li a:hover, footer li a:focus-visible { text-decoration-line: underline; }
