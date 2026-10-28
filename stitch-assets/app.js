@@ -1542,7 +1542,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.querySelectorAll('[data-signout]').forEach(btn => btn.addEventListener('click', signOut));
   const { data: { session } } = await sb.auth.getSession();
   if (!session) {
-    location.href = 'auth.html';
+    location.href = document.getElementById('teacher-root') ? 'larare-konto.html' : 'auth.html';
     return;
   }
   const user = session.user;
