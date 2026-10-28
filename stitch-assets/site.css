@@ -48,8 +48,10 @@
 .lp-facts { margin: 1.75rem 0 0; padding: 0; list-style: none; display: grid; gap: .35rem; }
 .lp-facts li { font-size: var(--t-sm); color: var(--ink-2); padding-left: 1rem; position: relative; }
 .lp-facts li::before { content: ""; position: absolute; left: 0; top: .55em; width: 6px; height: 6px; border-radius: 50%; background: var(--growth); }
-.lp-video { position: relative; border-radius: 20px; overflow: hidden; background: var(--ink); box-shadow: 0 24px 48px -24px rgba(30, 58, 138, .45); }
-.lp-video video { display: block; width: 100%; height: auto; cursor: pointer; }
+/* Hero screenshot: desktop image, portrait image below 960px. The images carry
+   their own frame and the page's --paper background, so no box styling here. */
+.lp-shot img { display: block; width: 100%; height: auto; }
+@media (max-width: 959px) { .lp-shot { max-width: 440px; margin: 0 auto; } }
 @media (min-width: 960px) {
   .lp-hero { padding: 5.5rem 0 5rem; }
   .lp-hero-grid { grid-template-columns: 5fr 6fr; gap: 4rem; }
