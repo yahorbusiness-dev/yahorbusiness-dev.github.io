@@ -56,3 +56,25 @@
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);
   else init();
 })();
+
+// "Till toppen": a button that slides in from the right once the page is scrolled down.
+(function(){
+  function init(){
+    if(document.querySelector('.to-top'))return;
+    var btn=document.createElement('button');
+    btn.type='button';btn.className='to-top';btn.setAttribute('aria-label','Till toppen');
+    btn.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"/></svg><span>Till toppen</span>';
+    document.body.appendChild(btn);
+    var reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    btn.addEventListener('click',function(){window.scrollTo({top:0,behavior:reduce?'auto':'smooth'})});
+    var ticking=false;
+    function update(){
+      ticking=false;
+      btn.classList.toggle('is-visible',window.scrollY>window.innerHeight*0.8);
+    }
+    window.addEventListener('scroll',function(){if(!ticking){ticking=true;requestAnimationFrame(update)}},{passive:true});
+    update();
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);
+  else init();
+})();
