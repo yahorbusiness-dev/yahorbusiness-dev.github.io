@@ -30,12 +30,12 @@
 .motion-ok .is-revealed .draw-after{opacity:1}
 
 /* "Till toppen" button: slides in from the right in the bottom-right corner */
-.to-top{position:fixed;right:1.25rem;bottom:1.25rem;z-index:60;display:inline-flex;align-items:center;gap:.5rem;padding:.75rem 1.25rem;border:0;border-radius:9999px;background:#34D399;color:#052E1C;font:600 15px/1 'Plus Jakarta Sans',system-ui,sans-serif;cursor:pointer;box-shadow:0 8px 24px rgba(16,185,129,.28);opacity:0;visibility:hidden;transform:translateX(calc(100% + 2rem));transition:transform .55s cubic-bezier(.22,1,.36,1),opacity .4s ease,visibility 0s linear .55s,background-color .2s ease,box-shadow .2s ease}
+.to-top{position:fixed;right:1.25rem;bottom:1.25rem;z-index:60;display:inline-flex;align-items:center;gap:.35rem;padding:.5rem .9rem;border:0;border-radius:9999px;background:#34D399;color:#052E1C;font:600 13px/1 'Plus Jakarta Sans',system-ui,sans-serif;cursor:pointer;box-shadow:0 6px 16px rgba(16,185,129,.25);opacity:0;visibility:hidden;transform:translateX(calc(100% + 2rem));transition:transform .55s cubic-bezier(.22,1,.36,1),opacity .4s ease,visibility 0s linear .55s,background-color .2s ease,box-shadow .2s ease}
 .to-top.is-visible{opacity:1;visibility:visible;transform:none;transition:transform .55s cubic-bezier(.22,1,.36,1),opacity .4s ease,visibility 0s,background-color .2s ease,box-shadow .2s ease}
 .to-top:hover{background:#4ADE9F;box-shadow:0 10px 28px rgba(16,185,129,.38)}
 .to-top:hover svg{transform:translateY(-2px)}
 .to-top:active{transform:scale(.97)}
 .to-top:focus-visible{outline:3px solid #1E40AF;outline-offset:3px}
-.to-top svg{width:18px;height:18px;transition:transform .2s ease}
-@media (max-width:640px){.to-top{right:1rem;bottom:1rem;padding:.65rem 1rem;font-size:14px}}
+.to-top svg{width:14px;height:14px;transition:transform .2s ease}
+@media (max-width:640px){.to-top{right:1rem;bottom:1rem;padding:.45rem .8rem;font-size:12px}}
 @media (prefers-reduced-motion:reduce){.to-top,.to-top.is-visible{transition:opacity .2s ease,visibility 0s;transform:none}}
