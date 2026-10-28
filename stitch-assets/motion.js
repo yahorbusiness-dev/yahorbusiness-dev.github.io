@@ -66,7 +66,24 @@
     btn.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"/></svg><span>Till toppen</span>';
     document.body.appendChild(btn);
     var reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    btn.addEventListener('click',function(){window.scrollTo({top:0,behavior:reduce?'auto':'smooth'})});
+    // Custom eased scroll so it is slower than the browser's built-in smooth scroll.
+    var anim=null;
+    function stop(){if(anim){cancelAnimationFrame(anim);anim=null}}
+    ['wheel','touchstart','keydown'].forEach(function(ev){window.addEventListener(ev,stop,{passive:true})});
+    btn.addEventListener('click',function(){
+      stop();
+      var from=window.scrollY;
+      if(reduce||from<=0){window.scrollTo(0,0);return}
+      var dur=Math.min(1800,Math.max(900,from*0.35)),start=null;
+      function frame(t){
+        if(start===null)start=t;
+        var p=Math.min(1,(t-start)/dur);
+        var e=p<0.5?4*p*p*p:1-Math.pow(-2*p+2,3)/2;
+        window.scrollTo(0,Math.round(from*(1-e)));
+        anim=p<1?requestAnimationFrame(frame):null;
+      }
+      anim=requestAnimationFrame(frame);
+    });
     var ticking=false;
     function update(){
       ticking=false;
