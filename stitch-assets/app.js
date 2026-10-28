@@ -1355,6 +1355,189 @@ async function initArticleReaderPage(ctx) {
   }
 }
 
+// ---------------------------------------------------------------------
+// Lärarvy (demo): a fictional class built on the real open lessons, so
+// teachers can see what the dashboard will look like. No real student data.
+// ---------------------------------------------------------------------
+const DEMO_CLASSES = [
+  { id: 'ek24a', name: 'EK24A', course: 'Företagsekonomi 1', seed: 7, names: ['Alva Lindqvist', 'Elias Berg', 'Maja Holm', 'Omar Haddad', 'Ella Sjöberg', 'Noah Ek', 'Saga Nyström', 'Liam Karlsson', 'Wilma Strand', 'Hugo Dahl', 'Nora Lund', 'Adam Ali', 'Selma Åberg', 'Leo Forsberg', 'Ines Persson', 'Viktor Engström', 'Agnes Holmberg', 'Melvin Sandberg', 'Stella Wikström', 'Ali Yilmaz', 'Freja Lindgren', 'William Björk', 'Elsa Hedlund', 'Isak Nilsson'] },
+  { id: 'sa24b', name: 'SA24B', course: 'Samhällskunskap 1b', seed: 23, names: ['Alice Johansson', 'Lucas Andersson', 'Olivia Eriksson', 'Theo Gustafsson', 'Astrid Olsson', 'Oscar Larsson', 'Vera Pettersson', 'Charlie Svensson', 'Juni Jonsson', 'Sam Hansson', 'Tilde Axelsson', 'Mohammed Ahmed', 'Ebba Lindberg', 'Melker Jakobsson', 'Lova Magnusson', 'Albin Bengtsson', 'Edith Fredriksson', 'Gustav Mattsson', 'Molly Sundberg', 'Emil Holmgren'] },
+];
+
+function demoRandom(seed) {
+  let x = seed;
+  return () => { x = (x * 9301 + 49297) % 233280; return x / 233280; };
+}
+
+function buildDemoClass(cls, lessons) {
+  const rnd = demoRandom(cls.seed);
+  return cls.names.map((name, i) => {
+    const engagement = rnd();
+    const done = lessons.map((l, j) => engagement > 0.12 && rnd() < engagement + 0.25 - j * 0.08);
+    const scores = done.map(d => (d ? Math.round(60 + rnd() * 40) : null));
+    const taken = scores.filter(v => v !== null);
+    const quiz = taken.length ? Math.round(taken.reduce((a, b) => a + b, 0) / taken.length) : null;
+    const lastActiveDays = engagement < 0.12 ? null : Math.floor(rnd() * (engagement > 0.5 ? 4 : 14));
+    const completed = done.filter(Boolean).length;
+    let status = 'ok';
+    if (completed === 0) status = 'none';
+    else if ((quiz !== null && quiz < 70) || lastActiveDays > 7) status = 'support';
+    return { id: `${cls.id}-${i}`, name, done, scores, completed, quiz, lastActiveDays, status };
+  });
+}
+
+function initTeacherPage(ctx) {
+  const root = document.getElementById('teacher-root');
+  let lessons = ctx.lessons.filter(l => isLessonOpen(l, ctx.lessons));
+  if (!lessons.length) {
+    lessons = Object.keys(CATEGORY_META).filter(k => !PAUSED_CATEGORIES.has(k)).slice(0, 5)
+      .map(k => ({ id: k, category: k, title: CATEGORY_META[k].label }));
+  }
+  const state = { classId: DEMO_CLASSES[0].id, filter: 'all', query: '' };
+  const firstName = (ctx.profile.display_name || 'lärare').split(/\s+/)[0];
+
+  const statusChip = s => ({
+    ok: '<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-positive-wash text-secondary font-caption-micro text-caption-micro">I fas</span>',
+    support: '<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#FEF3C7] text-[#B45309] font-caption-micro text-caption-micro">Behöver stöd</span>',
+    none: '<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-surface-subdued text-text-tertiary font-caption-micro text-caption-micro">Inte startat</span>',
+  }[s]);
+  const lastActive = d => d === null ? '–' : d === 0 ? 'Idag' : d === 1 ? 'Igår' : `${d} dagar sedan`;
+
+  function toast(msg) {
+    const t = document.createElement('div');
+    t.className = 'fixed left-1/2 -translate-x-1/2 bottom-6 z-[70] bg-text-primary text-on-primary font-label-md text-label-md px-4 py-3 rounded-xl shadow-lg';
+    t.textContent = msg;
+    document.body.appendChild(t);
+    setTimeout(() => t.remove(), 2600);
+  }
+
+  function render() {
+    const cls = DEMO_CLASSES.find(c => c.id === state.classId);
+    const students = buildDemoClass(cls, lessons);
+    const n = students.length;
+    const activeWeek = students.filter(s => s.lastActiveDays !== null && s.lastActiveDays <= 7).length;
+    const avgProgress = Math.round(students.reduce((a, s) => a + s.completed, 0) / (n * lessons.length) * 100);
+    const quizzes = students.filter(s => s.quiz !== null);
+    const avgQuiz = quizzes.length ? Math.round(quizzes.reduce((a, s) => a + s.quiz, 0) / quizzes.length) : null;
+    const needSupport = students.filter(s => s.status === 'support').length;
+
+    const stat = (icon, value, label, sub) => `
+      <div class="bg-surface-card rounded-2xl p-space-lg shadow-sm flex flex-col gap-1">
+        <span class="material-symbols-outlined text-[22px] text-primary-container">${icon}</span>
+        <span class="font-headline-1 text-headline-1 text-text-primary mt-1">${value}</span>
+        <span class="font-label-md text-label-md text-text-primary">${label}</span>
+        <span class="font-caption-micro text-caption-micro text-text-tertiary">${sub}</span>
+      </div>`;
+
+    const lessonRows = lessons.map((l, j) => {
+      const meta = CATEGORY_META[l.category] || CATEGORY_META.aktier;
+      const doneCount = students.filter(s => s.done[j]).length;
+      const sc = students.map(s => s.scores[j]).filter(v => v !== null);
+      const avg = sc.length ? Math.round(sc.reduce((a, b) => a + b, 0) / sc.length) : null;
+      const pct = Math.round(doneCount / n * 100);
+      return `
+        <div class="bg-surface-card rounded-2xl p-space-lg shadow-sm flex flex-col sm:flex-row sm:items-center gap-space-md">
+          <div class="flex items-center gap-space-md sm:w-2/5 min-w-0">
+            <div class="w-10 h-10 shrink-0 rounded-xl ${meta.iconBg} ${meta.iconColor} flex items-center justify-center"><span class="material-symbols-outlined text-[22px]">${meta.icon}</span></div>
+            <div class="min-w-0"><p class="font-caption-micro text-caption-micro text-text-tertiary uppercase tracking-wide">${meta.label}</p><p class="font-label-md text-[14px] text-text-primary truncate">${l.title}</p></div>
+          </div>
+          <div class="flex-1 flex flex-col gap-1.5">
+            <div class="flex justify-between font-caption-micro text-caption-micro text-text-secondary"><span>${doneCount} av ${n} klara</span><span>${pct}%</span></div>
+            <div class="h-2 bg-border-subtle rounded-full overflow-hidden"><div class="h-full bg-primary-container rounded-full" style="width:${pct}%"></div></div>
+          </div>
+          <div class="flex items-center gap-space-md sm:w-48 sm:justify-end">
+            <span class="font-caption-micro text-caption-micro text-text-secondary whitespace-nowrap">Quiz ${avg === null ? '–' : avg + '%'}</span>
+            <button type="button" data-assign="${l.title.replace(/"/g, '&quot;')}" class="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-primary-tint hover:bg-primary-fixed text-primary-deep font-label-md text-[12px] transition-colors"><span class="material-symbols-outlined text-[16px]">assignment_add</span>Tilldela</button>
+          </div>
+        </div>`;
+    }).join('');
+
+    const q = state.query.trim().toLowerCase();
+    const visible = students
+      .filter(s => state.filter === 'all' || s.status === state.filter)
+      .filter(s => !q || s.name.toLowerCase().includes(q));
+
+    const filterBtn = (key, label, count) => `
+      <button type="button" data-filter="${key}" class="px-3 py-1.5 rounded-full font-label-md text-[12px] transition-colors ${state.filter === key ? 'bg-text-primary text-on-primary' : 'bg-surface-card text-text-secondary hover:text-text-primary border border-border-subtle'}">${label} <span class="opacity-60">${count}</span></button>`;
+
+    const rows = visible.map(s => `
+      <tr class="border-t border-border-subtle">
+        <td class="py-3 pr-4">
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 shrink-0 rounded-full bg-surface-subdued flex items-center justify-center font-label-md text-[12px] text-text-primary">${initialsFromName(s.name)}</div>
+            <span class="font-label-md text-[14px] text-text-primary whitespace-nowrap">${s.name}</span>
+          </div>
+        </td>
+        <td class="py-3 pr-4">
+          <div class="flex items-center gap-1" title="${s.completed} av ${lessons.length} lektioner">
+            ${s.done.map(d => `<span class="w-4 h-1.5 rounded-full ${d ? 'bg-primary-container' : 'bg-border-subtle'}"></span>`).join('')}
+            <span class="ml-2 font-caption-micro text-caption-micro text-text-secondary">${s.completed}/${lessons.length}</span>
+          </div>
+        </td>
+        <td class="py-3 pr-4 font-body-regular text-[14px] ${s.quiz !== null && s.quiz < 70 ? 'text-[#B45309] font-semibold' : 'text-text-primary'}">${s.quiz === null ? '–' : s.quiz + '%'}</td>
+        <td class="py-3 pr-4 font-body-regular text-[14px] text-text-secondary whitespace-nowrap">${lastActive(s.lastActiveDays)}</td>
+        <td class="py-3">${statusChip(s.status)}</td>
+      </tr>`).join('');
+
+    root.innerHTML = `
+      <div class="flex flex-col md:flex-row md:items-end justify-between gap-space-md mb-space-lg">
+        <div>
+          <span class="font-label-md text-label-md text-primary-deep uppercase tracking-wider">Lärarvy · Demo</span>
+          <h1 class="font-display-xl text-display-xl text-text-primary tracking-tight mt-2">Hej, ${firstName} 👋</h1>
+          <p class="font-body-regular text-body-regular text-text-secondary mt-1">${cls.name} · ${cls.course} · ${n} elever</p>
+        </div>
+        <div class="flex gap-2">${DEMO_CLASSES.map(c => `<button type="button" data-class="${c.id}" class="px-4 py-2 rounded-xl font-label-md text-label-md transition-colors ${c.id === state.classId ? 'bg-primary-container text-on-primary shadow-sm' : 'bg-surface-card text-text-secondary hover:text-text-primary border border-border-subtle'}">${c.name}</button>`).join('')}</div>
+      </div>
+      <div class="flex items-start gap-3 bg-primary-tint rounded-2xl px-space-lg py-space-md mb-space-xl">
+        <span class="material-symbols-outlined text-[20px] text-primary-deep mt-0.5">info</span>
+        <p class="font-body-regular text-[14px] text-text-secondary">Det här är en <strong class="text-text-primary">demo</strong> av lärarvyn. Klasserna och eleverna är påhittade, men lektionerna är de riktiga som finns i plattformen.</p>
+      </div>
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        ${stat('group', `${activeWeek}/${n}`, 'Aktiva elever', 'senaste 7 dagarna')}
+        ${stat('donut_large', `${avgProgress}%`, 'Snittprogress', 'av tilldelade lektioner')}
+        ${stat('quiz', avgQuiz === null ? '–' : `${avgQuiz}%`, 'Quizsnitt', 'för hela klassen')}
+        ${stat('support', needSupport, 'Behöver stöd', 'lågt quiz eller inaktiv')}
+      </div>
+      <div class="mt-12">
+        <h2 class="font-headline-2 text-headline-2 text-text-primary mb-space-md">Lektioner</h2>
+        <div class="flex flex-col gap-3">${lessonRows}</div>
+      </div>
+      <div class="mt-12">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-space-md mb-space-md">
+          <h2 class="font-headline-2 text-headline-2 text-text-primary">Elever</h2>
+          <div class="flex flex-wrap items-center gap-2">
+            ${filterBtn('all', 'Alla', n)}
+            ${filterBtn('support', 'Behöver stöd', needSupport)}
+            ${filterBtn('none', 'Inte startat', students.filter(s => s.status === 'none').length)}
+            <label class="relative"><span class="material-symbols-outlined text-[18px] text-text-tertiary absolute left-2.5 top-1/2 -translate-y-1/2">search</span><input data-search type="search" placeholder="Sök elev" value="${state.query.replace(/"/g, '&quot;')}" class="pl-8 pr-3 py-1.5 w-40 rounded-full border border-border-subtle bg-surface-card font-body-regular text-[13px] focus:outline-none focus:border-primary-container"/></label>
+          </div>
+        </div>
+        <div class="bg-surface-card rounded-2xl shadow-sm px-space-lg py-2 overflow-x-auto">
+          <table class="w-full text-left">
+            <thead><tr class="font-caption-micro text-caption-micro text-text-tertiary uppercase tracking-wide">
+              <th class="py-3 pr-4 font-semibold">Elev</th><th class="py-3 pr-4 font-semibold">Lektioner</th><th class="py-3 pr-4 font-semibold">Quiz</th><th class="py-3 pr-4 font-semibold">Senast aktiv</th><th class="py-3 font-semibold">Status</th>
+            </tr></thead>
+            <tbody>${rows || `<tr><td colspan="5" class="py-6 text-center font-body-regular text-[14px] text-text-tertiary">Inga elever matchar.</td></tr>`}</tbody>
+          </table>
+        </div>
+      </div>`;
+
+    root.querySelectorAll('[data-class]').forEach(b => b.addEventListener('click', () => { state.classId = b.dataset.class; state.filter = 'all'; state.query = ''; render(); }));
+    root.querySelectorAll('[data-filter]').forEach(b => b.addEventListener('click', () => { state.filter = b.dataset.filter; render(); }));
+    root.querySelectorAll('[data-assign]').forEach(b => b.addEventListener('click', () => toast(`Demo: "${b.dataset.assign}" tilldelades ${cls.name}`)));
+    const search = root.querySelector('[data-search]');
+    search.addEventListener('input', () => {
+      state.query = search.value;
+      const pos = search.selectionStart;
+      render();
+      const again = root.querySelector('[data-search]');
+      again.focus();
+      again.setSelectionRange(pos, pos);
+    });
+  }
+  render();
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
   document.querySelectorAll('[data-signout]').forEach(btn => btn.addEventListener('click', signOut));
   const { data: { session } } = await sb.auth.getSession();
@@ -1383,4 +1566,5 @@ document.addEventListener('DOMContentLoaded', async () => {
   else if (document.getElementById('profile-root')) initProfilePage(ctx);
   else if (document.getElementById('articles-root')) initArticlesPage();
   else if (document.getElementById('article-root')) initArticleReaderPage(ctx);
+  else if (document.getElementById('teacher-root')) initTeacherPage(ctx);
 });
