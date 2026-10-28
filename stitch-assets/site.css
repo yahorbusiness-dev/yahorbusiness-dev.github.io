@@ -144,9 +144,6 @@
 .lp-alt { background: var(--card); }
 .lp-page-hero { padding: 3.5rem 0 3rem; }
 .lp-page-hero .lp-h1 { font-size: clamp(2.25rem, 1.45rem + 3.2vw, 3.25rem); max-width: 18ch; }
-.lp-crumbs { font-size: var(--t-sm); color: var(--ink-3); margin: 0 0 1.75rem; }
-.lp-crumbs a { color: var(--ink-2); text-decoration: none; }
-.lp-crumbs a:hover { text-decoration: underline; text-underline-offset: 3px; }
 .lp-inline-link { color: var(--blue); font-weight: 600; text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1px; }
 
 /* Points: parallel ideas, so unnumbered, each under a thin rule */
