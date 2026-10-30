@@ -60,6 +60,8 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 // "Registreringen öppnar snart" instead; also turn off sign-ups in Supabase then.
 const REGISTRATION_OPEN = true;
 
+// Students and teachers each have their own dashboard
+const homeFor = user => (user?.user_metadata?.role === 'teacher' ? 'larare.html' : 'oversikt.html');
 let mode = 'login'; // 'login' | 'register'
 
 const tabLogin = document.getElementById('tab-login');
@@ -117,9 +119,9 @@ form.addEventListener('submit', async (e) => {
 
   try {
     if (mode === 'login') {
-      const { error } = await sb.auth.signInWithPassword({ email, password });
+      const { data, error } = await sb.auth.signInWithPassword({ email, password });
       if (error) throw error;
-      location.href = 'oversikt.html';
+      location.href = homeFor(data.user);
     } else {
       const displayName = nameInput.value.trim() || email.split('@')[0];
       const { data, error } = await sb.auth.signUp({
@@ -132,7 +134,7 @@ form.addEventListener('submit', async (e) => {
       });
       if (error) throw error;
       if (data.session) {
-        location.href = 'oversikt.html';
+        location.href = homeFor(data.user);
       } else {
         infoEl.textContent = 'Konto skapat! Kolla din e-post för att bekräfta kontot innan du loggar in.';
         infoEl.classList.remove('hidden');
@@ -155,7 +157,7 @@ form.addEventListener('submit', async (e) => {
 
 // Already logged in? Skip straight to the dashboard.
 sb.auth.getSession().then(({ data }) => {
-  if (data.session) location.href = 'oversikt.html';
+  if (data.session) location.href = homeFor(data.session.user);
 });
 </script>
 </body>
