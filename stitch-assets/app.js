@@ -156,7 +156,7 @@ function renderAppChrome(role) {
   const nav = document.querySelector('[data-app-nav]');
   if (nav) {
     const links = role === 'teacher'
-      ? [['larare.html', 'Klassöversikt'], ['kurser.html', 'Lektioner']]
+      ? [['larare.html', 'Klassöversikt'], ['planering.html', 'Planering'], ['kurser.html', 'Lektioner']]
       : [['oversikt.html', 'Översikt'], ['kurser.html', 'Kurser']];
     const page = location.pathname.split('/').pop() || 'oversikt.html';
     const current = page === 'lektion.html' ? 'kurser.html' : page;
@@ -1659,10 +1659,116 @@ function initTeacherPage(ctx) {
   render();
 }
 
+// ---------------------------------------------------------------------
+// Planering (teachers): a month calendar, ready-made lesson plans (coming
+// soon) and a way to book a guest lecture.
+// ---------------------------------------------------------------------
+const LESSON_PLANS = [
+  { icon: 'account_balance_wallet', title: 'Budget & buffert', desc: 'Eleverna gör en egen månadsbudget och räknar fram en rimlig buffert.', minutes: 60 },
+  { icon: 'savings', title: 'Sparande', desc: 'Sparkonto, fonder och vanor – hur man kommer igång med att spara.', minutes: 45 },
+  { icon: 'credit_card', title: 'Lån & krediter', desc: 'Effektiv ränta, avbetalningar och vad ett sms-lån egentligen kostar.', minutes: 60 },
+  { icon: 'auto_graph', title: 'Ränta på ränta', desc: 'Räkneövningar som visar hur tid och ränta växer tillsammans.', minutes: 45 },
+  { icon: 'pie_chart', title: 'Fonder & aktier', desc: 'Risk, spridning och avgifter – grunderna innan första investeringen.', minutes: 60 },
+  { icon: 'receipt_long', title: 'Lönebesked & skatt', desc: 'Läs ett lönebesked och förstå vart skatten tar vägen.', minutes: 45 },
+];
+
+function isoWeek(d) {
+  const t = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+  const day = t.getUTCDay() || 7;
+  t.setUTCDate(t.getUTCDate() + 4 - day);
+  const yearStart = new Date(Date.UTC(t.getUTCFullYear(), 0, 1));
+  return Math.ceil(((t - yearStart) / 86400000 + 1) / 7);
+}
+
+function initPlanningPage() {
+  const root = document.getElementById('planning-root');
+  const today = new Date();
+  let view = new Date(today.getFullYear(), today.getMonth(), 1);
+  const monthName = d => d.toLocaleDateString('sv-SE', { month: 'long', year: 'numeric' });
+  const sameDay = (a, b) => a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+
+  const plans = LESSON_PLANS.map(p => `
+    <div class="plan-card group relative bg-surface-card rounded-2xl p-space-lg shadow-sm flex flex-col gap-space-sm overflow-hidden" tabindex="0" aria-label="${p.title} – kommer snart">
+      <div class="w-11 h-11 rounded-xl bg-primary-tint text-primary-deep flex items-center justify-center"><span class="material-symbols-outlined text-[24px]">${p.icon}</span></div>
+      <h3 class="font-headline-3 text-headline-3 text-text-primary mt-1">${p.title}</h3>
+      <p class="font-body-regular text-[14px] leading-relaxed text-text-secondary">${p.desc}</p>
+      <span class="mt-auto pt-2 inline-flex items-center gap-1 font-caption-micro text-caption-micro text-text-tertiary"><span class="material-symbols-outlined text-[15px]">schedule</span>${p.minutes} min · Lektionsupplägg</span>
+      <div class="absolute inset-0 bg-surface-card/85 backdrop-blur-[2px] flex items-center justify-center opacity-0 group-hover:opacity-100 group-focus:opacity-100 transition-opacity duration-300" aria-hidden="true">
+        <span class="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-text-primary text-on-primary font-label-md text-label-md shadow-sm"><span class="material-symbols-outlined text-[18px]">hourglass_top</span>Kommer snart…</span>
+      </div>
+    </div>`).join('');
+
+  root.innerHTML = `
+    <div class="mb-space-xl">
+      <span class="font-label-md text-label-md text-primary-deep uppercase tracking-wider">Lärarvy · Planering</span>
+      <h1 class="font-display-xl text-display-xl text-text-primary tracking-tight mt-2">Planering</h1>
+      <p class="font-body-regular text-body-regular text-text-secondary mt-1">Planera terminen, hitta färdiga lektionsupplägg och boka en gästföreläsning.</p>
+    </div>
+    <div class="bg-surface-card rounded-3xl shadow-sm p-space-lg md:p-space-xl" id="calendar"></div>
+    <div class="mt-12">
+      <h2 class="font-headline-2 text-headline-2 text-text-primary">Färdiga lektioner</h2>
+      <p class="font-body-regular text-body-regular text-text-secondary mt-1 mb-space-md">Kompletta upplägg med genomgång, övningar och quiz som du kan använda direkt i klassrummet.</p>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">${plans}</div>
+    </div>
+    <div class="mt-12 relative overflow-hidden bg-primary-container rounded-3xl px-space-xl py-10 md:px-12 flex flex-col md:flex-row md:items-center justify-between gap-space-lg">
+      <div class="absolute -right-16 -top-16 w-64 h-64 rounded-full bg-white/10 pointer-events-none"></div>
+      <div class="relative">
+        <h2 class="font-headline-1 text-headline-1 text-on-primary tracking-tight">Vill du ha oss i klassrummet?</h2>
+        <p class="font-body-medium text-body-medium text-primary-fixed mt-1">Vi håller en kostnadsfri gästföreläsning anpassad efter din klass.</p>
+      </div>
+      <a href="mailto:hej@ungekonom.se?subject=Bokning%20av%20f%C3%B6rel%C3%A4sning" class="relative inline-flex items-center justify-center gap-1.5 shrink-0 bg-surface-card hover:bg-primary-tint text-primary-deep font-label-md text-label-md px-space-lg py-3 rounded-xl transition-all shadow-sm"><span class="material-symbols-outlined text-[18px]">event_available</span>Boka en föreläsning</a>
+    </div>`;
+
+  const cal = root.querySelector('#calendar');
+  function renderCalendar() {
+    const first = new Date(view.getFullYear(), view.getMonth(), 1);
+    const start = new Date(first);
+    start.setDate(1 - ((first.getDay() + 6) % 7)); // back to Monday
+    const weeks = [];
+    const cursor = new Date(start);
+    do {
+      const days = [];
+      for (let i = 0; i < 7; i++) { days.push(new Date(cursor)); cursor.setDate(cursor.getDate() + 1); }
+      weeks.push(days);
+    } while (cursor.getMonth() === view.getMonth());
+
+    const head = ['Mån', 'Tis', 'Ons', 'Tor', 'Fre', 'Lör', 'Sön'];
+    const cell = d => {
+      const inMonth = d.getMonth() === view.getMonth();
+      const isToday = sameDay(d, today);
+      const weekend = d.getDay() === 0 || d.getDay() === 6;
+      return `<div class="min-h-[64px] md:min-h-[88px] rounded-xl p-1.5 md:p-2 ${inMonth ? (weekend ? 'bg-bg-root' : 'bg-surface-card border border-border-subtle') : ''}">
+        <span class="inline-flex items-center justify-center w-7 h-7 rounded-full font-label-md text-[13px] ${isToday ? 'bg-primary-container text-on-primary' : inMonth ? (weekend ? 'text-text-tertiary' : 'text-text-primary') : 'text-border-subtle'}">${d.getDate()}</span>
+      </div>`;
+    };
+    const title = monthName(view);
+    cal.innerHTML = `
+      <div class="flex items-center justify-between gap-space-md mb-space-lg">
+        <h2 class="font-headline-2 text-headline-2 text-text-primary">${title.charAt(0).toUpperCase() + title.slice(1)}</h2>
+        <div class="flex items-center gap-2">
+          <button type="button" data-cal="today" class="px-3 py-1.5 rounded-xl border border-border-subtle hover:bg-surface-subdued font-label-md text-[12px] text-text-secondary transition-colors">Idag</button>
+          <button type="button" data-cal="-1" aria-label="Föregående månad" class="w-9 h-9 rounded-xl border border-border-subtle hover:bg-surface-subdued flex items-center justify-center text-text-secondary transition-colors"><span class="material-symbols-outlined text-[20px]">chevron_left</span></button>
+          <button type="button" data-cal="1" aria-label="Nästa månad" class="w-9 h-9 rounded-xl border border-border-subtle hover:bg-surface-subdued flex items-center justify-center text-text-secondary transition-colors"><span class="material-symbols-outlined text-[20px]">chevron_right</span></button>
+        </div>
+      </div>
+      <div class="grid grid-cols-[2rem_repeat(7,minmax(0,1fr))] gap-1 md:gap-1.5">
+        <div></div>${head.map(h => `<div class="text-center font-caption-micro text-caption-micro text-text-tertiary uppercase tracking-wide pb-1">${h}</div>`).join('')}
+        ${weeks.map(w => `<div class="flex items-start justify-center pt-2.5 font-caption-micro text-[11px] text-text-tertiary">v${isoWeek(w[0])}</div>${w.map(cell).join('')}`).join('')}
+      </div>`;
+    cal.querySelectorAll('[data-cal]').forEach(b => b.addEventListener('click', () => {
+      const v = b.dataset.cal;
+      view = v === 'today' ? new Date(today.getFullYear(), today.getMonth(), 1) : new Date(view.getFullYear(), view.getMonth() + Number(v), 1);
+      renderCalendar();
+    }));
+  }
+  renderCalendar();
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
+  const isTeacherPage = !!document.querySelector('#teacher-root, #planning-root');
   const { data: { session } } = await sb.auth.getSession();
   if (!session) {
-    location.href = document.getElementById('teacher-root') ? 'larare-konto.html' : 'auth.html';
+    location.href = isTeacherPage ? 'larare-konto.html' : 'auth.html';
     return;
   }
   const user = session.user;
@@ -1670,7 +1776,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   APP_HOME = APP_ROLE === 'teacher' ? 'larare.html' : 'oversikt.html';
   // Each role has its own dashboard; send people to theirs
   if (APP_ROLE === 'teacher' && document.getElementById('dashboard-root')) { location.replace('larare.html'); return; }
-  if (APP_ROLE === 'student' && document.getElementById('teacher-root')) { location.replace('oversikt.html'); return; }
+  if (APP_ROLE === 'student' && isTeacherPage) { location.replace('oversikt.html'); return; }
   renderAppChrome(APP_ROLE);
 
   const [{ data: profile }, { data: lessons }, { data: progress }] = await Promise.all([
@@ -1694,4 +1800,5 @@ document.addEventListener('DOMContentLoaded', async () => {
   else if (document.getElementById('articles-root')) initArticlesPage();
   else if (document.getElementById('article-root')) initArticleReaderPage(ctx);
   else if (document.getElementById('teacher-root')) initTeacherPage(ctx);
+  else if (document.getElementById('planning-root')) initPlanningPage(ctx);
 });
