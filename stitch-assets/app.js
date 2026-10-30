@@ -137,8 +137,125 @@ window.openLektion = function (id) {
 
 // Legacy lesson content ("Du har klarat allt!") calls this to return home.
 window.goHome = function () {
-  location.href = 'oversikt.html';
+  location.href = APP_HOME;
 };
+
+// Students and teachers each stay in their own app. Teacher accounts are
+// tagged with user_metadata.role = 'teacher' when created on larare-konto.html.
+let APP_ROLE = 'student';
+let APP_HOME = 'oversikt.html';
+
+function roleOf(user) {
+  return user?.user_metadata?.role === 'teacher' ? 'teacher' : 'student';
+}
+
+// Logo, nav and header chips for the signed-in role. The only way back to the
+// public site is "Logga ut" in the account menu.
+function renderAppChrome(role) {
+  document.querySelectorAll('[data-home]').forEach(a => { a.href = APP_HOME; });
+  const nav = document.querySelector('[data-app-nav]');
+  if (nav) {
+    const links = role === 'teacher'
+      ? [['larare.html', 'Klassöversikt'], ['kurser.html', 'Lektioner']]
+      : [['oversikt.html', 'Översikt'], ['kurser.html', 'Kurser']];
+    const page = location.pathname.split('/').pop() || 'oversikt.html';
+    const current = page === 'lektion.html' ? 'kurser.html' : page;
+    nav.innerHTML = links.map(([href, label]) => `<a class="font-label-md text-label-md transition-colors ${href === current ? 'text-primary-deep' : 'text-on-surface-variant hover:text-on-surface'}" href="${href}">${label}</a>`).join('');
+  }
+  if (role === 'teacher') document.querySelectorAll('[data-student-only]').forEach(el => el.remove());
+}
+
+// Teachers can open lessons as a preview: nothing is saved and no XP is given.
+function renderTeacherPreviewBanner(text) {
+  // Insert above the page's render root so re-renders don't wipe it
+  const anchor = document.querySelector('main [id$="-root"]');
+  if (!anchor || document.getElementById('teacher-preview')) return;
+  const el = document.createElement('div');
+  el.id = 'teacher-preview';
+  el.className = 'flex items-start gap-3 bg-primary-tint rounded-2xl px-space-lg py-space-md mb-space-lg';
+  el.innerHTML = `<span class="material-symbols-outlined text-[20px] text-primary-deep mt-0.5">visibility</span><p class="font-body-regular text-[14px] text-text-secondary"><strong class="text-text-primary">Förhandsvisning som lärare.</strong> ${text}</p>`;
+  if (anchor.parentNode.tagName === 'MAIN') {
+    // The root is the page container itself: give the banner a matching container
+    const box = document.createElement('div');
+    box.className = 'max-w-5xl mx-auto px-margin pt-10 -mb-8 w-full';
+    el.classList.remove('mb-space-lg');
+    box.appendChild(el);
+    anchor.parentNode.insertBefore(box, anchor);
+  } else {
+    anchor.parentNode.insertBefore(el, anchor);
+  }
+}
+
+function renderAccountMenu(user, profile, role) {
+  const avatar = document.getElementById('hdr-avatar');
+  if (!avatar || avatar.dataset.menuReady) return;
+  avatar.dataset.menuReady = '1';
+  const name = profile.display_name || user.email?.split('@')[0] || 'Konto';
+  const roleLabel = role === 'teacher' ? 'Lärare' : 'Elev';
+
+  const wrap = document.createElement('div');
+  wrap.className = 'relative';
+  avatar.parentNode.insertBefore(wrap, avatar);
+  wrap.appendChild(avatar);
+
+  const menu = document.createElement('div');
+  menu.setAttribute('role', 'menu');
+  menu.hidden = true;
+  menu.className = 'absolute right-0 top-full mt-2 w-64 bg-surface-card rounded-2xl shadow-lg border border-border-subtle p-2 z-[60]';
+  menu.innerHTML = `
+    <div class="px-3 py-2.5 border-b border-border-subtle mb-1">
+      <p class="font-label-md text-label-md text-text-primary truncate">${name}</p>
+      <p class="font-caption-micro text-caption-micro text-text-tertiary truncate">${user.email || ''}</p>
+    </div>
+    <button type="button" role="menuitem" data-open-settings class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left font-label-md text-label-md text-text-primary hover:bg-surface-subdued transition-colors">
+      <span class="material-symbols-outlined text-[20px] text-text-secondary">settings</span>Inställningar
+    </button>`;
+  wrap.appendChild(menu);
+
+  const setOpen = open => { menu.hidden = !open; avatar.setAttribute('aria-expanded', String(open)); };
+  avatar.addEventListener('click', e => { e.stopPropagation(); setOpen(menu.hidden); });
+  document.addEventListener('click', e => { if (!wrap.contains(e.target)) setOpen(false); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') setOpen(false); });
+  menu.querySelector('[data-open-settings]').addEventListener('click', () => { setOpen(false); showSettings(); });
+
+  function showSettings() {
+    if (document.getElementById('settings-panel')) return;
+    const row = (label, value) => value ? `<div class="flex justify-between gap-4 py-2.5 border-b border-border-subtle last:border-0"><span class="font-body-regular text-[14px] text-text-secondary">${label}</span><span class="font-label-md text-[14px] text-text-primary text-right truncate">${value}</span></div>` : '';
+    const overlay = document.createElement('div');
+    overlay.id = 'settings-panel';
+    overlay.setAttribute('role', 'dialog');
+    overlay.setAttribute('aria-modal', 'true');
+    overlay.setAttribute('aria-labelledby', 'settings-title');
+    overlay.style.cssText = 'position:fixed;inset:0;z-index:70;background:rgba(15,23,42,.45);display:flex;align-items:center;justify-content:center;padding:16px';
+    overlay.innerHTML = `
+      <div class="bg-surface-card rounded-2xl shadow-lg w-full p-space-lg md:p-space-xl" style="max-width:420px">
+        <div class="flex items-center justify-between mb-space-lg">
+          <h2 class="font-headline-2 text-headline-2 text-text-primary" id="settings-title">Inställningar</h2>
+          <button type="button" data-settings-close aria-label="Stäng" class="w-9 h-9 rounded-full hover:bg-surface-subdued flex items-center justify-center text-text-secondary"><span class="material-symbols-outlined text-[20px]">close</span></button>
+        </div>
+        <div class="flex items-center gap-3 mb-space-md">
+          <div class="w-12 h-12 rounded-full bg-primary-tint text-primary-deep flex items-center justify-center font-headline-3 text-headline-3">${initialsFromName(name)}</div>
+          <div class="min-w-0"><p class="font-label-md text-[15px] text-text-primary truncate">${name}</p><p class="font-caption-micro text-caption-micro text-text-tertiary truncate">${user.email || ''}</p></div>
+        </div>
+        <div class="bg-bg-root rounded-xl px-space-md">
+          ${row('Kontotyp', roleLabel)}
+          ${row('Skola', role === 'teacher' ? user.user_metadata?.school : '')}
+          ${row('E-post', user.email)}
+        </div>
+        <button type="button" data-settings-signout class="mt-space-lg w-full inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl border border-border-subtle hover:bg-[#FEF2F2] hover:border-[#FCA5A5] text-critical-danger font-label-md text-label-md transition-all">
+          <span class="material-symbols-outlined text-[18px]">logout</span>Logga ut
+        </button>
+      </div>`;
+    const close = () => { overlay.remove(); document.removeEventListener('keydown', onEsc); avatar.focus(); };
+    const onEsc = e => { if (e.key === 'Escape') close(); };
+    overlay.addEventListener('click', e => { if (e.target === overlay) close(); });
+    overlay.querySelector('[data-settings-close]').addEventListener('click', close);
+    overlay.querySelector('[data-settings-signout]').addEventListener('click', e => { e.currentTarget.disabled = true; signOut(); });
+    document.addEventListener('keydown', onEsc);
+    document.body.appendChild(overlay);
+    overlay.querySelector('[data-settings-close]').focus();
+  }
+}
 
 function renderSidebarChrome(profile) {
   const sbName = document.getElementById('sb-name');
@@ -307,6 +424,8 @@ function isYesterday(dateStr) {
 
 async function initLessonPage(ctx) {
   const { user, profile, lessons } = ctx;
+  const preview = ctx.role === 'teacher';
+  if (preview) renderTeacherPreviewBanner('Du ser lektionen som eleverna gör. Dina svar sparas inte och ger ingen XP.');
   const root = document.getElementById('lesson-root');
   const lessonId = new URLSearchParams(location.search).get('id');
   if (!lessonId) {
@@ -433,6 +552,7 @@ async function initLessonPage(ctx) {
   resetQuiz();
 
   async function saveProgress(status, currentStep, quizScore) {
+    if (preview) return;
     const payload = { user_id: user.id, lesson_id: lessonId, status, current_step: currentStep, updated_at: new Date().toISOString() };
     if (quizScore !== undefined) {
       payload.quiz_score = quizScore;
@@ -464,7 +584,7 @@ async function initLessonPage(ctx) {
   }
 
   async function awardCompletion(score) {
-    if (alreadyCompleted) return; // no double XP on retakes
+    if (alreadyCompleted || preview) return; // no double XP on retakes, none in teacher preview
     const today = new Date().toISOString().slice(0, 10);
     const sameDay = profile.last_active_date === today;
     const newStreak = sameDay ? profile.streak_days : (isYesterday(profile.last_active_date) ? profile.streak_days + 1 : 1);
@@ -612,7 +732,7 @@ async function initLessonPage(ctx) {
           return;
         }
         saving = false;
-        const earnedXp = !alreadyCompleted;
+        const earnedXp = !alreadyCompleted && !preview;
         alreadyCompleted = true;
         renderDone(score, earnedXp);
       }
@@ -690,7 +810,7 @@ async function initLessonPage(ctx) {
           : ''}
         <button id="done-retake" type="button" class="${passed && next ? btnSecondary : btnPrimary}"><span class="material-symbols-outlined text-[18px]">replay</span><span>Gör om quizet</span></button>
         ${passed ? '' : `<button id="done-reread" type="button" class="${btnSecondary}"><span class="material-symbols-outlined text-[18px]">menu_book</span><span>Läs lektionen igen</span></button>`}
-        <a href="oversikt.html" class="${btnSecondary}">Till översikten</a>
+        <a href="${APP_HOME}" class="${btnSecondary}">${preview ? 'Till klassöversikten' : 'Till översikten'}</a>
       </div>
       ${passed && !next ? '<p class="text-center font-body-regular text-body-regular text-text-secondary mt-space-md">Du har klarat alla öppna lektioner – fler är under utveckling!</p>' : ''}`;
     toTop();
@@ -716,6 +836,7 @@ function lessonStatusBadge(status) {
 
 function initCoursesPage(ctx) {
   const { lessons, progress } = ctx;
+  if (ctx.role === 'teacher') renderTeacherPreviewBanner('Här ser du lektionerna som eleverna har. Öppna en lektion för att testa den – inget sparas.');
   const progressByLesson = new Map(progress.map(p => [p.lesson_id, p]));
   const root = document.getElementById('courses-root');
 
@@ -1539,13 +1660,18 @@ function initTeacherPage(ctx) {
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
-  document.querySelectorAll('[data-signout]').forEach(btn => btn.addEventListener('click', signOut));
   const { data: { session } } = await sb.auth.getSession();
   if (!session) {
     location.href = document.getElementById('teacher-root') ? 'larare-konto.html' : 'auth.html';
     return;
   }
   const user = session.user;
+  APP_ROLE = roleOf(user);
+  APP_HOME = APP_ROLE === 'teacher' ? 'larare.html' : 'oversikt.html';
+  // Each role has its own dashboard; send people to theirs
+  if (APP_ROLE === 'teacher' && document.getElementById('dashboard-root')) { location.replace('larare.html'); return; }
+  if (APP_ROLE === 'student' && document.getElementById('teacher-root')) { location.replace('oversikt.html'); return; }
+  renderAppChrome(APP_ROLE);
 
   const [{ data: profile }, { data: lessons }, { data: progress }] = await Promise.all([
     sb.from('profiles').select('*').eq('id', user.id).single(),
@@ -1556,8 +1682,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   const safeProfile = profile || { display_name: user.email?.split('@')[0] || 'Medlem', xp: 0, streak_days: 0, best_streak_days: 0, daily_goal_minutes: 15, minutes_today: 0, last_active_date: null, created_at: new Date().toISOString() };
   renderSidebarChrome(safeProfile);
   renderPrototypeChrome(user);
+  renderAccountMenu(user, safeProfile, APP_ROLE);
 
-  const ctx = { user, profile: safeProfile, lessons: lessons || [], progress: progress || [] };
+  const ctx = { user, role: APP_ROLE, profile: safeProfile, lessons: lessons || [], progress: progress || [] };
 
   if (document.getElementById('dashboard-root')) renderDashboard(ctx);
   else if (document.getElementById('lesson-root')) initLessonPage(ctx);
