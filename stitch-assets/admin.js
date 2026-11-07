@@ -10,7 +10,7 @@ const ROLE_CHIP = {
   teacher: 'bg-positive-wash text-secondary',
   admin: 'bg-text-primary text-on-primary',
 };
-const LOG_LABEL = { reset_account: 'Nollställde', delete_user: 'Tog bort' };
+const LOG_LABEL = { reset_account: 'Nollställde', delete_user: 'Tog bort', approve_teacher: 'Godkände lärare', reject_teacher: 'Avslog läraransökan' };
 
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const fmtDate = d => d ? new Date(d).toLocaleDateString('sv-SE', { day: 'numeric', month: 'short', year: 'numeric' }) : '–';
@@ -25,6 +25,12 @@ function initials(name) {
   return ((parts[0]?.[0] || '') + (parts[1]?.[0] || '')).toUpperCase() || '–';
 }
 const roleChip = r => `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full ${ROLE_CHIP[r] || ROLE_CHIP.student} font-caption-micro text-caption-micro">${ROLE_LABEL[r] || r}</span>`;
+// Teacher application status next to the role (set by the Edge Function)
+const teacherChip = s => s === 'pending'
+  ? ' <span class="inline-flex items-center px-2.5 py-0.5 rounded-full bg-[#FEF3C7] text-[#B45309] font-caption-micro text-caption-micro">Ansöker om lärare</span>'
+  : s === 'rejected'
+    ? ' <span class="inline-flex items-center px-2.5 py-0.5 rounded-full bg-surface-subdued text-text-tertiary font-caption-micro text-caption-micro">Läraransökan avslagen</span>'
+    : '';
 
 async function api(action, id) {
   const { data, error } = await sb.functions.invoke('admin', { body: { action, id } });
@@ -132,8 +138,33 @@ function initAdmin(me) {
     render();
   }
 
+  // Approve or reject a teacher application. Returns true when it went through.
+  async function decideTeacher(u, approve) {
+    const ok = await confirmDialog(approve ? {
+      title: 'Godkänn som lärare?',
+      text: `<strong>${esc(u.email)}</strong>${u.school ? ` (${esc(u.school)})` : ''} får tillgång till lärarvyn. Kontrollera att personen verkligen är lärare innan du godkänner.`,
+      confirmLabel: 'Godkänn',
+    } : {
+      title: 'Avslå läraransökan?',
+      text: `<strong>${esc(u.email)}</strong> får inte tillgång till lärarvyn. Du kan godkänna kontot senare om du ändrar dig.`,
+      confirmLabel: 'Avslå',
+      danger: true,
+    });
+    if (!ok) return false;
+    try {
+      await api(approve ? 'approve_teacher' : 'reject_teacher', u.id);
+      toast(approve ? `${u.email} är godkänd som lärare.` : `Ansökan från ${u.email} är avslagen.`);
+      await load();
+      return true;
+    } catch (err) {
+      toast(`Kunde inte spara beslutet: ${err.message}`, 'error');
+      return false;
+    }
+  }
+
   function render() {
     const { users } = state;
+    const pending = users.filter(u => u.teacher_status === 'pending').sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
     const count = r => users.filter(u => u.role === r).length;
     const active7 = users.filter(u => u.last_sign_in_at && Date.now() - new Date(u.last_sign_in_at) < 7 * 86400000).length;
     const q = state.query.trim().toLowerCase();
@@ -161,7 +192,7 @@ function initAdmin(me) {
             <div class="min-w-0"><p class="font-label-md text-[14px] text-text-primary truncate">${esc(u.name || '–')}${u.id === me.id ? ' <span class="text-text-tertiary font-normal">(du)</span>' : ''}</p><p class="font-caption-micro text-caption-micro text-text-tertiary truncate">${esc(u.email)}</p></div>
           </div>
         </td>
-        <td class="py-3 pr-4">${roleChip(u.role)}</td>
+        <td class="py-3 pr-4 whitespace-nowrap">${roleChip(u.role)}${teacherChip(u.teacher_status)}</td>
         <td class="py-3 pr-4 font-body-regular text-[14px] text-text-secondary whitespace-nowrap">${fmtDate(u.created_at)}</td>
         <td class="py-3 pr-4 font-body-regular text-[14px] text-text-secondary whitespace-nowrap">${ago(u.last_sign_in_at)}</td>
         <td class="py-3 pr-4 font-body-regular text-[14px] text-text-primary">${u.role === 'teacher' ? '–' : `${u.xp} XP`}</td>
@@ -187,6 +218,25 @@ function initAdmin(me) {
         ${stat('school', count('student'), 'Elever')}
         ${stat('co_present', count('teacher'), 'Lärare')}
         ${stat('login', active7, 'Inloggade senaste 7 dagarna')}
+      </div>
+      <div class="mt-12">
+        <h2 class="font-headline-2 text-headline-2 text-text-primary">Väntar på godkännande${!state.loading && pending.length ? ` <span class="text-text-tertiary font-normal">${pending.length}</span>` : ''}</h2>
+        <p class="font-body-regular text-[14px] text-text-secondary mt-1 mb-space-md">Konton som har ansökt om att bli lärare. De har ingen tillgång till lärarvyn förrän du godkänner dem.</p>
+        <div class="bg-surface-card rounded-2xl shadow-sm px-space-lg py-2">
+          ${state.loading ? '<p class="py-4 font-body-regular text-[14px] text-text-tertiary">Hämtar ansökningar…</p>'
+            : !pending.length ? '<p class="py-4 font-body-regular text-[14px] text-text-tertiary">Inga ansökningar väntar.</p>'
+            : `<ul>${pending.map(u => `
+              <li class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 py-3 border-t border-border-subtle first:border-0">
+                <div class="min-w-0">
+                  <p class="font-label-md text-[14px] text-text-primary truncate">${esc(u.name || '–')} <span class="text-text-tertiary font-normal">· ${esc(u.email)}</span></p>
+                  <p class="font-caption-micro text-caption-micro text-text-tertiary">Skola: ${esc(u.school || 'ej angiven')} · Ansökte ${fmtDate(u.created_at)}</p>
+                </div>
+                <div class="flex gap-2 shrink-0">
+                  <button type="button" data-approve="${u.id}" class="px-4 py-2 rounded-xl bg-primary-container hover:bg-primary-deep text-on-primary font-label-md text-label-md transition-colors">Godkänn</button>
+                  <button type="button" data-reject="${u.id}" class="px-4 py-2 rounded-xl border border-border-subtle hover:bg-[#FEF2F2] text-critical-danger font-label-md text-label-md transition-colors">Avslå</button>
+                </div>
+              </li>`).join('')}</ul>`}
+        </div>
       </div>
       <div class="mt-12">
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-space-md mb-space-md">
@@ -216,6 +266,9 @@ function initAdmin(me) {
     root.querySelector('[data-refresh]').addEventListener('click', load);
     root.querySelectorAll('[data-filter]').forEach(b => b.addEventListener('click', () => { state.filter = b.dataset.filter; render(); }));
     root.querySelectorAll('[data-user]').forEach(tr => tr.addEventListener('click', () => openUser(tr.dataset.user)));
+    const byId = id => state.users.find(u => u.id === id);
+    root.querySelectorAll('[data-approve]').forEach(b => b.addEventListener('click', () => decideTeacher(byId(b.dataset.approve), true)));
+    root.querySelectorAll('[data-reject]').forEach(b => b.addEventListener('click', () => decideTeacher(byId(b.dataset.reject), false)));
     const search = root.querySelector('[data-search]');
     search.addEventListener('input', () => {
       state.query = search.value;
@@ -255,7 +308,7 @@ function initAdmin(me) {
           <div class="w-12 h-12 shrink-0 rounded-full bg-primary-tint text-primary-deep flex items-center justify-center font-headline-3 text-headline-3">${initials(p.display_name || user.email)}</div>
           <div class="min-w-0">
             <h2 class="font-headline-2 text-headline-2 text-text-primary truncate">${esc(p.display_name || '–')}</h2>
-            <p class="font-body-regular text-[14px] text-text-secondary truncate">${esc(user.email)} · ${roleChip(user.role)}</p>
+            <p class="font-body-regular text-[14px] text-text-secondary truncate">${esc(user.email)} · ${roleChip(user.role)}${teacherChip(user.teacher_status)}</p>
           </div>
         </div>
         <button type="button" data-close aria-label="Stäng" class="w-9 h-9 shrink-0 rounded-full hover:bg-surface-subdued flex items-center justify-center text-text-secondary"><span class="material-symbols-outlined text-[20px]">close</span></button>
@@ -280,12 +333,17 @@ function initAdmin(me) {
         </div>`).join('')}</div>` : '<p class="font-body-regular text-[14px] text-text-tertiary">Har inte påbörjat någon lektion än.</p>'}`}
       <h3 class="font-headline-3 text-headline-3 text-text-primary mt-space-lg mb-2">Åtgärder</h3>
       <div class="flex flex-wrap gap-2">
+        ${user.teacher_status ? `<button type="button" data-act="approve" class="${btn} bg-primary-container hover:bg-primary-deep text-on-primary"><span class="material-symbols-outlined text-[18px]">verified</span>Godkänn som lärare</button>` : ''}
+        ${user.teacher_status === 'pending' ? `<button type="button" data-act="reject" class="${btn} border border-border-subtle hover:bg-[#FEF2F2] text-critical-danger"><span class="material-symbols-outlined text-[18px]">block</span>Avslå läraransökan</button>` : ''}
         <button type="button" data-act="reset-password" class="${btn} bg-surface-subdued hover:bg-surface-container text-text-primary"><span class="material-symbols-outlined text-[18px]">lock_reset</span>Skicka återställningslänk<span class="ml-1 px-1.5 py-0.5 rounded-full bg-[#FEF3C7] text-[#B45309] text-[10px] font-semibold uppercase tracking-wide">Förhandsvisning</span></button>
         ${isTeacher ? '' : `<button type="button" data-act="reset-account" class="${btn} bg-surface-subdued hover:bg-surface-container text-text-primary"><span class="material-symbols-outlined text-[18px]">restart_alt</span>Nollställ konto</button>`}
         ${canDelete ? `<button type="button" data-act="delete" class="${btn} border border-border-subtle hover:bg-[#FEF2F2] hover:border-[#FCA5A5] text-critical-danger"><span class="material-symbols-outlined text-[18px]">delete</span>Ta bort konto</button>` : ''}
       </div>`;
     m.el.querySelectorAll('[data-close]').forEach(b => b.addEventListener('click', m.close));
 
+    const decided = approve => async () => { if (await decideTeacher({ ...user, name: p.display_name }, approve)) { m.close(); openUser(user.id); } };
+    m.el.querySelector('[data-act="approve"]')?.addEventListener('click', decided(true));
+    m.el.querySelector('[data-act="reject"]')?.addEventListener('click', decided(false));
     m.el.querySelector('[data-act="reset-password"]').addEventListener('click', () => {
       toast(`Förhandsvisning: ingen länk skickades till ${user.email}. Funktionen kopplas på senare.`);
     });
@@ -331,7 +389,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (!session) { location.href = 'auth.html'; return; }
   const user = session.user;
   if (user.app_metadata?.role !== 'admin') {
-    location.replace(user.user_metadata?.role === 'teacher' ? 'larare.html' : 'oversikt.html');
+    location.replace((user.app_metadata?.role === 'teacher' || user.user_metadata?.role === 'teacher') ? 'larare.html' : 'oversikt.html');
     return;
   }
   renderAccountMenu(user);

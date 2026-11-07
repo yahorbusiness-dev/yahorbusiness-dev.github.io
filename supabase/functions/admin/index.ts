@@ -12,8 +12,20 @@ const cors = {
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: { ...cors, 'Content-Type': 'application/json' } });
 
+// Teacher access is granted by an admin (app_metadata.role = 'teacher'). Older
+// accounts were tagged in user_metadata and are still counted as teachers until
+// they are moved over.
 const roleOf = (u: any) =>
-  u.app_metadata?.role === 'admin' ? 'admin' : u.user_metadata?.role === 'teacher' ? 'teacher' : 'student';
+  u.app_metadata?.role === 'admin' ? 'admin'
+    : (u.app_metadata?.role === 'teacher' || u.user_metadata?.role === 'teacher') ? 'teacher' : 'student';
+
+// A teacher sign-up is an application: user_metadata.requested_role only asks.
+// 'pending' until an admin approves (role = teacher) or rejects it.
+const teacherStatusOf = (u: any) => {
+  if (roleOf(u) !== 'student') return null;
+  if (u.app_metadata?.teacher_status === 'rejected') return 'rejected';
+  return u.user_metadata?.requested_role === 'teacher' ? 'pending' : null;
+};
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: cors });
@@ -64,7 +76,8 @@ Deno.serve(async (req) => {
           const p: any = profileById.get(u.id) || {};
           const s = stats.get(u.id);
           return {
-            id: u.id, email: u.email, role: roleOf(u), school: u.user_metadata?.school || null,
+            id: u.id, email: u.email, role: roleOf(u), teacher_status: teacherStatusOf(u),
+            school: u.user_metadata?.school || null,
             name: p.display_name || u.user_metadata?.display_name || null,
             created_at: u.created_at, last_sign_in_at: u.last_sign_in_at,
             xp: p.xp ?? 0, streak: p.streak_days ?? 0, last_active_date: p.last_active_date ?? null,
@@ -90,7 +103,8 @@ Deno.serve(async (req) => {
       const lessonById = new Map((lessons || []).map((l: any) => [l.id, l]));
       return json({
         user: {
-          id: t.id, email: t.email, role: roleOf(t), school: t.user_metadata?.school || null,
+          id: t.id, email: t.email, role: roleOf(t), teacher_status: teacherStatusOf(t),
+          school: t.user_metadata?.school || null,
           created_at: t.created_at, last_sign_in_at: t.last_sign_in_at,
         },
         profile,
@@ -110,6 +124,27 @@ Deno.serve(async (req) => {
       }).eq('id', id);
       if (error) throw error;
       await log('reset_account', t);
+      return json({ ok: true });
+    }
+
+    if (action === 'approve_teacher') {
+      // Only applicants (pending or earlier rejected) can be approved, never admins.
+      if (!teacherStatusOf(t)) return json({ error: 'Kontot har inte ansökt om att bli lärare.' }, 400);
+      const { error } = await admin.auth.admin.updateUserById(id, {
+        app_metadata: { role: 'teacher', teacher_status: 'approved' },
+      });
+      if (error) throw error;
+      await log('approve_teacher', t);
+      return json({ ok: true });
+    }
+
+    if (action === 'reject_teacher') {
+      if (teacherStatusOf(t) !== 'pending') return json({ error: 'Kontot har ingen väntande läraransökan.' }, 400);
+      const { error } = await admin.auth.admin.updateUserById(id, {
+        app_metadata: { teacher_status: 'rejected' },
+      });
+      if (error) throw error;
+      await log('reject_teacher', t);
       return json({ ok: true });
     }
 

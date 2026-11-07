@@ -70,16 +70,21 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 const REGISTRATION_OPEN = true;
 
 // Students and teachers each have their own dashboard
-const homeFor = user => (user?.app_metadata?.role === 'admin' ? 'admin.html' : user?.user_metadata?.role === 'teacher' ? 'larare.html' : 'oversikt.html');
+// Teacher access is set by an admin in app_metadata; user_metadata.role is the
+// older tag, still accepted until those accounts are moved over.
+const isTeacher = user => user?.app_metadata?.role === 'teacher' || user?.user_metadata?.role === 'teacher';
+const homeFor = user => (user?.app_metadata?.role === 'admin' ? 'admin.html' : isTeacher(user) ? 'larare.html' : 'oversikt.html');
 // A teacher sign-up is only an application (user_metadata.requested_role). It gives
 // no teacher access until an admin approves it in the admin panel.
-const isPendingTeacher = user => user?.user_metadata?.requested_role === 'teacher'
-  && user?.app_metadata?.role !== 'teacher' && user?.user_metadata?.role !== 'teacher';
+const isPendingTeacher = user => user?.user_metadata?.requested_role === 'teacher' && !isTeacher(user);
 const PENDING_MSG = 'Tack! Ditt lärarkonto granskas. Du får besked när det är godkänt.';
-async function showPending() {
+const REJECTED_MSG = 'Din ansökan om lärarkonto har inte godkänts. Kontakta oss om du tror att det är fel.';
+async function showPending(user) {
   await sb.auth.signOut();
-  infoEl.textContent = PENDING_MSG;
-  infoEl.classList.remove('hidden');
+  const rejected = user?.app_metadata?.teacher_status === 'rejected';
+  const el = rejected ? errorEl : infoEl;
+  el.textContent = rejected ? REJECTED_MSG : PENDING_MSG;
+  el.classList.remove('hidden');
 }
 let mode = 'login'; // 'login' | 'register'
 
@@ -148,7 +153,7 @@ form.addEventListener('submit', async (e) => {
     if (mode === 'login') {
       const { data, error } = await sb.auth.signInWithPassword({ email, password });
       if (error) throw error;
-      if (isPendingTeacher(data.user)) { await showPending(); return; }
+      if (isPendingTeacher(data.user)) { await showPending(data.user); return; }
       location.href = homeFor(data.user);
     } else {
       const displayName = nameInput.value.trim() || email.split('@')[0];
@@ -187,7 +192,7 @@ form.addEventListener('submit', async (e) => {
 // Already logged in? Skip straight to the teacher view.
 sb.auth.getSession().then(({ data }) => {
   if (!data.session) return;
-  if (isPendingTeacher(data.session.user)) { showPending(); return; }
+  if (isPendingTeacher(data.session.user)) { showPending(data.session.user); return; }
   location.href = homeFor(data.session.user);
 });
 </script>
