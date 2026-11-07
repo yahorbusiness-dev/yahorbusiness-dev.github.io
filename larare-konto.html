@@ -71,6 +71,16 @@ const REGISTRATION_OPEN = true;
 
 // Students and teachers each have their own dashboard
 const homeFor = user => (user?.app_metadata?.role === 'admin' ? 'admin.html' : user?.user_metadata?.role === 'teacher' ? 'larare.html' : 'oversikt.html');
+// A teacher sign-up is only an application (user_metadata.requested_role). It gives
+// no teacher access until an admin approves it in the admin panel.
+const isPendingTeacher = user => user?.user_metadata?.requested_role === 'teacher'
+  && user?.app_metadata?.role !== 'teacher' && user?.user_metadata?.role !== 'teacher';
+const PENDING_MSG = 'Tack! Ditt lärarkonto granskas. Du får besked när det är godkänt.';
+async function showPending() {
+  await sb.auth.signOut();
+  infoEl.textContent = PENDING_MSG;
+  infoEl.classList.remove('hidden');
+}
 let mode = 'login'; // 'login' | 'register'
 
 const tabLogin = document.getElementById('tab-login');
@@ -138,26 +148,26 @@ form.addEventListener('submit', async (e) => {
     if (mode === 'login') {
       const { data, error } = await sb.auth.signInWithPassword({ email, password });
       if (error) throw error;
+      if (isPendingTeacher(data.user)) { await showPending(); return; }
       location.href = homeFor(data.user);
     } else {
       const displayName = nameInput.value.trim() || email.split('@')[0];
       const { data, error } = await sb.auth.signUp({
         email,
         password,
-        // Teacher accounts are normal accounts tagged with role + school in the
-        // user metadata; the confirmation link lands on the teacher view.
+        // The sign-up is an application: requested_role is only a request and
+        // gives no access. An admin approves it in the admin panel.
         options: {
-          data: { display_name: displayName, role: 'teacher', school: document.getElementById('school').value.trim() || null },
-          emailRedirectTo: new URL('larare.html', location.href).href,
+          data: { display_name: displayName, requested_role: 'teacher', school: document.getElementById('school').value.trim() || null },
+          emailRedirectTo: new URL('larare-konto.html', location.href).href,
         },
       });
       if (error) throw error;
-      if (data.session) {
-        location.href = homeFor(data.user);
-      } else {
-        infoEl.textContent = 'Konto skapat! Kolla din e-post för att bekräfta kontot innan du loggar in.';
-        infoEl.classList.remove('hidden');
-      }
+      if (data.session) await sb.auth.signOut();
+      form.reset();
+      setMode('login');
+      infoEl.textContent = data.session ? PENDING_MSG : 'Kolla din e-post och bekräfta adressen. Därefter granskas ditt lärarkonto, och du får besked när det är godkänt.';
+      infoEl.classList.remove('hidden');
     }
   } catch (err) {
     const messages = {
@@ -176,7 +186,9 @@ form.addEventListener('submit', async (e) => {
 
 // Already logged in? Skip straight to the teacher view.
 sb.auth.getSession().then(({ data }) => {
-  if (data.session) location.href = homeFor(data.session.user);
+  if (!data.session) return;
+  if (isPendingTeacher(data.session.user)) { showPending(); return; }
+  location.href = homeFor(data.session.user);
 });
 </script>
 </body>
