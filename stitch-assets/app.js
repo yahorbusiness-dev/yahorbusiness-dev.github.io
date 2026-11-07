@@ -140,14 +140,14 @@ window.goHome = function () {
   location.href = APP_HOME;
 };
 
-// Students and teachers each stay in their own app. Teacher access is granted by
-// an admin (app_metadata.role = 'teacher'); user_metadata.role is the older tag,
-// still accepted until those accounts are moved over.
+// Students and teachers each stay in their own app. Teacher access is granted only
+// by an admin (app_metadata.role = 'teacher'); user_metadata is user-editable and
+// must never decide access.
 let APP_ROLE = 'student';
 let APP_HOME = 'oversikt.html';
 
 function roleOf(user) {
-  return (user?.app_metadata?.role === 'teacher' || user?.user_metadata?.role === 'teacher') ? 'teacher' : 'student';
+  return user?.app_metadata?.role === 'teacher' ? 'teacher' : 'student';
 }
 
 // Logo, nav and header chips for the signed-in role. The only way back to the

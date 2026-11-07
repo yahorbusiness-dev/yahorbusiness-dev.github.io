@@ -188,7 +188,7 @@ function initAdmin(me) {
       <tr class="border-t border-border-subtle hover:bg-bg-root cursor-pointer" data-user="${u.id}">
         <td class="py-3 pr-4">
           <div class="flex items-center gap-3 min-w-0">
-            <div class="w-8 h-8 shrink-0 rounded-full bg-surface-subdued flex items-center justify-center font-label-md text-[12px] text-text-primary">${initials(u.name || u.email)}</div>
+            <div class="w-8 h-8 shrink-0 rounded-full bg-surface-subdued flex items-center justify-center font-label-md text-[12px] text-text-primary">${esc(initials(u.name || u.email))}</div>
             <div class="min-w-0"><p class="font-label-md text-[14px] text-text-primary truncate">${esc(u.name || '–')}${u.id === me.id ? ' <span class="text-text-tertiary font-normal">(du)</span>' : ''}</p><p class="font-caption-micro text-caption-micro text-text-tertiary truncate">${esc(u.email)}</p></div>
           </div>
         </td>
@@ -305,7 +305,7 @@ function initAdmin(me) {
     m.el.firstElementChild.innerHTML = `
       <div class="flex items-start justify-between gap-space-md">
         <div class="flex items-center gap-3 min-w-0">
-          <div class="w-12 h-12 shrink-0 rounded-full bg-primary-tint text-primary-deep flex items-center justify-center font-headline-3 text-headline-3">${initials(p.display_name || user.email)}</div>
+          <div class="w-12 h-12 shrink-0 rounded-full bg-primary-tint text-primary-deep flex items-center justify-center font-headline-3 text-headline-3">${esc(initials(p.display_name || user.email))}</div>
           <div class="min-w-0">
             <h2 class="font-headline-2 text-headline-2 text-text-primary truncate">${esc(p.display_name || '–')}</h2>
             <p class="font-body-regular text-[14px] text-text-secondary truncate">${esc(user.email)} · ${roleChip(user.role)}${teacherChip(user.teacher_status)}</p>
@@ -389,7 +389,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (!session) { location.href = 'auth.html'; return; }
   const user = session.user;
   if (user.app_metadata?.role !== 'admin') {
-    location.replace((user.app_metadata?.role === 'teacher' || user.user_metadata?.role === 'teacher') ? 'larare.html' : 'oversikt.html');
+    location.replace(user.app_metadata?.role === 'teacher' ? 'larare.html' : 'oversikt.html');
     return;
   }
   renderAccountMenu(user);

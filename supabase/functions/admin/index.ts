@@ -12,19 +12,19 @@ const cors = {
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: { ...cors, 'Content-Type': 'application/json' } });
 
-// Teacher access is granted by an admin (app_metadata.role = 'teacher'). Older
-// accounts were tagged in user_metadata and are still counted as teachers until
-// they are moved over.
+// Access comes only from app_metadata, which users cannot change. user_metadata
+// is editable by every user and must never grant a role.
 const roleOf = (u: any) =>
-  u.app_metadata?.role === 'admin' ? 'admin'
-    : (u.app_metadata?.role === 'teacher' || u.user_metadata?.role === 'teacher') ? 'teacher' : 'student';
+  u.app_metadata?.role === 'admin' ? 'admin' : u.app_metadata?.role === 'teacher' ? 'teacher' : 'student';
 
 // A teacher sign-up is an application: user_metadata.requested_role only asks.
+// Older accounts tagged user_metadata.role = 'teacher' count as applications too.
 // 'pending' until an admin approves (role = teacher) or rejects it.
 const teacherStatusOf = (u: any) => {
   if (roleOf(u) !== 'student') return null;
   if (u.app_metadata?.teacher_status === 'rejected') return 'rejected';
-  return u.user_metadata?.requested_role === 'teacher' ? 'pending' : null;
+  const asked = u.user_metadata?.requested_role === 'teacher' || u.user_metadata?.role === 'teacher';
+  return asked ? 'pending' : null;
 };
 
 Deno.serve(async (req) => {

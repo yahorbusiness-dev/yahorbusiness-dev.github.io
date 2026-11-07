@@ -61,9 +61,9 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 const REGISTRATION_OPEN = true;
 
 // Students and teachers each have their own dashboard
-// Teacher access is set by an admin in app_metadata; user_metadata.role is the
-// older tag, still accepted until those accounts are moved over.
-const isTeacher = user => user?.app_metadata?.role === 'teacher' || user?.user_metadata?.role === 'teacher';
+// Teacher access is set only by an admin, in app_metadata (users cannot change it).
+// Never trust user_metadata for access: every user can edit their own.
+const isTeacher = user => user?.app_metadata?.role === 'teacher';
 const homeFor = user => (user?.app_metadata?.role === 'admin' ? 'admin.html' : isTeacher(user) ? 'larare.html' : 'oversikt.html');
 let mode = 'login'; // 'login' | 'register'
 

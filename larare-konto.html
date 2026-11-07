@@ -70,13 +70,14 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 const REGISTRATION_OPEN = true;
 
 // Students and teachers each have their own dashboard
-// Teacher access is set by an admin in app_metadata; user_metadata.role is the
-// older tag, still accepted until those accounts are moved over.
-const isTeacher = user => user?.app_metadata?.role === 'teacher' || user?.user_metadata?.role === 'teacher';
+// Teacher access is set only by an admin, in app_metadata (users cannot change it).
+// Never trust user_metadata for access: every user can edit their own.
+const isTeacher = user => user?.app_metadata?.role === 'teacher';
 const homeFor = user => (user?.app_metadata?.role === 'admin' ? 'admin.html' : isTeacher(user) ? 'larare.html' : 'oversikt.html');
 // A teacher sign-up is only an application (user_metadata.requested_role). It gives
 // no teacher access until an admin approves it in the admin panel.
-const isPendingTeacher = user => user?.user_metadata?.requested_role === 'teacher' && !isTeacher(user);
+const isPendingTeacher = user => !isTeacher(user)
+  && (user?.user_metadata?.requested_role === 'teacher' || user?.user_metadata?.role === 'teacher');
 const PENDING_MSG = 'Tack! Ditt lärarkonto granskas. Du får besked när det är godkänt.';
 const REJECTED_MSG = 'Din ansökan om lärarkonto har inte godkänts. Kontakta oss om du tror att det är fel.';
 async function showPending(user) {
