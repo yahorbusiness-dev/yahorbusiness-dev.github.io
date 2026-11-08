@@ -4,13 +4,19 @@ const SUPABASE_URL = 'https://psvjlxqdqcuhmafqorlv.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_yuBvIFJ1sU3sfLpC0P3rmA_lNdgxITd';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-const ROLE_LABEL = { student: 'Elev', teacher: 'Lärare', admin: 'Admin' };
+const ROLE_LABEL = { student: 'Elev', teacher: 'Lärare', admin: 'Admin', pending: 'Vill bli lärare', rejected: 'Nekad lärare' };
 const ROLE_CHIP = {
   student: 'bg-primary-tint text-primary-deep',
   teacher: 'bg-positive-wash text-secondary',
   admin: 'bg-text-primary text-on-primary',
+  pending: 'bg-[#FEF3C7] text-[#B45309]',
+  rejected: 'bg-surface-subdued text-text-tertiary',
 };
-const LOG_LABEL = { reset_account: 'Nollställde', delete_user: 'Tog bort' };
+const LOG_LABEL = {
+  reset_account: 'Nollställde', delete_user: 'Tog bort',
+  approve_teacher: 'Godkände läraren', reject_teacher: 'Nekade läraren', revoke_teacher: 'Tog bort lärarbehörighet för',
+};
+const TEACHERISH = new Set(['teacher', 'pending', 'rejected']);
 
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const fmtDate = d => d ? new Date(d).toLocaleDateString('sv-SE', { day: 'numeric', month: 'short', year: 'numeric' }) : '–';
@@ -163,16 +169,43 @@ function initAccounts(me, root) {
         <td class="py-3 pr-4">${roleChip(u.role)}</td>
         <td class="py-3 pr-4 font-body-regular text-[14px] text-text-secondary whitespace-nowrap">${fmtDate(u.created_at)}</td>
         <td class="py-3 pr-4 font-body-regular text-[14px] text-text-secondary whitespace-nowrap">${ago(u.last_sign_in_at)}</td>
-        <td class="py-3 pr-4 font-body-regular text-[14px] text-text-primary">${u.role === 'teacher' ? '–' : `${u.xp} XP`}</td>
-        <td class="py-3 pr-4 font-body-regular text-[14px] text-text-primary">${u.role === 'teacher' ? '–' : `${u.completed} klara${u.quiz !== null ? ` · ${u.quiz}%` : ''}`}</td>
+        <td class="py-3 pr-4 font-body-regular text-[14px] text-text-primary">${TEACHERISH.has(u.role) ? '–' : `${u.xp} XP`}</td>
+        <td class="py-3 pr-4 font-body-regular text-[14px] text-text-primary">${TEACHERISH.has(u.role) ? '–' : `${u.completed} klara${u.quiz !== null ? ` · ${u.quiz}%` : ''}`}</td>
         <td class="py-3 text-right"><span class="inline-flex items-center gap-0.5 font-label-md text-[13px] text-primary-container">Visa<span class="material-symbols-outlined text-[18px]">chevron_right</span></span></td>
       </tr>`).join('');
+
+    const pending = users.filter(u => u.role === 'pending').sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+    const requestsHtml = state.loading || state.error ? '' : `
+      <div class="mb-space-xl">
+        <div class="flex items-center gap-2 mb-space-md">
+          <h2 class="font-headline-2 text-headline-2 text-text-primary">Lärarförfrågningar</h2>
+          ${pending.length ? `<span class="px-2 py-0.5 rounded-full bg-[#FEF3C7] text-[#B45309] font-label-md text-[12px]">${pending.length}</span>` : ''}
+        </div>
+        ${pending.length ? `<div class="grid grid-cols-1 md:grid-cols-2 gap-3">${pending.map(u => `
+          <div class="bg-surface-card rounded-2xl shadow-sm border border-[#FDE68A] p-space-lg flex flex-col gap-space-md">
+            <div class="flex items-start gap-3 min-w-0">
+              <div class="w-10 h-10 shrink-0 rounded-full bg-[#FEF3C7] text-[#B45309] flex items-center justify-center font-label-md text-[13px]">${initials(u.name || u.email)}</div>
+              <div class="min-w-0">
+                <p class="font-label-md text-[15px] text-text-primary truncate">${esc(u.name || '–')}</p>
+                <p class="font-body-regular text-[14px] text-text-secondary truncate">${esc(u.email)}</p>
+                <p class="font-caption-micro text-caption-micro text-text-tertiary mt-1"><span class="material-symbols-outlined text-[14px] align-[-3px]">domain</span> ${esc(u.school || 'Ingen skola angiven')} · Ansökte ${fmtDate(u.created_at)}</p>
+              </div>
+            </div>
+            <div class="flex flex-wrap gap-2">
+              <button type="button" data-approve="${u.id}" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-primary-container hover:bg-primary-deep text-on-primary font-label-md text-label-md transition-colors"><span class="material-symbols-outlined text-[18px]">check</span>Godkänn</button>
+              <button type="button" data-reject="${u.id}" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-border-subtle hover:bg-surface-subdued text-text-secondary font-label-md text-label-md transition-colors"><span class="material-symbols-outlined text-[18px]">close</span>Neka</button>
+              <button type="button" data-user-open="${u.id}" class="inline-flex items-center px-3 py-2 rounded-xl text-primary-container hover:underline font-label-md text-label-md">Visa konto</button>
+            </div>
+          </div>`).join('')}</div>`
+        : '<div class="bg-surface-card rounded-2xl shadow-sm px-space-lg py-space-md flex items-center gap-2 font-body-regular text-[14px] text-text-tertiary"><span class="material-symbols-outlined text-[18px] text-positive-spruce">check_circle</span>Inga lärare väntar på granskning.</div>'}
+      </div>`;
 
     const logHtml = state.log.length
       ? state.log.map(l => `<li class="flex items-center justify-between gap-4 py-2.5 border-t border-border-subtle first:border-0"><span class="font-body-regular text-[14px] text-text-primary">${LOG_LABEL[l.action] || esc(l.action)} <strong>${esc(l.target_email || '–')}</strong></span><span class="font-caption-micro text-caption-micro text-text-tertiary whitespace-nowrap">${fmtDateTime(l.created_at)}</span></li>`).join('')
       : '<li class="py-2.5 font-body-regular text-[14px] text-text-tertiary">Inga händelser än.</li>';
 
     root.innerHTML = `
+      ${requestsHtml}
       <div class="flex justify-end -mt-2 mb-space-md">
         <button type="button" data-refresh class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-surface-card border border-border-subtle hover:bg-surface-subdued font-label-md text-label-md text-text-secondary transition-colors"><span class="material-symbols-outlined text-[18px]">refresh</span>Uppdatera</button>
       </div>
@@ -189,6 +222,7 @@ function initAccounts(me, root) {
             ${filterBtn('all', 'Alla', users.length)}
             ${filterBtn('student', 'Elever', count('student'))}
             ${filterBtn('teacher', 'Lärare', count('teacher'))}
+            ${filterBtn('pending', 'Väntar', count('pending'))}
             ${filterBtn('admin', 'Admin', count('admin'))}
             <label class="relative"><span class="material-symbols-outlined text-[18px] text-text-tertiary absolute left-2.5 top-1/2 -translate-y-1/2">search</span><input data-search type="search" placeholder="Sök namn eller e-post" value="${esc(state.query)}" class="pl-8 pr-3 py-1.5 w-52 rounded-full border border-border-subtle bg-surface-card font-body-regular text-[13px] focus:outline-none focus:border-primary-container"/></label>
           </div>
@@ -210,6 +244,9 @@ function initAccounts(me, root) {
     root.querySelector('[data-refresh]').addEventListener('click', load);
     root.querySelectorAll('[data-filter]').forEach(b => b.addEventListener('click', () => { state.filter = b.dataset.filter; render(); }));
     root.querySelectorAll('[data-user]').forEach(tr => tr.addEventListener('click', () => openUser(tr.dataset.user)));
+    root.querySelectorAll('[data-user-open]').forEach(b => b.addEventListener('click', () => openUser(b.dataset.userOpen)));
+    root.querySelectorAll('[data-approve]').forEach(b => b.addEventListener('click', () => reviewTeacher(b.dataset.approve, true)));
+    root.querySelectorAll('[data-reject]').forEach(b => b.addEventListener('click', () => reviewTeacher(b.dataset.reject, false)));
     const search = root.querySelector('[data-search]');
     search.addEventListener('input', () => {
       state.query = search.value;
@@ -219,6 +256,24 @@ function initAccounts(me, root) {
       again.focus();
       again.setSelectionRange(pos, pos);
     });
+  }
+
+  // Approve or reject a teacher request (also used to revoke an approved teacher)
+  async function reviewTeacher(id, approve, after) {
+    const u = state.users.find(x => x.id === id) || {};
+    const revoking = !approve && u.role === 'teacher';
+    const ok = await confirmDialog(approve
+      ? { title: 'Godkänn lärare?', text: `<strong>${esc(u.email)}</strong>${u.school ? ` (${esc(u.school)})` : ''} får tillgång till lärarvyn nästa gång hen loggar in.`, confirmLabel: 'Godkänn' }
+      : revoking
+        ? { title: 'Ta bort lärarbehörighet?', text: `<strong>${esc(u.email)}</strong> förlorar tillgången till lärarvyn. Kontot finns kvar.`, confirmLabel: 'Ta bort behörighet', danger: true }
+        : { title: 'Neka lärare?', text: `<strong>${esc(u.email)}</strong> får inte tillgång till lärarvyn. Kontot finns kvar och du kan godkänna det senare.`, confirmLabel: 'Neka', danger: true });
+    if (!ok) return;
+    try {
+      await api(approve ? 'approve_teacher' : 'reject_teacher', id);
+      toast(approve ? 'Läraren är godkänd.' : revoking ? 'Lärarbehörigheten är borttagen.' : 'Förfrågan är nekad.');
+      await load();
+      if (after) after();
+    } catch (err) { toast(`Det gick inte: ${err.message}`, 'error'); }
   }
 
   async function openUser(id) {
@@ -232,8 +287,14 @@ function initAccounts(me, root) {
     }
     const { user, profile = {}, progress = [] } = data;
     const p = profile || {};
-    const isTeacher = user.role === 'teacher';
+    const isTeacher = TEACHERISH.has(user.role);
     const canDelete = user.role !== 'admin' && user.id !== me.id;
+    const reviewButtons = user.role === 'pending' || user.role === 'rejected'
+      ? `<button type="button" data-act="approve" class="${'inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl font-label-md text-label-md transition-colors'} bg-primary-container hover:bg-primary-deep text-on-primary"><span class="material-symbols-outlined text-[18px]">check</span>Godkänn som lärare</button>
+         ${user.role === 'pending' ? `<button type="button" data-act="reject" class="${'inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl font-label-md text-label-md transition-colors'} border border-border-subtle hover:bg-surface-subdued text-text-secondary"><span class="material-symbols-outlined text-[18px]">close</span>Neka</button>` : ''}`
+      : user.role === 'teacher'
+        ? `<button type="button" data-act="reject" class="${'inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl font-label-md text-label-md transition-colors'} border border-border-subtle hover:bg-surface-subdued text-text-secondary"><span class="material-symbols-outlined text-[18px]">person_remove</span>Ta bort lärarbehörighet</button>`
+        : '';
     const statusChip = s => s === 'completed'
       ? '<span class="px-2 py-0.5 rounded-full bg-positive-wash text-secondary font-caption-micro text-caption-micro">Klar</span>'
       : s === 'in_progress'
@@ -274,12 +335,15 @@ function initAccounts(me, root) {
         </div>`).join('')}</div>` : '<p class="font-body-regular text-[14px] text-text-tertiary">Har inte påbörjat någon lektion än.</p>'}`}
       <h3 class="font-headline-3 text-headline-3 text-text-primary mt-space-lg mb-2">Åtgärder</h3>
       <div class="flex flex-wrap gap-2">
+        ${reviewButtons}
         <button type="button" data-act="reset-password" class="${btn} bg-surface-subdued hover:bg-surface-container text-text-primary"><span class="material-symbols-outlined text-[18px]">lock_reset</span>Skicka återställningslänk<span class="ml-1 px-1.5 py-0.5 rounded-full bg-[#FEF3C7] text-[#B45309] text-[10px] font-semibold uppercase tracking-wide">Förhandsvisning</span></button>
         ${isTeacher ? '' : `<button type="button" data-act="reset-account" class="${btn} bg-surface-subdued hover:bg-surface-container text-text-primary"><span class="material-symbols-outlined text-[18px]">restart_alt</span>Nollställ konto</button>`}
         ${canDelete ? `<button type="button" data-act="delete" class="${btn} border border-border-subtle hover:bg-[#FEF2F2] hover:border-[#FCA5A5] text-critical-danger"><span class="material-symbols-outlined text-[18px]">delete</span>Ta bort konto</button>` : ''}
       </div>`;
     m.el.querySelectorAll('[data-close]').forEach(b => b.addEventListener('click', m.close));
 
+    m.el.querySelector('[data-act="approve"]')?.addEventListener('click', () => reviewTeacher(user.id, true, () => { m.close(); openUser(user.id); }));
+    m.el.querySelector('[data-act="reject"]')?.addEventListener('click', () => reviewTeacher(user.id, false, () => { m.close(); openUser(user.id); }));
     m.el.querySelector('[data-act="reset-password"]').addEventListener('click', () => {
       toast(`Förhandsvisning: ingen länk skickades till ${user.email}. Funktionen kopplas på senare.`);
     });
@@ -697,7 +761,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (!session) { location.href = 'auth.html'; return; }
   const user = session.user;
   if (user.app_metadata?.role !== 'admin') {
-    location.replace(user.user_metadata?.role === 'teacher' ? 'larare.html' : 'oversikt.html');
+    const meta = user.user_metadata || {};
+    const teacherSide = user.app_metadata?.role === 'teacher' || meta.requested_role === 'teacher' || meta.role === 'teacher';
+    location.replace(teacherSide ? 'larare.html' : 'oversikt.html');
     return;
   }
   renderAccountMenu(user);

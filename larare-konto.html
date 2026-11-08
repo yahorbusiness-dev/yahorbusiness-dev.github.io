@@ -15,7 +15,7 @@
 <img alt="UngEkonom Logo" class="h-10 w-auto object-contain" src="stitch-assets/logo.svg"/>
 <span class="inline-flex items-center gap-1 mt-2 px-2.5 py-1 rounded-full bg-primary-tint text-primary-deep text-[11px] font-semibold uppercase tracking-wide"><span class="material-symbols-outlined text-[14px]">school</span>För lärare</span>
 <h1 class="font-headline-2 text-headline-2 text-text-primary text-center mt-1" id="auth-title">Logga in på lärarvyn</h1>
-<p class="font-body-regular text-[14px] text-text-secondary text-center max-w-sm">Följ klassens framsteg i UngEkonom. Lärarvyn är en demo med påhittade elever just nu.</p>
+<p class="font-body-regular text-[14px] text-text-secondary text-center max-w-sm">Följ klassens framsteg i UngEkonom. Nya lärarkonton granskas av oss innan de får tillgång till lärarvyn.</p>
 </div>
 <div class="bg-surface-card rounded-2xl shadow-lg p-space-xl">
 <div class="flex bg-surface-subdued rounded-xl p-1 mb-space-lg" id="auth-tabs">
@@ -70,7 +70,14 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 const REGISTRATION_OPEN = true;
 
 // Students and teachers each have their own dashboard
-const homeFor = user => (user?.app_metadata?.role === 'admin' ? 'admin.html' : user?.user_metadata?.role === 'teacher' ? 'larare.html' : 'oversikt.html');
+// Admins to the admin panel; approved or applying teachers to the teacher side
+const homeFor = user => {
+  const app = user?.app_metadata || {};
+  const meta = user?.user_metadata || {};
+  if (app.role === 'admin') return 'admin.html';
+  if (app.role === 'teacher' || meta.requested_role === 'teacher' || meta.role === 'teacher') return 'larare.html';
+  return 'oversikt.html';
+};
 let mode = 'login'; // 'login' | 'register'
 
 const tabLogin = document.getElementById('tab-login');
@@ -144,10 +151,11 @@ form.addEventListener('submit', async (e) => {
       const { data, error } = await sb.auth.signUp({
         email,
         password,
-        // Teacher accounts are normal accounts tagged with role + school in the
-        // user metadata; the confirmation link lands on the teacher view.
+        // A teacher sign-up only *asks* for the teacher role; an admin approves it
+        // in admin.html (app_metadata.role = 'teacher'). Until then larare.html
+        // shows a waiting screen.
         options: {
-          data: { display_name: displayName, role: 'teacher', school: document.getElementById('school').value.trim() || null },
+          data: { display_name: displayName, requested_role: 'teacher', school: document.getElementById('school').value.trim() || null },
           emailRedirectTo: new URL('larare.html', location.href).href,
         },
       });

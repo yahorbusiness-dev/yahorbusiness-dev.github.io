@@ -12,8 +12,16 @@ const cors = {
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: { ...cors, 'Content-Type': 'application/json' } });
 
-const roleOf = (u: any) =>
-  u.app_metadata?.role === 'admin' ? 'admin' : u.user_metadata?.role === 'teacher' ? 'teacher' : 'student';
+// Teacher access lives in app_metadata (only this function sets it). A teacher
+// sign-up only sets user_metadata.requested_role, so it shows up as "pending".
+const roleOf = (u: any) => {
+  const app = u.app_metadata || {};
+  const meta = u.user_metadata || {};
+  if (app.role === 'admin') return 'admin';
+  if (app.role === 'teacher') return 'teacher';
+  if (meta.requested_role === 'teacher' || meta.role === 'teacher') return app.teacher_status === 'rejected' ? 'rejected' : 'pending';
+  return 'student';
+};
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: cors });
@@ -110,6 +118,19 @@ Deno.serve(async (req) => {
       }).eq('id', id);
       if (error) throw error;
       await log('reset_account', t);
+      return json({ ok: true });
+    }
+
+    if (action === 'approve_teacher' || action === 'reject_teacher') {
+      const role = roleOf(t);
+      if (role === 'admin') return json({ error: 'Adminkonton kan inte ändras härifrån.' }, 400);
+      if (role === 'student') return json({ error: 'Kontot har inte ansökt om att bli lärare.' }, 400);
+      const approve = action === 'approve_teacher';
+      const { error } = await admin.auth.admin.updateUserById(id, {
+        app_metadata: { ...t.app_metadata, role: approve ? 'teacher' : null, teacher_status: approve ? 'approved' : 'rejected' },
+      });
+      if (error) throw error;
+      await log(approve ? 'approve_teacher' : (role === 'teacher' ? 'revoke_teacher' : 'reject_teacher'), t);
       return json({ ok: true });
     }
 
