@@ -61,7 +61,14 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 const REGISTRATION_OPEN = true;
 
 // Students and teachers each have their own dashboard
-const homeFor = user => (user?.app_metadata?.role === 'admin' ? 'admin.html' : user?.user_metadata?.role === 'teacher' ? 'larare.html' : 'oversikt.html');
+// Admins to the admin panel; approved or applying teachers to the teacher side
+const homeFor = user => {
+  const app = user?.app_metadata || {};
+  const meta = user?.user_metadata || {};
+  if (app.role === 'admin') return 'admin.html';
+  if (app.role === 'teacher' || meta.requested_role === 'teacher' || meta.role === 'teacher') return 'larare.html';
+  return 'oversikt.html';
+};
 let mode = 'login'; // 'login' | 'register'
 
 const tabLogin = document.getElementById('tab-login');

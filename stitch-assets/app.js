@@ -140,13 +140,41 @@ window.goHome = function () {
   location.href = APP_HOME;
 };
 
-// Students and teachers each stay in their own app. Teacher accounts are
-// tagged with user_metadata.role = 'teacher' when created on larare-konto.html.
+// Students and teachers each stay in their own app. Teacher access lives in
+// app_metadata (set only by an admin in admin.html). Someone who signed up on
+// larare-konto.html but isn't approved yet is "pending" (or "rejected").
 let APP_ROLE = 'student';
 let APP_HOME = 'oversikt.html';
 
 function roleOf(user) {
-  return user?.user_metadata?.role === 'teacher' ? 'teacher' : 'student';
+  const app = user?.app_metadata || {};
+  const meta = user?.user_metadata || {};
+  if (app.role === 'teacher') return 'teacher';
+  if (meta.requested_role === 'teacher' || meta.role === 'teacher') return app.teacher_status === 'rejected' ? 'rejected' : 'pending';
+  return 'student';
+}
+const isTeacherSide = role => role === 'teacher' || role === 'pending' || role === 'rejected';
+
+// Shown on larare.html until an admin has approved the teacher account
+function renderTeacherPending(role, user) {
+  const root = document.getElementById('teacher-root');
+  if (!root) return;
+  const rejected = role === 'rejected';
+  root.innerHTML = `
+    <div class="max-w-xl mx-auto text-center bg-surface-card rounded-3xl shadow-sm p-space-xl md:p-12">
+      <div class="w-16 h-16 rounded-full ${rejected ? 'bg-surface-subdued text-text-secondary' : 'bg-primary-tint text-primary-deep'} flex items-center justify-center mx-auto mb-space-md">
+        <span class="material-symbols-outlined text-[32px]">${rejected ? 'block' : 'hourglass_top'}</span>
+      </div>
+      <h1 class="font-headline-1 text-headline-1 text-text-primary">${rejected ? 'Ansökan godkändes inte' : 'Ditt lärarkonto granskas'}</h1>
+      <p class="font-body-regular text-body-regular text-text-secondary mt-2">${rejected
+        ? 'Vi kunde inte godkänna kontot som lärarkonto. Hör av dig om du tror att det blivit fel.'
+        : 'Tack för att du vill använda UngEkonom i klassrummet! Vi kontrollerar alla lärarkonton innan de får tillgång till lärarvyn. Du får tillgång så snart kontot är godkänt.'}</p>
+      <div class="bg-bg-root rounded-xl px-space-md mt-space-lg text-left">
+        <div class="flex justify-between gap-4 py-2.5 border-b border-border-subtle"><span class="font-body-regular text-[14px] text-text-secondary">E-post</span><span class="font-label-md text-[14px] text-text-primary truncate">${user.email || ''}</span></div>
+        <div class="flex justify-between gap-4 py-2.5"><span class="font-body-regular text-[14px] text-text-secondary">Skola</span><span class="font-label-md text-[14px] text-text-primary truncate">${user.user_metadata?.school || '–'}</span></div>
+      </div>
+      <a href="mailto:hej@ungekonom.se?subject=L%C3%A4rarkonto" class="mt-space-lg inline-flex items-center justify-center gap-1.5 px-5 py-2.5 rounded-xl bg-surface-subdued hover:bg-surface-container text-text-primary font-label-md text-label-md transition-colors"><span class="material-symbols-outlined text-[18px]">mail</span>Kontakta oss</a>
+    </div>`;
 }
 
 // Logo, nav and header chips for the signed-in role. The only way back to the
@@ -162,7 +190,8 @@ function renderAppChrome(role) {
     const current = page === 'lektion.html' ? 'kurser.html' : page;
     nav.innerHTML = links.map(([href, label]) => `<a class="font-label-md text-label-md transition-colors ${href === current ? 'text-primary-deep' : 'text-on-surface-variant hover:text-on-surface'}" href="${href}">${label}</a>`).join('');
   }
-  if (role === 'teacher') document.querySelectorAll('[data-student-only]').forEach(el => el.remove());
+  if (isTeacherSide(role)) document.querySelectorAll('[data-student-only]').forEach(el => el.remove());
+  if (nav && role !== 'teacher' && role !== 'student') nav.innerHTML = '';
 }
 
 // Teachers can open lessons as a preview: nothing is saved and no XP is given.
@@ -191,7 +220,7 @@ function renderAccountMenu(user, profile, role) {
   if (!avatar || avatar.dataset.menuReady) return;
   avatar.dataset.menuReady = '1';
   const name = profile.display_name || user.email?.split('@')[0] || 'Konto';
-  const roleLabel = role === 'teacher' ? 'Lärare' : 'Elev';
+  const roleLabel = { teacher: 'Lärare', pending: 'Lärare (väntar på godkännande)', rejected: 'Lärare (ej godkänd)' }[role] || 'Elev';
 
   const wrap = document.createElement('div');
   wrap.className = 'relative';
@@ -239,7 +268,7 @@ function renderAccountMenu(user, profile, role) {
         </div>
         <div class="bg-bg-root rounded-xl px-space-md">
           ${row('Kontotyp', roleLabel)}
-          ${row('Skola', role === 'teacher' ? user.user_metadata?.school : '')}
+          ${row('Skola', isTeacherSide(role) ? user.user_metadata?.school : '')}
           ${row('E-post', user.email)}
         </div>
         <button type="button" data-settings-signout class="mt-space-lg w-full inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl border border-border-subtle hover:bg-[#FEF2F2] hover:border-[#FCA5A5] text-critical-danger font-label-md text-label-md transition-all">
@@ -1773,11 +1802,21 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
   const user = session.user;
   APP_ROLE = roleOf(user);
-  APP_HOME = APP_ROLE === 'teacher' ? 'larare.html' : 'oversikt.html';
+  APP_HOME = isTeacherSide(APP_ROLE) ? 'larare.html' : 'oversikt.html';
   // Each role has its own dashboard; send people to theirs
   if (APP_ROLE === 'teacher' && document.getElementById('dashboard-root')) { location.replace('larare.html'); return; }
   if (APP_ROLE === 'student' && isTeacherPage) { location.replace('oversikt.html'); return; }
+  // Unapproved teachers only see the waiting screen on larare.html
+  if ((APP_ROLE === 'pending' || APP_ROLE === 'rejected') && !document.getElementById('teacher-root')) { location.replace('larare.html'); return; }
   renderAppChrome(APP_ROLE);
+  if (APP_ROLE === 'pending' || APP_ROLE === 'rejected') {
+    const name = user.user_metadata?.display_name || user.email?.split('@')[0] || 'Lärare';
+    renderAccountMenu(user, { display_name: name }, APP_ROLE);
+    const avatar = document.getElementById('hdr-avatar');
+    if (avatar) avatar.textContent = initialsFromName(name);
+    renderTeacherPending(APP_ROLE, user);
+    return;
+  }
 
   const [{ data: profile }, { data: lessons }, { data: progress }] = await Promise.all([
     sb.from('profiles').select('*').eq('id', user.id).single(),
