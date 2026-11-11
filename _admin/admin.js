@@ -1,5 +1,7 @@
-// Adminpanel (admin.html). Every action goes through the "admin" Edge Function,
-// which checks server-side that the caller is an admin; this page only renders.
+// Adminpanel. Not published on GitHub Pages (folders starting with "_" are
+// skipped); it is opened from a Claude session, see CLAUDE.md. Every action goes
+// through the "admin" Edge Function, which checks server-side that the caller is
+// an admin; this page only renders.
 const SUPABASE_URL = 'https://psvjlxqdqcuhmafqorlv.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_yuBvIFJ1sU3sfLpC0P3rmA_lNdgxITd';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -116,7 +118,7 @@ function renderAccountMenu(user) {
   avatar.addEventListener('click', e => { e.stopPropagation(); setOpen(menu.hidden); });
   document.addEventListener('click', e => { if (!wrap.contains(e.target)) setOpen(false); });
   document.addEventListener('keydown', e => { if (e.key === 'Escape') setOpen(false); });
-  menu.querySelector('[data-signout]').addEventListener('click', async () => { await sb.auth.signOut(); location.href = 'index.html'; });
+  menu.querySelector('[data-signout]').addEventListener('click', async () => { await sb.auth.signOut(); location.reload(); });
 }
 
 function initAccounts(me, root) {
@@ -756,14 +758,47 @@ function initSchools(root) {
   render();
 }
 
+// The admin panel has its own login and only lets admin accounts in
+function renderLogin(message) {
+  document.getElementById('hdr-avatar').style.display = 'none';
+  const root = document.getElementById('admin-root');
+  root.innerHTML = `
+    <div class="max-w-md mx-auto bg-surface-card rounded-2xl shadow-lg p-space-xl">
+      <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-text-primary text-on-primary text-[11px] font-semibold uppercase tracking-wide"><span class="material-symbols-outlined text-[14px]">shield_person</span>Admin</span>
+      <h1 class="font-headline-2 text-headline-2 text-text-primary mt-3">Logga in som admin</h1>
+      <p class="font-body-regular text-[14px] text-text-secondary mt-1">Endast för UngEkonoms administratörer.</p>
+      <form data-login class="flex flex-col gap-space-md mt-space-lg">
+        <label class="flex flex-col gap-1.5 font-label-md text-label-md text-text-secondary">E-post
+          <input name="email" type="email" required autocomplete="email" class="w-full px-4 py-3 rounded-xl border border-border-subtle bg-surface-subdued/50 font-body-regular text-body-regular text-text-primary focus:outline-none focus:ring-2 focus:ring-primary-container"/></label>
+        <label class="flex flex-col gap-1.5 font-label-md text-label-md text-text-secondary">Lösenord
+          <input name="password" type="password" required autocomplete="current-password" class="w-full px-4 py-3 rounded-xl border border-border-subtle bg-surface-subdued/50 font-body-regular text-body-regular text-text-primary focus:outline-none focus:ring-2 focus:ring-primary-container"/></label>
+        <p data-login-error class="${message ? '' : 'hidden'} text-[13px] text-critical-danger font-body-medium">${esc(message || '')}</p>
+        <button type="submit" class="w-full mt-1 px-6 py-3.5 rounded-xl bg-text-primary hover:opacity-90 text-on-primary font-label-md text-label-md transition-all disabled:opacity-60">Logga in</button>
+      </form>
+    </div>`;
+  const form = root.querySelector('[data-login]');
+  const errorEl = root.querySelector('[data-login-error]');
+  form.addEventListener('submit', async e => {
+    e.preventDefault();
+    const btn = form.querySelector('button');
+    btn.disabled = true;
+    errorEl.classList.add('hidden');
+    const { data, error } = await sb.auth.signInWithPassword({ email: form.email.value.trim(), password: form.password.value });
+    if (!error && data.user?.app_metadata?.role === 'admin') { location.reload(); return; }
+    if (!error) await sb.auth.signOut(); // signed in, but not an admin
+    errorEl.textContent = error ? (error.message === 'Invalid login credentials' ? 'Fel e-post eller lösenord.' : error.message) : 'Det här kontot har inte admin-behörighet.';
+    errorEl.classList.remove('hidden');
+    btn.disabled = false;
+  });
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
   const { data: { session } } = await sb.auth.getSession();
-  if (!session) { location.href = 'auth.html'; return; }
-  const user = session.user;
+  const user = session?.user;
+  if (!user) { renderLogin(); return; }
   if (user.app_metadata?.role !== 'admin') {
-    const meta = user.user_metadata || {};
-    const teacherSide = user.app_metadata?.role === 'teacher' || meta.requested_role === 'teacher' || meta.role === 'teacher';
-    location.replace(teacherSide ? 'larare.html' : 'oversikt.html');
+    await sb.auth.signOut();
+    renderLogin('Det här kontot har inte admin-behörighet.');
     return;
   }
   renderAccountMenu(user);

@@ -1,0 +1,7 @@
+# GitHub Pages (Jekyll) settings.
+# Folders starting with "_" (like _admin/) are never published. These are kept
+# off the public site as well:
+exclude:
+  - supabase
+  - CLAUDE.md
+  - README.md
