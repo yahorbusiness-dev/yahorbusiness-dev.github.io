@@ -60,15 +60,25 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 // "Registreringen öppnar snart" instead; also turn off sign-ups in Supabase then.
 const REGISTRATION_OPEN = true;
 
-// Students and teachers each have their own dashboard
-// Admins to the admin panel; approved or applying teachers to the teacher side
-const homeFor = user => {
+// Each login page only lets in its own kind of account: students on auth.html,
+// teachers (approved or waiting for approval) on larare-konto.html. Admin
+// accounts can't sign in here at all; the admin panel has its own login.
+const roleOf = user => {
   const app = user?.app_metadata || {};
   const meta = user?.user_metadata || {};
-  if (app.role === 'admin') return 'admin.html';
-  if (app.role === 'teacher' || meta.requested_role === 'teacher' || meta.role === 'teacher') return 'larare.html';
-  return 'oversikt.html';
+  if (app.role === 'admin') return 'admin';
+  if (app.role === 'teacher') return 'teacher';
+  if (meta.requested_role === 'teacher' || meta.role === 'teacher') return app.teacher_status === 'rejected' ? 'rejected' : 'pending';
+  return 'student';
 };
+const allowedHere = user => { const role = roleOf(user); return role === 'student'; };
+const wrongAccountMessage = user => {
+  const role = roleOf(user);
+  return role === 'admin'
+    ? 'Adminkonton kan inte logga in här.'
+    : 'Det här är ett lärarkonto. <a class="font-semibold underline" href="larare-konto.html">Logga in som lärare →</a>';
+};
+const HOME = 'oversikt.html';
 let mode = 'login'; // 'login' | 'register'
 
 const tabLogin = document.getElementById('tab-login');
@@ -128,7 +138,14 @@ form.addEventListener('submit', async (e) => {
     if (mode === 'login') {
       const { data, error } = await sb.auth.signInWithPassword({ email, password });
       if (error) throw error;
-      location.href = homeFor(data.user);
+      if (!allowedHere(data.user)) {
+        // Wrong kind of account for this page: sign straight back out
+        await sb.auth.signOut();
+        errorEl.innerHTML = wrongAccountMessage(data.user);
+        errorEl.classList.remove('hidden');
+        return;
+      }
+      location.href = HOME;
     } else {
       const displayName = nameInput.value.trim() || email.split('@')[0];
       const { data, error } = await sb.auth.signUp({
@@ -141,7 +158,7 @@ form.addEventListener('submit', async (e) => {
       });
       if (error) throw error;
       if (data.session) {
-        location.href = homeFor(data.user);
+        location.href = HOME;
       } else {
         infoEl.textContent = 'Konto skapat! Kolla din e-post för att bekräfta kontot innan du loggar in.';
         infoEl.classList.remove('hidden');
@@ -162,9 +179,15 @@ form.addEventListener('submit', async (e) => {
   }
 });
 
-// Already logged in? Skip straight to the dashboard.
-sb.auth.getSession().then(({ data }) => {
-  if (data.session) location.href = homeFor(data.session.user);
+// Already signed in with the right kind of account? Go straight in. Any other
+// account is signed out here, so only this page's kind of account gets in.
+sb.auth.getSession().then(async ({ data }) => {
+  const user = data.session?.user;
+  if (!user) return;
+  if (allowedHere(user)) { location.href = HOME; return; }
+  await sb.auth.signOut();
+  infoEl.textContent = `Du loggades ut från ${user.email} eftersom det inte är ett elevkonto.`;
+  infoEl.classList.remove('hidden');
 });
 </script>
 </body>

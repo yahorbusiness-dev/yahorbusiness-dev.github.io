@@ -141,7 +141,7 @@ window.goHome = function () {
 };
 
 // Students and teachers each stay in their own app. Teacher access lives in
-// app_metadata (set only by an admin in admin.html). Someone who signed up on
+// app_metadata (set only by an admin in the admin panel). Someone who signed up on
 // larare-konto.html but isn't approved yet is "pending" (or "rejected").
 let APP_ROLE = 'student';
 let APP_HOME = 'oversikt.html';
@@ -149,6 +149,7 @@ let APP_HOME = 'oversikt.html';
 function roleOf(user) {
   const app = user?.app_metadata || {};
   const meta = user?.user_metadata || {};
+  if (app.role === 'admin') return 'admin';
   if (app.role === 'teacher') return 'teacher';
   if (meta.requested_role === 'teacher' || meta.role === 'teacher') return app.teacher_status === 'rejected' ? 'rejected' : 'pending';
   return 'student';
@@ -1802,6 +1803,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
   const user = session.user;
   APP_ROLE = roleOf(user);
+  // Admin accounts only work in the admin panel, never as a student or teacher
+  if (APP_ROLE === 'admin') { await sb.auth.signOut(); location.replace(isTeacherPage ? 'larare-konto.html' : 'auth.html'); return; }
   APP_HOME = isTeacherSide(APP_ROLE) ? 'larare.html' : 'oversikt.html';
   // Each role has its own dashboard; send people to theirs
   if (APP_ROLE === 'teacher' && document.getElementById('dashboard-root')) { location.replace('larare.html'); return; }
