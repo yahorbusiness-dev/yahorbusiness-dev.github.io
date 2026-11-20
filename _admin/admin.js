@@ -16,6 +16,7 @@ const ROLE_CHIP = {
 };
 const LOG_LABEL = {
   reset_account: 'Nollställde', delete_user: 'Tog bort',
+  send_password_reset: 'Skickade återställningslänk till',
   approve_teacher: 'Godkände läraren', reject_teacher: 'Nekade läraren', revoke_teacher: 'Tog bort lärarbehörighet för',
 };
 const TEACHERISH = new Set(['teacher', 'pending', 'rejected']);
@@ -338,7 +339,7 @@ function initAccounts(me, root) {
       <h3 class="font-headline-3 text-headline-3 text-text-primary mt-space-lg mb-2">Åtgärder</h3>
       <div class="flex flex-wrap gap-2">
         ${reviewButtons}
-        <button type="button" data-act="reset-password" class="${btn} bg-surface-subdued hover:bg-surface-container text-text-primary"><span class="material-symbols-outlined text-[18px]">lock_reset</span>Skicka återställningslänk<span class="ml-1 px-1.5 py-0.5 rounded-full bg-[#FEF3C7] text-[#B45309] text-[10px] font-semibold uppercase tracking-wide">Förhandsvisning</span></button>
+        <button type="button" data-act="reset-password" class="${btn} bg-surface-subdued hover:bg-surface-container text-text-primary"><span class="material-symbols-outlined text-[18px]">lock_reset</span>Skicka återställningslänk</button>
         ${isTeacher ? '' : `<button type="button" data-act="reset-account" class="${btn} bg-surface-subdued hover:bg-surface-container text-text-primary"><span class="material-symbols-outlined text-[18px]">restart_alt</span>Nollställ konto</button>`}
         ${canDelete ? `<button type="button" data-act="delete" class="${btn} border border-border-subtle hover:bg-[#FEF2F2] hover:border-[#FCA5A5] text-critical-danger"><span class="material-symbols-outlined text-[18px]">delete</span>Ta bort konto</button>` : ''}
       </div>`;
@@ -346,8 +347,18 @@ function initAccounts(me, root) {
 
     m.el.querySelector('[data-act="approve"]')?.addEventListener('click', () => reviewTeacher(user.id, true, () => { m.close(); openUser(user.id); }));
     m.el.querySelector('[data-act="reject"]')?.addEventListener('click', () => reviewTeacher(user.id, false, () => { m.close(); openUser(user.id); }));
-    m.el.querySelector('[data-act="reset-password"]').addEventListener('click', () => {
-      toast(`Förhandsvisning: ingen länk skickades till ${user.email}. Funktionen kopplas på senare.`);
+    m.el.querySelector('[data-act="reset-password"]').addEventListener('click', async () => {
+      const ok = await confirmDialog({
+        title: 'Skicka återställningslänk?',
+        text: `Vi mejlar en länk till <strong>${esc(user.email)}</strong> där personen väljer ett nytt lösenord. Det nuvarande lösenordet fungerar tills dess.`,
+        confirmLabel: 'Skicka länk',
+      });
+      if (!ok) return;
+      try {
+        await api('send_password_reset', user.id);
+        toast(`Länken är skickad till ${user.email}.`);
+        load();
+      } catch (err) { toast(`Kunde inte skicka: ${err.message}`, 'error'); }
     });
     m.el.querySelector('[data-act="reset-account"]')?.addEventListener('click', async () => {
       const ok = await confirmDialog({

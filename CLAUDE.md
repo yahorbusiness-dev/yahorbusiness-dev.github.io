@@ -25,6 +25,13 @@ Edge Function (`supabase/functions/admin/`) checks that on every request.
 - Teacher access is `app_metadata.role = 'teacher'`, set only by an admin.
   A teacher sign-up just sets `user_metadata.requested_role = 'teacher'`.
 
+## Lösenord
+
+"Glömt lösenord?" on both login pages (and "Skicka återställningslänk" in the
+admin panel) e-mails a Supabase recovery link to `nytt-losenord.html`, which must
+be listed under Auth > URL Configuration > Redirect URLs. `index.html` forwards
+recovery links that land on the site root.
+
 ## Styles
 
 `stitch-assets/tailwind.css` is a prebuilt Tailwind v3 file. After adding new

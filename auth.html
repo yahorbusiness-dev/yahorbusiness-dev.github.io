@@ -30,7 +30,7 @@
 <input autocomplete="email" class="w-full px-4 py-3 rounded-xl border border-border-subtle bg-surface-subdued/50 font-body-regular text-body-regular focus:outline-none focus:ring-2 focus:ring-primary-container transition-all" id="email" placeholder="din@mejl.se" required type="email"/>
 </div>
 <div class="flex flex-col gap-1.5">
-<label class="font-label-md text-label-md text-text-secondary" for="password">Lösenord</label>
+<div class="flex items-center justify-between gap-2"><label class="font-label-md text-label-md text-text-secondary" for="password">Lösenord</label><button class="font-label-md text-[13px] text-primary-container hover:underline" id="forgot-link" type="button">Glömt lösenord?</button></div>
 <input autocomplete="current-password" class="w-full px-4 py-3 rounded-xl border border-border-subtle bg-surface-subdued/50 font-body-regular text-body-regular focus:outline-none focus:ring-2 focus:ring-primary-container transition-all" id="password" minlength="6" placeholder="Minst 6 tecken" required type="password"/>
 </div>
 
@@ -38,6 +38,21 @@
 <p id="auth-info" class="hidden text-[13px] text-secondary font-body-medium"></p>
 
 <button class="w-full mt-2 px-6 py-3.5 rounded-xl bg-primary-container hover:bg-primary-deep text-on-primary font-label-md text-label-md transition-all shadow-sm disabled:opacity-60 disabled:cursor-not-allowed" id="submit-btn" type="submit">Logga in</button>
+</form>
+
+<form id="reset-form" class="hidden flex-col gap-space-md">
+<div>
+<h2 class="font-headline-3 text-headline-3 text-text-primary">Återställ lösenord</h2>
+<p class="font-body-regular text-[14px] text-text-secondary mt-1">Skriv e-postadressen till ditt konto så skickar vi en länk där du väljer ett nytt lösenord.</p>
+</div>
+<div class="flex flex-col gap-1.5">
+<label class="font-label-md text-label-md text-text-secondary" for="reset-email">E-post</label>
+<input autocomplete="email" class="w-full px-4 py-3 rounded-xl border border-border-subtle bg-surface-subdued/50 font-body-regular text-body-regular focus:outline-none focus:ring-2 focus:ring-primary-container transition-all" id="reset-email" required type="email"/>
+</div>
+<p id="reset-error" class="hidden text-[13px] text-critical-danger font-body-medium"></p>
+<p id="reset-info" class="hidden text-[13px] text-secondary font-body-medium"></p>
+<button class="w-full mt-2 px-6 py-3.5 rounded-xl bg-primary-container hover:bg-primary-deep text-on-primary font-label-md text-label-md transition-all shadow-sm disabled:opacity-60 disabled:cursor-not-allowed" id="reset-btn" type="submit">Skicka återställningslänk</button>
+<button class="font-label-md text-label-md text-text-secondary hover:text-text-primary" id="reset-back" type="button">← Tillbaka till inloggningen</button>
 </form>
 
 <p class="text-center font-caption-micro text-caption-micro text-text-tertiary mt-space-lg">
@@ -109,6 +124,7 @@ function setMode(next) {
     nameField.classList.add('flex');
     submitBtn.textContent = 'Skapa konto';
   }
+  document.getElementById('forgot-link').hidden = mode !== 'login';
   errorEl.classList.add('hidden');
   infoEl.classList.add('hidden');
 }
@@ -189,6 +205,47 @@ sb.auth.getSession().then(async ({ data }) => {
   infoEl.textContent = `Du loggades ut från ${user.email} eftersom det inte är ett elevkonto.`;
   infoEl.classList.remove('hidden');
 });
+// "Glömt lösenord?": swap the login form for a small reset form. The e-mailed
+// link opens nytt-losenord.html, where the new password is chosen.
+const resetForm = document.getElementById('reset-form');
+const resetEmail = document.getElementById('reset-email');
+const resetError = document.getElementById('reset-error');
+const resetInfo = document.getElementById('reset-info');
+const resetBtn = document.getElementById('reset-btn');
+function showReset(on) {
+  form.classList.toggle('hidden', on);
+  document.getElementById('auth-tabs').classList.toggle('hidden', on);
+  resetForm.classList.toggle('hidden', !on);
+  resetForm.classList.toggle('flex', on);
+  resetError.classList.add('hidden');
+  resetInfo.classList.add('hidden');
+  if (on) {
+    resetEmail.value = document.getElementById('email').value.trim();
+    resetEmail.focus();
+  }
+}
+document.getElementById('forgot-link').addEventListener('click', () => showReset(true));
+document.getElementById('reset-back').addEventListener('click', () => showReset(false));
+resetForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  resetError.classList.add('hidden');
+  resetInfo.classList.add('hidden');
+  resetBtn.disabled = true;
+  const { error } = await sb.auth.resetPasswordForEmail(resetEmail.value.trim(), {
+    // Must be listed under Auth > URL Configuration > Redirect URLs in Supabase
+    redirectTo: new URL('nytt-losenord.html', location.href).href,
+  });
+  resetBtn.disabled = false;
+  if (error && /rate limit|security purposes/i.test(error.message)) {
+    resetError.textContent = 'För många försök just nu. Vänta en stund och försök igen.';
+    resetError.classList.remove('hidden');
+    return;
+  }
+  // Same answer whether or not the address has an account
+  resetInfo.textContent = 'Om det finns ett konto med den e-postadressen har vi skickat en länk. Kolla inkorgen (och skräpposten).';
+  resetInfo.classList.remove('hidden');
+});
+if (new URLSearchParams(location.search).get('glomt') === '1') showReset(true);
 </script>
 </body>
 </html>

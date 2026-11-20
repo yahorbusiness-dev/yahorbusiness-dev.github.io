@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<meta content="noindex" name="robots"/>
+<title>Nytt lösenord – UngEkonom</title>
+<link href="stitch-assets/fonts.css" rel="stylesheet"/>
+<link href="stitch-assets/tailwind.css" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+</head>
+<body class="bg-bg-root font-body-regular text-text-primary antialiased min-h-screen flex items-center justify-center p-space-lg">
+<div class="w-full max-w-md">
+<div class="flex flex-col items-center gap-2 mb-8">
+<img alt="UngEkonom Logo" class="h-10 w-auto object-contain" src="stitch-assets/logo.svg"/>
+</div>
+<div class="bg-surface-card rounded-2xl shadow-lg p-space-xl" id="reset-root">
+
+<div id="state-loading">
+<p class="font-body-regular text-body-regular text-text-secondary">Kontrollerar länken…</p>
+</div>
+
+<form id="state-form" class="hidden flex-col gap-space-md">
+<div>
+<h1 class="font-headline-2 text-headline-2 text-text-primary">Välj ett nytt lösenord</h1>
+<p class="font-body-regular text-[14px] text-text-secondary mt-1" id="form-email"></p>
+</div>
+<div class="flex flex-col gap-1.5">
+<label class="font-label-md text-label-md text-text-secondary" for="new-password">Nytt lösenord</label>
+<input autocomplete="new-password" class="w-full px-4 py-3 rounded-xl border border-border-subtle bg-surface-subdued/50 font-body-regular text-body-regular focus:outline-none focus:ring-2 focus:ring-primary-container transition-all" id="new-password" minlength="6" placeholder="Minst 6 tecken" required type="password"/>
+</div>
+<div class="flex flex-col gap-1.5">
+<label class="font-label-md text-label-md text-text-secondary" for="repeat-password">Upprepa lösenordet</label>
+<input autocomplete="new-password" class="w-full px-4 py-3 rounded-xl border border-border-subtle bg-surface-subdued/50 font-body-regular text-body-regular focus:outline-none focus:ring-2 focus:ring-primary-container transition-all" id="repeat-password" minlength="6" required type="password"/>
+</div>
+<p id="form-error" class="hidden text-[13px] text-critical-danger font-body-medium"></p>
+<button class="w-full mt-2 px-6 py-3.5 rounded-xl bg-primary-container hover:bg-primary-deep text-on-primary font-label-md text-label-md transition-all shadow-sm disabled:opacity-60 disabled:cursor-not-allowed" id="save-btn" type="submit">Spara nytt lösenord</button>
+</form>
+
+<div id="state-done" class="hidden text-center">
+<div class="w-14 h-14 rounded-full bg-positive-wash text-positive-spruce flex items-center justify-center mx-auto mb-space-md"><span class="material-symbols-outlined text-[28px]">check</span></div>
+<h1 class="font-headline-2 text-headline-2 text-text-primary">Lösenordet är bytt</h1>
+<p class="font-body-regular text-[14px] text-text-secondary mt-1" id="done-text">Logga in med ditt nya lösenord.</p>
+<a class="mt-space-lg inline-flex items-center justify-center w-full px-6 py-3.5 rounded-xl bg-primary-container hover:bg-primary-deep text-on-primary font-label-md text-label-md transition-all shadow-sm" href="auth.html" id="done-link">Till inloggningen</a>
+</div>
+
+<div id="state-invalid" class="hidden text-center">
+<div class="w-14 h-14 rounded-full bg-surface-subdued text-text-secondary flex items-center justify-center mx-auto mb-space-md"><span class="material-symbols-outlined text-[28px]">link_off</span></div>
+<h1 class="font-headline-2 text-headline-2 text-text-primary">Länken fungerar inte</h1>
+<p class="font-body-regular text-[14px] text-text-secondary mt-1">Länken har redan använts eller gått ut. Be om en ny länk så skickar vi den direkt.</p>
+<div class="flex flex-col gap-2 mt-space-lg">
+<a class="inline-flex items-center justify-center px-6 py-3.5 rounded-xl bg-primary-container hover:bg-primary-deep text-on-primary font-label-md text-label-md transition-all shadow-sm" href="auth.html?glomt=1">Ny länk – elev</a>
+<a class="inline-flex items-center justify-center px-6 py-3.5 rounded-xl bg-surface-subdued hover:bg-surface-container text-text-primary font-label-md text-label-md transition-all" href="larare-konto.html?glomt=1">Ny länk – lärare</a>
+</div>
+</div>
+
+</div>
+<p class="text-center mt-space-lg">
+<a class="font-label-md text-label-md text-text-secondary hover:text-text-primary transition-colors" href="index.html">← Tillbaka till startsidan</a>
+</p>
+</div>
+
+<script>
+// Landing page for the password-reset e-mail. Supabase puts a one-time recovery
+// session in the link; we let the user set a new password, then sign out so they
+// log in again on the right login page for their kind of account.
+const SUPABASE_URL = 'https://psvjlxqdqcuhmafqorlv.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_yuBvIFJ1sU3sfLpC0P3rmA_lNdgxITd';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+const states = ['loading', 'form', 'done', 'invalid'];
+function show(name) {
+  states.forEach(s => {
+    const el = document.getElementById('state-' + s);
+    el.classList.toggle('hidden', s !== name);
+    if (s === 'form') el.classList.toggle('flex', s === name);
+  });
+}
+
+// Where to log in afterwards, by kind of account
+function loginFor(user) {
+  const app = user?.app_metadata || {};
+  const meta = user?.user_metadata || {};
+  if (app.role === 'admin') return null;
+  if (app.role === 'teacher' || meta.requested_role === 'teacher' || meta.role === 'teacher') return 'larare-konto.html';
+  return 'auth.html';
+}
+
+let user = null;
+function ready(u) {
+  if (user || !u) return;
+  user = u;
+  document.getElementById('form-email').textContent = 'För ' + (u.email || 'ditt konto');
+  show('form');
+  document.getElementById('new-password').focus();
+}
+
+// An error in the link itself (expired, already used) comes back in the URL
+const hashParams = new URLSearchParams(location.hash.slice(1));
+const queryParams = new URLSearchParams(location.search);
+if (hashParams.get('error') || queryParams.get('error')) {
+  show('invalid');
+} else {
+  sb.auth.onAuthStateChange((event, session) => {
+    if (session && (event === 'PASSWORD_RECOVERY' || event === 'SIGNED_IN' || event === 'INITIAL_SESSION')) ready(session.user);
+  });
+  // No recovery session after a moment: the link was opened without a token or has expired
+  setTimeout(async () => {
+    if (user) return;
+    const { data } = await sb.auth.getSession();
+    if (data.session) ready(data.session.user); else show('invalid');
+  }, 2500);
+}
+
+document.getElementById('state-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const pw = document.getElementById('new-password').value;
+  const repeat = document.getElementById('repeat-password').value;
+  const errorEl = document.getElementById('form-error');
+  errorEl.classList.add('hidden');
+  if (pw !== repeat) {
+    errorEl.textContent = 'Lösenorden matchar inte.';
+    errorEl.classList.remove('hidden');
+    return;
+  }
+  const btn = document.getElementById('save-btn');
+  btn.disabled = true;
+  const { error } = await sb.auth.updateUser({ password: pw });
+  btn.disabled = false;
+  if (error) {
+    const messages = {
+      'New password should be different from the old password.': 'Välj ett annat lösenord än det gamla.',
+      'Password should be at least 6 characters.': 'Lösenordet måste vara minst 6 tecken.',
+    };
+    errorEl.textContent = messages[error.message] || (/pwned|leaked|compromised/i.test(error.message) ? 'Det lösenordet har läckt i ett dataintrång. Välj ett annat.' : error.message);
+    errorEl.classList.remove('hidden');
+    return;
+  }
+  const target = loginFor(user);
+  await sb.auth.signOut();
+  const link = document.getElementById('done-link');
+  if (target) {
+    link.href = target;
+  } else {
+    link.remove();
+    document.getElementById('done-text').textContent = 'Logga in i adminpanelen med ditt nya lösenord.';
+  }
+  show('done');
+});
+</script>
+</body>
+</html>

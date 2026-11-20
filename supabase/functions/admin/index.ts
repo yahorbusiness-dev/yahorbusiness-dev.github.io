@@ -9,6 +9,9 @@ const cors = {
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
 };
 
+// Where the reset e-mail's link lands (must be in Auth > URL Configuration > Redirect URLs)
+const RESET_REDIRECT = 'https://yahorbusiness-dev.github.io/nytt-losenord.html';
+
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: { ...cors, 'Content-Type': 'application/json' } });
 
@@ -131,6 +134,14 @@ Deno.serve(async (req) => {
       });
       if (error) throw error;
       await log(approve ? 'approve_teacher' : (role === 'teacher' ? 'revoke_teacher' : 'reject_teacher'), t);
+      return json({ ok: true });
+    }
+
+    if (action === 'send_password_reset') {
+      if (!t.email) return json({ error: 'Kontot saknar e-postadress.' }, 400);
+      const { error } = await admin.auth.resetPasswordForEmail(t.email, { redirectTo: RESET_REDIRECT });
+      if (error) throw error;
+      await log('send_password_reset', t);
       return json({ ok: true });
     }
 
