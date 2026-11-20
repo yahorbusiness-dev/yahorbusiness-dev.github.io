@@ -74,6 +74,7 @@
       stop();
       var from=window.scrollY;
       if(reduce||from<=0){window.scrollTo(0,0);return}
+      if(window.lenis){window.lenis.scrollTo(0,{duration:Math.min(1.8,Math.max(0.9,from*0.00035)),easing:function(p){return p<0.5?4*p*p*p:1-Math.pow(-2*p+2,3)/2}});return}
       var dur=Math.min(1800,Math.max(900,from*0.35)),start=null;
       function frame(t){
         if(start===null)start=t;
@@ -91,6 +92,20 @@
     }
     window.addEventListener('scroll',function(){if(!ticking){ticking=true;requestAnimationFrame(update)}},{passive:true});
     update();
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);
+  else init();
+})();
+
+// Smooth, gliding scroll (Lenis) on pages that load stitch-assets/vendor/lenis.min.js.
+// Wheel and trackpad scrolling get a soft ease-out; touch scrolling stays native.
+// Off for people who prefer reduced motion.
+(function(){
+  var reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if(reduce||typeof window.Lenis!=='function')return;
+  function init(){
+    // Fixed header is 80px; land anchor targets just below it
+    window.lenis=new window.Lenis({lerp:0.085,wheelMultiplier:0.9,autoRaf:true,anchors:{offset:-88}});
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);
   else init();

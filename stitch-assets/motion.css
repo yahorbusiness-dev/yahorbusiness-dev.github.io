@@ -39,3 +39,9 @@
 .to-top svg{width:14px;height:14px;transition:transform .2s ease}
 @media (max-width:640px){.to-top{right:1rem;bottom:1rem;padding:.45rem .8rem;font-size:12px}}
 @media (prefers-reduced-motion:reduce){.to-top,.to-top.is-visible{transition:opacity .2s ease,visibility 0s;transform:none}}
+
+/* Lenis smooth scroll (see motion.js) */
+html.lenis,html.lenis body{height:auto}
+.lenis.lenis-smooth [data-lenis-prevent]{overscroll-behavior:contain}
+.lenis.lenis-stopped{overflow:clip}
+.lenis.lenis-smooth iframe{pointer-events:none}
