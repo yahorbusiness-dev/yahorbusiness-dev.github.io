@@ -123,7 +123,23 @@ function renderAccountMenu(user) {
   avatar.addEventListener('click', e => { e.stopPropagation(); setOpen(menu.hidden); });
   document.addEventListener('click', e => { if (!wrap.contains(e.target)) setOpen(false); });
   document.addEventListener('keydown', e => { if (e.key === 'Escape') setOpen(false); });
-  menu.querySelector('[data-signout]').addEventListener('click', async () => { await sb.auth.signOut(); location.reload(); });
+  menu.querySelector('[data-signout]').addEventListener('click', async e => {
+    e.currentTarget.disabled = true;
+    await forceSignOut();
+    location.reload();
+  });
+}
+
+// Signs out this browser only. supabase-js keeps the stored session when the
+// sign-out request fails (network error, already revoked session it can't
+// refresh), so the stored token is cleared by hand as well.
+async function forceSignOut() {
+  try { await sb.auth.signOut({ scope: 'local' }); } catch (err) { /* cleared below */ }
+  try {
+    Object.keys(localStorage)
+      .filter(k => k.startsWith('sb-') && k.includes('-auth-token'))
+      .forEach(k => localStorage.removeItem(k));
+  } catch (err) { /* storage unavailable */ }
 }
 
 function initAccounts(me, root) {
@@ -718,7 +734,7 @@ function renderLogin(message) {
     const { data, error } = await sb.auth.signInWithPassword({ email: form.email.value.trim(), password: form.password.value, options: HCAPTCHA_SITE_KEY ? { captchaToken } : undefined });
     try { hcaptcha.reset(captchaId); } catch (err) { /* ignore */ }
     if (!error && data.user?.app_metadata?.role === 'admin') { location.reload(); return; }
-    if (!error) await sb.auth.signOut({ scope: 'local' }); // signed in, but not an admin
+    if (!error) await forceSignOut(); // signed in, but not an admin
     errorEl.textContent = error
       ? (error.message === 'Invalid login credentials' ? 'Fel e-post eller lösenord.' : /captcha/i.test(error.message) ? 'Captcha-kontrollen gick inte igenom. Klicka i rutan och försök igen.' : error.message)
       : 'Det här kontot har inte admin-behörighet.';
@@ -729,10 +745,19 @@ function renderLogin(message) {
 
 document.addEventListener('DOMContentLoaded', async () => {
   const { data: { session } } = await sb.auth.getSession();
-  const user = session?.user;
+  let user = session?.user;
   if (!user) { renderLogin(); return; }
+  // The stored session may have been revoked on the server (e.g. signed out
+  // elsewhere); ask the server instead of trusting the browser's copy.
+  const { data: fresh, error: userError } = await sb.auth.getUser();
+  if (fresh?.user) user = fresh.user;
+  else if (userError && userError.status && userError.status < 500) {
+    await forceSignOut();
+    renderLogin('Du har loggats ut. Logga in igen.');
+    return;
+  }
   if (user.app_metadata?.role !== 'admin') {
-    await sb.auth.signOut({ scope: 'local' });
+    await forceSignOut();
     renderLogin('Det här kontot har inte admin-behörighet.');
     return;
   }
