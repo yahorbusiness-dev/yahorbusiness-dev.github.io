@@ -39,6 +39,10 @@ Edge Function (`supabase/functions/admin/`) checks that on every request.
   lessons there. Lessons with a `package_id` are left out of Kurser and open only to
   class members and teachers (`CLASS_PACKAGES` in `stitch-assets/app.js`). Lessons with
   an empty `quiz` are completed after the last step.
+- `larare.html` (`initTeacherPage`) is the real teacher view: school, own classes
+  (tabs + "Ny klass" via `create_class`), join code with copy button, students and
+  their package progress. The old made-up demo (`renderTeacherDemo`) sits behind
+  "Visa exempel". A teacher without a `school_teachers` row is told to wait for UngEkonom.
 - The teacher file ("Ladda ner lektionen" on `larare.html`) comes from the Edge Function
   `teacher-file` (teachers only). It serves `lesson_packages.teacher_file` from the
   private Storage bucket `teacher-files` if uploaded, else a generated placeholder PDF.
