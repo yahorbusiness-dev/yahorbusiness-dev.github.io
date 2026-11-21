@@ -4,6 +4,7 @@
 // an admin; this page only renders.
 const SUPABASE_URL = 'https://psvjlxqdqcuhmafqorlv.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_yuBvIFJ1sU3sfLpC0P3rmA_lNdgxITd';
+const HCAPTCHA_SITE_KEY = '7a6048f0-4206-424e-8858-36ead912cbd4'; // public; the secret lives in Supabase
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 const ROLE_LABEL = { student: 'Elev', teacher: 'Lärare', admin: 'Admin', pending: 'Vill bli lärare', rejected: 'Nekad lärare' };
@@ -783,21 +784,42 @@ function renderLogin(message) {
           <input name="email" type="email" required autocomplete="email" class="w-full px-4 py-3 rounded-xl border border-border-subtle bg-surface-subdued/50 font-body-regular text-body-regular text-text-primary focus:outline-none focus:ring-2 focus:ring-primary-container"/></label>
         <label class="flex flex-col gap-1.5 font-label-md text-label-md text-text-secondary">Lösenord
           <input name="password" type="password" required autocomplete="current-password" class="w-full px-4 py-3 rounded-xl border border-border-subtle bg-surface-subdued/50 font-body-regular text-body-regular text-text-primary focus:outline-none focus:ring-2 focus:ring-primary-container"/></label>
+        <div class="flex justify-center min-h-[78px]" data-captcha></div>
         <p data-login-error class="${message ? '' : 'hidden'} text-[13px] text-critical-danger font-body-medium">${esc(message || '')}</p>
         <button type="submit" class="w-full mt-1 px-6 py-3.5 rounded-xl bg-text-primary hover:opacity-90 text-on-primary font-label-md text-label-md transition-all disabled:opacity-60">Logga in</button>
       </form>
     </div>`;
   const form = root.querySelector('[data-login]');
   const errorEl = root.querySelector('[data-login-error]');
+  // hCaptcha: Supabase requires a token for every password sign-in
+  let captchaId;
+  window.onHcaptchaLoad = () => { captchaId = hcaptcha.render(root.querySelector('[data-captcha]'), { sitekey: HCAPTCHA_SITE_KEY }); };
+  if (window.hcaptcha) window.onHcaptchaLoad();
+  else {
+    const sc = document.createElement('script');
+    sc.src = 'https://js.hcaptcha.com/1/api.js?hl=sv&render=explicit&onload=onHcaptchaLoad';
+    sc.async = true;
+    document.head.appendChild(sc);
+  }
   form.addEventListener('submit', async e => {
     e.preventDefault();
-    const btn = form.querySelector('button');
-    btn.disabled = true;
+    const btn = form.querySelector('button[type="submit"]');
     errorEl.classList.add('hidden');
-    const { data, error } = await sb.auth.signInWithPassword({ email: form.email.value.trim(), password: form.password.value });
+    let captchaToken = '';
+    try { captchaToken = captchaId !== undefined ? hcaptcha.getResponse(captchaId) : ''; } catch (err) { /* not loaded */ }
+    if (!captchaToken) {
+      errorEl.textContent = 'Bekräfta att du inte är en robot genom att klicka i rutan ovan.';
+      errorEl.classList.remove('hidden');
+      return;
+    }
+    btn.disabled = true;
+    const { data, error } = await sb.auth.signInWithPassword({ email: form.email.value.trim(), password: form.password.value, options: { captchaToken } });
+    try { hcaptcha.reset(captchaId); } catch (err) { /* ignore */ }
     if (!error && data.user?.app_metadata?.role === 'admin') { location.reload(); return; }
     if (!error) await sb.auth.signOut(); // signed in, but not an admin
-    errorEl.textContent = error ? (error.message === 'Invalid login credentials' ? 'Fel e-post eller lösenord.' : error.message) : 'Det här kontot har inte admin-behörighet.';
+    errorEl.textContent = error
+      ? (error.message === 'Invalid login credentials' ? 'Fel e-post eller lösenord.' : /captcha/i.test(error.message) ? 'Captcha-kontrollen gick inte igenom. Klicka i rutan och försök igen.' : error.message)
+      : 'Det här kontot har inte admin-behörighet.';
     errorEl.classList.remove('hidden');
     btn.disabled = false;
   });
