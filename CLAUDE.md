@@ -25,6 +25,17 @@ Edge Function (`supabase/functions/admin/`) checks that on every request.
 - Teacher access is `app_metadata.role = 'teacher'`, set only by an admin.
   A teacher sign-up just sets `user_metadata.requested_role = 'teacher'`.
 
+## Skolor, klasser och lektionspaket
+
+- Tables `schools`, `school_teachers` (admin links an approved teacher to a school),
+  `classes` (teacher-owned, unique `join_code`), `class_members`, `lesson_packages`;
+  `lessons.package_id` marks a package's student lessons (first package:
+  `test-lektion` with lessons `barnbyar-1..5`). See `supabase/migrations/`.
+- Teachers create classes via RPC `create_class(name)`; students join via
+  `join_class(code)`. RLS lets a teacher read only their own students' profiles
+  and progress.
+- Admin panel → Skolor: create schools, link teachers, see classes and students.
+
 ## Lösenord
 
 "Glömt lösenord?" on both login pages (and "Skicka återställningslänk" in the

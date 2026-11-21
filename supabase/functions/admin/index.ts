@@ -26,6 +26,17 @@ const roleOf = (u: any) => {
   return 'student';
 };
 
+async function allUsers(admin: any) {
+  const users: any[] = [];
+  for (let page = 1; page < 50; page++) {
+    const { data, error } = await admin.auth.admin.listUsers({ page, perPage: 1000 });
+    if (error) throw error;
+    users.push(...data.users);
+    if (data.users.length < 1000) break;
+  }
+  return users;
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: cors });
   if (req.method !== 'POST') return json({ error: 'Method not allowed' }, 405);
@@ -40,7 +51,7 @@ Deno.serve(async (req) => {
 
   let body: any = {};
   try { body = await req.json(); } catch { /* empty body */ }
-  const { action, id } = body;
+  const { action, id, school_id, class_id, name, city } = body;
 
   const log = (act: string, target?: { id: string; email?: string | null }) =>
     admin.from('admin_audit_log').insert({
@@ -50,13 +61,7 @@ Deno.serve(async (req) => {
 
   try {
     if (action === 'list') {
-      const users: any[] = [];
-      for (let page = 1; page < 50; page++) {
-        const { data, error } = await admin.auth.admin.listUsers({ page, perPage: 1000 });
-        if (error) throw error;
-        users.push(...data.users);
-        if (data.users.length < 1000) break;
-      }
+      const users = await allUsers(admin);
       const [{ data: profiles }, { data: progress }, { data: logRows }] = await Promise.all([
         admin.from('profiles').select('id, display_name, xp, streak_days, last_active_date'),
         admin.from('user_lesson_progress').select('user_id, status, quiz_score'),
@@ -84,6 +89,102 @@ Deno.serve(async (req) => {
           };
         }),
         log: logRows || [],
+      });
+    }
+
+    // ---- Schools & classes ----
+    if (action === 'schools') {
+      const [{ data: schools }, { data: links }, { data: classes }, { data: members }, { data: lessons }, users] = await Promise.all([
+        admin.from('schools').select('id, name, city, created_at').order('created_at'),
+        admin.from('school_teachers').select('user_id, school_id'),
+        admin.from('classes').select('id, school_id, teacher_id, name, join_code, package_id, created_at').order('created_at'),
+        admin.from('class_members').select('class_id, user_id'),
+        admin.from('lessons').select('id, package_id').not('package_id', 'is', null),
+        allUsers(admin),
+      ]);
+      const memberIds = [...new Set((members || []).map((m: any) => m.user_id))];
+      const { data: progress } = memberIds.length
+        ? await admin.from('user_lesson_progress').select('user_id, lesson_id, status').in('user_id', memberIds)
+        : { data: [] as any[] };
+      const userById = new Map(users.map((u: any) => [u.id, u]));
+      const pkgLessons = (pkg: string) => (lessons || []).filter((l: any) => l.package_id === pkg).map((l: any) => l.id);
+      const done = new Set((progress || []).filter((p: any) => p.status === 'completed').map((p: any) => p.user_id + '|' + p.lesson_id));
+      const person = (uid: string) => { const u: any = userById.get(uid); return { id: uid, email: u?.email || null, name: u?.user_metadata?.display_name || null }; };
+      const classInfo = (c: any) => {
+        const ms = (members || []).filter((m: any) => m.class_id === c.id).map((m: any) => m.user_id);
+        const ls = pkgLessons(c.package_id);
+        const completed = ms.reduce((a: number, uid: string) => a + ls.filter((l: string) => done.has(uid + '|' + l)).length, 0);
+        return { ...c, teacher: person(c.teacher_id), students: ms.length, progress: ms.length && ls.length ? Math.round(completed / (ms.length * ls.length) * 100) : 0 };
+      };
+      const teachers = users.filter((u: any) => roleOf(u) === 'teacher').map((u: any) => ({ ...person(u.id), school: u.user_metadata?.school || null, school_id: (links || []).find((l: any) => l.user_id === u.id)?.school_id || null }));
+      return json({
+        schools: (schools || []).map((s: any) => ({
+          ...s,
+          teachers: (links || []).filter((l: any) => l.school_id === s.id).map((l: any) => person(l.user_id)),
+          classes: (classes || []).filter((c: any) => c.school_id === s.id).map(classInfo),
+        })),
+        teachers,
+      });
+    }
+
+    if (action === 'create_school') {
+      if (!name || typeof name !== 'string' || !name.trim()) return json({ error: 'Skolan behöver ett namn.' }, 400);
+      const { data, error } = await admin.from('schools').insert({ name: name.trim(), city: (city || '').trim() || null }).select().single();
+      if (error) throw error;
+      await log('create_school', { id: caller.id, email: data.name });
+      return json({ school: data });
+    }
+
+    if (action === 'delete_school') {
+      const { data: s } = await admin.from('schools').select('name').eq('id', school_id).maybeSingle();
+      if (!s) return json({ error: 'Skolan finns inte.' }, 404);
+      const { error } = await admin.from('schools').delete().eq('id', school_id);
+      if (error) throw error;
+      await log('delete_school', { id: caller.id, email: s.name });
+      return json({ ok: true });
+    }
+
+    if (action === 'set_teacher_school') {
+      const { data: target } = await admin.auth.admin.getUserById(id);
+      if (!target?.user || roleOf(target.user) !== 'teacher') return json({ error: 'Kontot är inte en godkänd lärare.' }, 400);
+      if (school_id) {
+        const { error } = await admin.from('school_teachers').upsert({ user_id: id, school_id });
+        if (error) throw error;
+      } else {
+        await admin.from('school_teachers').delete().eq('user_id', id);
+      }
+      await log(school_id ? 'set_teacher_school' : 'remove_teacher_school', target.user);
+      return json({ ok: true });
+    }
+
+    if (action === 'class_detail') {
+      const { data: c } = await admin.from('classes').select('*').eq('id', class_id).maybeSingle();
+      if (!c) return json({ error: 'Klassen finns inte.' }, 404);
+      const [{ data: ms }, { data: ls }, users] = await Promise.all([
+        admin.from('class_members').select('user_id, joined_at').eq('class_id', class_id),
+        admin.from('lessons').select('id, title, order_index').eq('package_id', c.package_id).order('order_index'),
+        allUsers(admin),
+      ]);
+      const ids = (ms || []).map((m: any) => m.user_id);
+      const [{ data: progress }, { data: profiles }] = ids.length
+        ? await Promise.all([
+            admin.from('user_lesson_progress').select('user_id, lesson_id, status, quiz_score, updated_at').in('user_id', ids),
+            admin.from('profiles').select('id, display_name, last_active_date').in('id', ids),
+          ])
+        : [{ data: [] as any[] }, { data: [] as any[] }];
+      const userById = new Map(users.map((u: any) => [u.id, u]));
+      return json({
+        class: c,
+        lessons: ls || [],
+        students: (ms || []).map((m: any) => {
+          const u: any = userById.get(m.user_id);
+          const prof: any = (profiles || []).find((p: any) => p.id === m.user_id) || {};
+          return {
+            id: m.user_id, email: u?.email || null, name: prof.display_name || u?.user_metadata?.display_name || null,
+            joined_at: m.joined_at, last_sign_in_at: u?.last_sign_in_at || null,
+            progress: (progress || []).filter((p: any) => p.user_id === m.user_id),
+          };
+        }),
       });
     }
 
