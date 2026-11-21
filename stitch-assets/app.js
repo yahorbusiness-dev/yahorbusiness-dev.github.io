@@ -1754,8 +1754,8 @@ function bindTeacherFileDownload(root) {
   });
 }
 
-function initTeacherPage(ctx) {
-  const root = document.getElementById('teacher-root');
+// The demo class view (made-up classes and students), shown behind "Visa exempel"
+function renderTeacherDemo(ctx, root) {
   let lessons = ctx.lessons.filter(l => isLessonOpen(l, ctx.lessons));
   if (!lessons.length) {
     lessons = Object.keys(CATEGORY_META).filter(k => !PAUSED_CATEGORIES.has(k)).slice(0, 5)
@@ -1850,16 +1850,15 @@ function initTeacherPage(ctx) {
     root.innerHTML = `
       <div class="flex flex-col md:flex-row md:items-end justify-between gap-space-md mb-space-lg">
         <div>
-          <span class="font-label-md text-label-md text-primary-deep uppercase tracking-wider">Lärarvy · Demo</span>
+          <span class="font-label-md text-label-md text-primary-deep uppercase tracking-wider">Exempel</span>
           <h1 class="font-display-xl text-display-xl text-text-primary tracking-tight mt-2">Hej, ${firstName} 👋</h1>
           <p class="font-body-regular text-body-regular text-text-secondary mt-1">${cls.name} · ${cls.course} · ${n} elever</p>
         </div>
         <div class="flex gap-2">${DEMO_CLASSES.map(c => `<button type="button" data-class="${c.id}" class="px-4 py-2 rounded-xl font-label-md text-label-md transition-colors ${c.id === state.classId ? 'bg-primary-container text-on-primary shadow-sm' : 'bg-surface-card text-text-secondary hover:text-text-primary border border-border-subtle'}">${c.name}</button>`).join('')}</div>
       </div>
-      ${packageCardHtml(ctx)}
       <div class="flex items-start gap-3 bg-primary-tint rounded-2xl px-space-lg py-space-md mb-space-xl">
         <span class="material-symbols-outlined text-[20px] text-primary-deep mt-0.5">info</span>
-        <p class="font-body-regular text-[14px] text-text-secondary">Det här är en <strong class="text-text-primary">demo</strong> av lärarvyn. Klasserna och eleverna är påhittade, men lektionerna är de riktiga som finns i plattformen.</p>
+        <p class="font-body-regular text-[14px] text-text-secondary">Det här är ett <strong class="text-text-primary">exempel</strong> på hur lärarvyn ser ut med en full klass. Klasserna och eleverna är påhittade.</p>
       </div>
       <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
         ${stat('group', `${activeWeek}/${n}`, 'Aktiva elever', 'senaste 7 dagarna')}
@@ -1891,7 +1890,6 @@ function initTeacherPage(ctx) {
         </div>
       </div>`;
 
-    bindTeacherFileDownload(root);
     root.querySelectorAll('[data-class]').forEach(b => b.addEventListener('click', () => { state.classId = b.dataset.class; state.filter = 'all'; state.query = ''; render(); }));
     root.querySelectorAll('[data-filter]').forEach(b => b.addEventListener('click', () => { state.filter = b.dataset.filter; render(); }));
     root.querySelectorAll('[data-assign]').forEach(b => b.addEventListener('click', () => toast(`Demo: "${b.dataset.assign}" tilldelades ${cls.name}`)));
@@ -1904,6 +1902,261 @@ function initTeacherPage(ctx) {
       again.focus();
       again.setSelectionRange(pos, pos);
     });
+  }
+  render();
+}
+
+// ---------------------------------------------------------------------
+// Lärarvy (real): the teacher's own classes, join codes, students and their
+// progress in the class's lesson package. RLS only returns the teacher's own
+// classes and the profiles/progress of students in them.
+// ---------------------------------------------------------------------
+async function initTeacherPage(ctx) {
+  const root = document.getElementById('teacher-root');
+  const firstName = escapeHtml((ctx.profile.display_name || 'lärare').split(/\s+/)[0]);
+  const state = { demo: false, classId: null, creating: false, loaded: null };
+  const btnPrimary = 'inline-flex items-center justify-center gap-1.5 px-5 py-2.5 rounded-xl bg-primary-container hover:bg-primary-deep text-on-primary font-label-md text-label-md transition-all shadow-sm disabled:opacity-60';
+  const btnGhost = 'inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-surface-card border border-border-subtle text-text-secondary hover:text-text-primary font-label-md text-label-md transition-colors';
+
+  function toast(msg) {
+    const t = document.createElement('div');
+    t.className = 'fixed left-1/2 -translate-x-1/2 bottom-6 z-[70] bg-text-primary text-on-primary font-label-md text-label-md px-4 py-3 rounded-xl shadow-lg';
+    t.setAttribute('role', 'status');
+    t.textContent = msg;
+    document.body.appendChild(t);
+    setTimeout(() => t.remove(), 2600);
+  }
+
+  async function load() {
+    const [{ data: link }, { data: classes, error }] = await Promise.all([
+      sb.from('school_teachers').select('school_id, schools(name, city)').eq('user_id', ctx.user.id).maybeSingle(),
+      sb.from('classes').select('id, name, join_code, package_id, created_at').eq('teacher_id', ctx.user.id).order('created_at'),
+    ]);
+    if (error) throw error;
+    const classIds = (classes || []).map(c => c.id);
+    const { data: members } = classIds.length
+      ? await sb.from('class_members').select('class_id, user_id, joined_at').in('class_id', classIds)
+      : { data: [] };
+    const userIds = [...new Set((members || []).map(m => m.user_id))];
+    const pkgLessonIds = (ctx.packageLessons || []).map(l => l.id);
+    const [{ data: profiles }, { data: progress }] = userIds.length
+      ? await Promise.all([
+          sb.from('profiles').select('id, display_name, last_active_date').in('id', userIds),
+          sb.from('user_lesson_progress').select('user_id, lesson_id, status, updated_at, completed_at').in('user_id', userIds).in('lesson_id', pkgLessonIds),
+        ])
+      : [{ data: [] }, { data: [] }];
+    return { school: link?.schools || null, hasSchool: !!link, classes: classes || [], members: members || [], profiles: profiles || [], progress: progress || [] };
+  }
+
+  const daysSince = d => {
+    if (!d) return null;
+    const ms = new Date(new Date().toISOString().slice(0, 10)) - new Date(String(d).slice(0, 10));
+    return Math.max(0, Math.round(ms / 86400000));
+  };
+  const lastActive = d => d === null ? '–' : d === 0 ? 'Idag' : d === 1 ? 'Igår' : `${d} dagar sedan`;
+  const shortDate = d => new Date(d).toLocaleDateString('sv-SE', { day: 'numeric', month: 'short' });
+
+  function studentsOf(data, cls) {
+    const lessons = (ctx.packageLessons || []).filter(l => l.package_id === cls.package_id).sort((a, b) => a.order_index - b.order_index);
+    const students = data.members.filter(m => m.class_id === cls.id).map(m => {
+      const p = data.profiles.find(x => x.id === m.user_id) || {};
+      const mine = data.progress.filter(x => x.user_id === m.user_id);
+      const status = lessons.map(l => mine.find(x => x.lesson_id === l.id)?.status || null);
+      const latest = mine.reduce((a, x) => (x.updated_at > a ? x.updated_at : a), p.last_active_date || '');
+      return { id: m.user_id, name: p.display_name || 'Elev', joined: m.joined_at, status, completed: status.filter(s => s === 'completed').length, lastActiveDays: daysSince(latest || null) };
+    }).sort((a, b) => a.name.localeCompare(b.name, 'sv'));
+    return { lessons, students };
+  }
+
+  const createForm = (id) => `
+    <form data-create-class="${id}" class="flex flex-col sm:flex-row gap-2" novalidate>
+      <label class="sr-only" for="new-class-${id}">Klassens namn</label>
+      <input id="new-class-${id}" name="classname" maxlength="40" autocomplete="off" placeholder="Klassens namn, t.ex. Ek21b" class="flex-1 min-w-0 px-4 py-2.5 rounded-xl border border-border-subtle bg-surface-card font-body-regular text-body-regular focus:outline-none focus:border-primary-container"/>
+      <button type="submit" class="${btnPrimary}"><span class="material-symbols-outlined text-[18px]">add</span>Skapa klass</button>
+    </form>
+    <p data-create-msg class="font-body-regular text-[14px] text-critical-danger mt-2 hidden" role="status"></p>`;
+
+  function classView(data, cls) {
+    const { lessons, students } = studentsOf(data, cls);
+    const n = students.length;
+    const activeWeek = students.filter(s => s.lastActiveDays !== null && s.lastActiveDays <= 7).length;
+    const totalDone = students.reduce((a, s) => a + s.completed, 0);
+    const avg = n && lessons.length ? Math.round(totalDone / (n * lessons.length) * 100) : 0;
+    const allDone = students.filter(s => lessons.length && s.completed === lessons.length).length;
+    const stat = (icon, value, label, sub) => `
+      <div class="bg-surface-card rounded-2xl p-space-lg shadow-sm flex flex-col gap-1">
+        <span class="material-symbols-outlined text-[22px] text-primary-container">${icon}</span>
+        <span class="font-headline-1 text-headline-1 text-text-primary mt-1">${value}</span>
+        <span class="font-label-md text-label-md text-text-primary">${label}</span>
+        <span class="font-caption-micro text-caption-micro text-text-tertiary">${sub}</span>
+      </div>`;
+    const codeCard = `
+      <div class="bg-primary-container rounded-3xl p-space-lg md:p-space-xl text-on-primary flex flex-col md:flex-row md:items-center justify-between gap-space-md">
+        <div>
+          <p class="font-label-md text-label-md text-primary-fixed uppercase tracking-wider">Klasskod · ${escapeHtml(cls.name)}</p>
+          <p class="font-display-xl text-[40px] leading-tight tracking-widest mt-1 select-all" data-code>${escapeHtml(cls.join_code)}</p>
+          <p class="font-body-regular text-[14px] text-primary-fixed mt-1 max-w-md">Eleverna skapar ett elevkonto, går till <strong class="text-on-primary">Översikt</strong> och skriver in koden under "Gå med i din klass".</p>
+        </div>
+        <button type="button" data-copy-code="${escapeHtml(cls.join_code)}" class="shrink-0 inline-flex items-center justify-center gap-1.5 px-5 py-3 rounded-xl bg-surface-card hover:bg-primary-tint text-primary-deep font-label-md text-label-md transition-all shadow-sm"><span class="material-symbols-outlined text-[18px]">content_copy</span>Kopiera koden</button>
+      </div>`;
+    const lessonRows = lessons.map((l, j) => {
+      const done = students.filter(s => s.status[j] === 'completed').length;
+      const started = students.filter(s => s.status[j] === 'in_progress').length;
+      const pct = n ? Math.round(done / n * 100) : 0;
+      return `
+        <div class="bg-surface-card rounded-2xl p-space-md md:px-space-lg shadow-sm flex flex-col sm:flex-row sm:items-center gap-space-sm sm:gap-space-md">
+          <div class="sm:w-2/5 min-w-0"><p class="font-caption-micro text-caption-micro text-text-tertiary uppercase tracking-wide">Lektion ${j + 1}</p><p class="font-label-md text-[14px] text-text-primary truncate">${escapeHtml(l.title)}</p></div>
+          <div class="flex-1 flex flex-col gap-1.5">
+            <div class="flex justify-between font-caption-micro text-caption-micro text-text-secondary"><span>${done} av ${n} klara${started ? ` · ${started} påbörjade` : ''}</span><span>${pct}%</span></div>
+            <div class="h-2 bg-border-subtle rounded-full overflow-hidden"><div class="h-full bg-primary-container rounded-full" style="width:${pct}%"></div></div>
+          </div>
+        </div>`;
+    }).join('');
+    const dot = s => s === 'completed' ? 'bg-primary-container' : s === 'in_progress' ? 'bg-primary-container opacity-40' : 'bg-border-subtle';
+    const rows = students.map(s => `
+      <tr class="border-t border-border-subtle">
+        <td class="py-3 pr-4"><div class="flex items-center gap-3">
+          <div class="w-8 h-8 shrink-0 rounded-full bg-surface-subdued flex items-center justify-center font-label-md text-[12px] text-text-primary">${escapeHtml(initialsFromName(s.name))}</div>
+          <span class="font-label-md text-[14px] text-text-primary whitespace-nowrap">${escapeHtml(s.name)}</span></div></td>
+        <td class="py-3 pr-4"><div class="flex items-center gap-1" title="${s.completed} av ${lessons.length} klara (ljusblå = påbörjad)">
+          ${s.status.map(st => `<span class="w-4 h-1.5 rounded-full ${dot(st)}"></span>`).join('')}
+          <span class="ml-2 font-caption-micro text-caption-micro text-text-secondary">${s.completed}/${lessons.length}</span></div></td>
+        <td class="py-3 pr-4 font-body-regular text-[14px] text-text-secondary whitespace-nowrap">${lastActive(s.lastActiveDays)}</td>
+        <td class="py-3 font-body-regular text-[14px] text-text-secondary whitespace-nowrap">${shortDate(s.joined)}</td>
+      </tr>`).join('');
+    return `
+      ${codeCard}
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-space-lg">
+        ${stat('group', n, n === 1 ? 'elev' : 'elever', 'har gått med i klassen')}
+        ${stat('bolt', `${activeWeek}/${n}`, 'Aktiva', 'senaste 7 dagarna')}
+        ${stat('donut_large', `${avg}%`, 'Snittprogress', 'av paketets lektioner')}
+        ${stat('task_alt', allDone, 'Klara med allt', `alla ${lessons.length} lektioner`)}
+      </div>
+      <div class="mt-12">
+        <h2 class="font-headline-2 text-headline-2 text-text-primary mb-space-md">Lektioner</h2>
+        <div class="flex flex-col gap-3">${lessonRows || '<p class="font-body-regular text-[14px] text-text-tertiary">Paketet har inga elevlektioner än.</p>'}</div>
+      </div>
+      <div class="mt-12">
+        <h2 class="font-headline-2 text-headline-2 text-text-primary mb-space-md">Elever</h2>
+        ${n ? `
+        <div class="bg-surface-card rounded-2xl shadow-sm px-space-lg py-2 overflow-x-auto">
+          <table class="w-full text-left">
+            <thead><tr class="font-caption-micro text-caption-micro text-text-tertiary uppercase tracking-wide">
+              <th class="py-3 pr-4 font-semibold">Elev</th><th class="py-3 pr-4 font-semibold">Lektioner</th><th class="py-3 pr-4 font-semibold">Senast aktiv</th><th class="py-3 font-semibold">Gick med</th>
+            </tr></thead>
+            <tbody>${rows}</tbody>
+          </table>
+        </div>` : `
+        <div class="bg-surface-card rounded-2xl shadow-sm p-space-xl text-center">
+          <span class="material-symbols-outlined text-[36px] text-text-tertiary">person_add</span>
+          <p class="font-label-md text-label-md text-text-primary mt-2">Inga elever än</p>
+          <p class="font-body-regular text-[14px] text-text-secondary mt-1">Dela klasskoden <strong class="text-text-primary">${escapeHtml(cls.join_code)}</strong> med eleverna. De dyker upp här när de har gått med.</p>
+        </div>`}
+      </div>`;
+  }
+
+  function render() {
+    const data = state.loaded;
+    if (state.demo) {
+      root.innerHTML = `
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-surface-subdued rounded-2xl px-space-lg py-space-md mb-space-xl">
+          <p class="font-body-regular text-[14px] text-text-secondary"><strong class="text-text-primary">Exempelvy</strong> – så här ser lärarvyn ut med en full klass.</p>
+          <button type="button" data-exit-demo class="${btnGhost}"><span class="material-symbols-outlined text-[18px]">arrow_back</span>Tillbaka till mina klasser</button>
+        </div>
+        <div data-demo-root></div>`;
+      root.querySelector('[data-exit-demo]').addEventListener('click', () => { state.demo = false; render(); });
+      renderTeacherDemo(ctx, root.querySelector('[data-demo-root]'));
+      window.scrollTo({ top: 0 });
+      return;
+    }
+    const cls = data.classes.find(c => c.id === state.classId) || data.classes[0] || null;
+    if (cls) state.classId = cls.id;
+    const schoolLine = data.school ? `${escapeHtml(data.school.name)}${data.school.city ? ` · ${escapeHtml(data.school.city)}` : ''}` : '';
+
+    let body;
+    if (!data.hasSchool) {
+      body = `
+        <div class="bg-surface-card rounded-3xl shadow-sm p-space-xl flex items-start gap-space-md">
+          <span class="material-symbols-outlined text-[28px] text-primary-container">domain</span>
+          <div>
+            <h2 class="font-headline-3 text-headline-3 text-text-primary">Ditt konto är inte kopplat till en skola än</h2>
+            <p class="font-body-regular text-body-regular text-text-secondary mt-1">UngEkonom kopplar ditt konto till din skola. Därefter kan du skapa klasser här och få en klasskod till eleverna. Under tiden kan du ladda ner lektionen och titta på exemplet.</p>
+          </div>
+        </div>`;
+    } else if (!data.classes.length) {
+      body = `
+        <div class="bg-surface-card rounded-3xl shadow-sm p-space-lg md:p-space-xl">
+          <div class="flex items-start gap-space-md mb-space-md">
+            <div class="w-11 h-11 shrink-0 rounded-xl bg-primary-tint text-primary-deep flex items-center justify-center"><span class="material-symbols-outlined text-[24px]">group_add</span></div>
+            <div>
+              <h2 class="font-headline-3 text-headline-3 text-text-primary">Skapa din första klass</h2>
+              <p class="font-body-regular text-[14px] text-text-secondary mt-1">Du får en klasskod som eleverna skriver in. Sedan ser du deras framsteg i lektionerna här.</p>
+            </div>
+          </div>
+          <div class="max-w-xl">${createForm('first')}</div>
+        </div>`;
+    } else {
+      const tabs = data.classes.map(c => `<button type="button" data-class-tab="${c.id}" class="px-4 py-2 rounded-xl font-label-md text-label-md transition-colors ${c.id === cls.id ? 'bg-primary-container text-on-primary shadow-sm' : 'bg-surface-card text-text-secondary hover:text-text-primary border border-border-subtle'}">${escapeHtml(c.name)}</button>`).join('');
+      body = `
+        <div class="flex flex-wrap items-center gap-2 mb-space-md">
+          ${tabs}
+          <button type="button" data-toggle-create class="${btnGhost}"><span class="material-symbols-outlined text-[18px]">${state.creating ? 'close' : 'add'}</span>${state.creating ? 'Avbryt' : 'Ny klass'}</button>
+        </div>
+        ${state.creating ? `<div class="bg-surface-card rounded-2xl shadow-sm p-space-md mb-space-md max-w-xl">${createForm('more')}</div>` : ''}
+        ${classView(data, cls)}`;
+    }
+
+    root.innerHTML = `
+      <div class="flex flex-col md:flex-row md:items-end justify-between gap-space-md mb-space-lg">
+        <div>
+          <span class="font-label-md text-label-md text-primary-deep uppercase tracking-wider">Lärarvy</span>
+          <h1 class="font-display-xl text-display-xl text-text-primary tracking-tight mt-2">Hej, ${firstName} 👋</h1>
+          ${schoolLine ? `<p class="font-body-regular text-body-regular text-text-secondary mt-1">${schoolLine}</p>` : ''}
+        </div>
+        <button type="button" data-show-demo class="${btnGhost} self-start md:self-auto"><span class="material-symbols-outlined text-[18px]">visibility</span>Visa exempel</button>
+      </div>
+      ${packageCardHtml(ctx)}
+      ${body}`;
+
+    bindTeacherFileDownload(root);
+    root.querySelector('[data-show-demo]').addEventListener('click', () => { state.demo = true; render(); });
+    root.querySelectorAll('[data-class-tab]').forEach(b => b.addEventListener('click', () => { state.classId = b.dataset.classTab; render(); }));
+    root.querySelector('[data-toggle-create]')?.addEventListener('click', () => {
+      state.creating = !state.creating;
+      render();
+      root.querySelector('[data-create-class] input')?.focus();
+    });
+    root.querySelectorAll('[data-copy-code]').forEach(b => b.addEventListener('click', async () => {
+      try { await navigator.clipboard.writeText(b.dataset.copyCode); toast('Klasskoden är kopierad'); }
+      catch { toast(`Klasskoden: ${b.dataset.copyCode}`); }
+    }));
+    root.querySelectorAll('[data-create-class]').forEach(form => form.addEventListener('submit', async e => {
+      e.preventDefault();
+      const msg = form.parentElement.querySelector('[data-create-msg]');
+      const name = form.classname.value.trim();
+      const fail = text => { msg.textContent = text; msg.classList.remove('hidden'); };
+      if (!name) { fail("Skriv ett namn på klassen."); form.classname.focus(); return; }
+      const btn = form.querySelector('button');
+      btn.disabled = true;
+      const { data: created, error } = await sb.rpc('create_class', { p_name: name });
+      if (error) {
+        btn.disabled = false;
+        fail(error.code === 'P0001' ? error.message : 'Det gick inte att skapa klassen just nu. Försök igen.');
+        return;
+      }
+      state.creating = false;
+      try { state.loaded = await load(); } catch { /* keep old data */ }
+      state.classId = created?.id || state.classId;
+      render();
+      toast(`Klassen ${name} är skapad`);
+    }));
+  }
+
+  try {
+    state.loaded = await load();
+  } catch (e) {
+    root.innerHTML = `<p class="font-body-regular text-body-regular text-text-secondary">Kunde inte ladda dina klasser. Ladda om sidan för att försöka igen.</p>`;
+    return;
   }
   render();
 }
