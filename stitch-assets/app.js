@@ -19,6 +19,13 @@ const OPEN_LESSONS_PER_CATEGORY = 1;
 // Minimum quiz score (%) to complete a lesson and earn XP. 0 = always pass.
 const PASS_THRESHOLD = 90;
 
+// Lesson packages (first one: "Test lektion"). Lessons with a package_id are
+// open only to students in a class that has the package, and to teachers
+// (as a preview). They never show up in Kurser or the subject lists.
+let CLASS_PACKAGES = new Set();
+const PACKAGE_META = { label: 'Klasslektion', icon: 'groups', iconBg: 'bg-primary-tint', iconColor: 'text-primary-deep' };
+const metaOf = l => CATEGORY_META[l?.category] || (l?.package_id ? PACKAGE_META : CATEGORY_META.aktier);
+
 // Prototype test round: feedback button (Google Form) and a one-time welcome
 // guide. Clicking the "Prototyp" badge in the header reopens the guide.
 const FEEDBACK_URL = 'https://forms.gle/nERKE46Ng4DuKrsGA'; // Google Forms; the button stays hidden while empty
@@ -86,6 +93,7 @@ function showPrototypeGuide() {
   overlay.querySelector('[data-guide-close]').focus();
 }
 function isLessonOpen(lesson, lessons) {
+  if (lesson?.package_id) return APP_ROLE === 'teacher' || CLASS_PACKAGES.has(lesson.package_id);
   if (!lesson || PAUSED_CATEGORIES.has(lesson.category)) return false;
   const sameCategory = lessons.filter(l => l.category === lesson.category).sort((a, b) => a.order_index - b.order_index);
   const pos = sameCategory.findIndex(l => l.id === lesson.id);
@@ -428,6 +436,7 @@ async function renderDashboard(data) {
       <span class="font-label-md text-label-md text-primary-deep uppercase tracking-wider">Översikt</span>
       <h1 class="font-display-xl text-display-xl text-text-primary tracking-tight mt-2">${greeting}, ${profile.display_name} 👋</h1>
     </div>
+    ${classSectionHtml(data, statusOf)}
     ${continueCard}
     <div class="mt-12">
       <h2 class="font-headline-2 text-headline-2 text-text-primary mb-space-md">Din resa</h2>
@@ -440,6 +449,111 @@ async function renderDashboard(data) {
       </div>
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">${subjects}</div>
     </div>`;
+  bindJoinClass(root);
+}
+
+// Student side of a class: "Gå med i klass" with the teacher's code, then the
+// class's package lessons with status.
+function classSectionHtml(data, statusOf) {
+  const classes = data.classes || [];
+  const joinForm = (compact) => `
+    <form data-join-class class="flex flex-col sm:flex-row gap-2 ${compact ? '' : 'mt-space-md'}" novalidate>
+      <label class="sr-only" for="join-code">Klasskod</label>
+      <input id="join-code" name="code" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="20" placeholder="T.ex. KLASS-7K2M" class="flex-1 min-w-0 px-4 py-3 rounded-xl border border-border-subtle bg-surface-card font-body-regular text-body-regular uppercase tracking-wider placeholder:normal-case placeholder:tracking-normal focus:outline-none focus:border-primary-container"/>
+      <button type="submit" class="inline-flex items-center justify-center gap-1.5 px-6 py-3 rounded-xl bg-primary-container hover:bg-primary-deep text-on-primary font-label-md text-label-md transition-all shadow-sm">Gå med<span class="material-symbols-outlined text-[18px]">arrow_forward</span></button>
+    </form>
+    <p data-join-msg class="font-body-regular text-[14px] mt-2 hidden" role="status"></p>`;
+
+  if (!classes.length) {
+    return `
+      <div class="bg-surface-card rounded-3xl p-space-lg md:p-space-xl shadow-sm mb-space-xl flex flex-col md:flex-row md:items-center gap-space-md md:gap-space-xl">
+        <div class="flex items-start gap-space-md md:w-1/2">
+          <div class="w-11 h-11 shrink-0 rounded-xl bg-primary-tint text-primary-deep flex items-center justify-center"><span class="material-symbols-outlined text-[24px]">groups</span></div>
+          <div>
+            <h2 class="font-headline-3 text-headline-3 text-text-primary">Gå med i din klass</h2>
+            <p class="font-body-regular text-[14px] text-text-secondary mt-1">Har du fått en klasskod av din lärare? Skriv in den här så får du klassens lektioner.</p>
+          </div>
+        </div>
+        <div class="md:flex-1">${joinForm(true)}</div>
+      </div>`;
+  }
+
+  const cards = classes.map(c => {
+    const pl = (data.packageLessons || []).filter(l => l.package_id === c.package_id).sort((a, b) => a.order_index - b.order_index);
+    const done = pl.filter(l => statusOf(l) === 'completed').length;
+    const rows = pl.map((l, i) => {
+      const st = statusOf(l);
+      const icon = st === 'completed' ? 'check_circle' : st === 'in_progress' ? 'pending' : 'radio_button_unchecked';
+      const color = st === 'completed' ? 'text-positive-spruce' : st === 'in_progress' ? 'text-primary-container' : 'text-text-tertiary';
+      return `
+        <a href="lektion.html?id=${encodeURIComponent(l.id)}" class="flex items-center gap-space-md px-space-md py-3 rounded-xl hover:bg-surface-subdued transition-colors group">
+          <span class="material-symbols-outlined text-[22px] ${color}">${icon}</span>
+          <span class="flex-1 min-w-0">
+            <span class="block font-caption-micro text-caption-micro text-text-tertiary uppercase tracking-wide">Lektion ${i + 1}</span>
+            <span class="block font-label-md text-[14px] text-text-primary truncate group-hover:text-primary-deep">${escapeHtml(l.title)}</span>
+          </span>
+          <span class="font-caption-micro text-caption-micro text-text-tertiary whitespace-nowrap">${st === 'completed' ? 'Klar' : st === 'in_progress' ? 'Påbörjad' : `~${l.estimated_minutes} min`}</span>
+          <span class="material-symbols-outlined text-[18px] text-text-tertiary">chevron_right</span>
+        </a>`;
+    }).join('');
+    const pct = pl.length ? Math.round(done / pl.length * 100) : 0;
+    return `
+      <div class="bg-surface-card rounded-3xl p-space-lg md:p-space-xl shadow-sm">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-space-md mb-space-md">
+          <div class="flex items-center gap-space-md min-w-0">
+            <div class="w-11 h-11 shrink-0 rounded-xl bg-primary-tint text-primary-deep flex items-center justify-center"><span class="material-symbols-outlined text-[24px]">groups</span></div>
+            <div class="min-w-0">
+              <p class="font-caption-micro text-caption-micro text-text-tertiary uppercase tracking-wide">Din klass${c.school ? ` · ${escapeHtml(c.school)}` : ''}</p>
+              <h2 class="font-headline-3 text-headline-3 text-text-primary truncate">${escapeHtml(c.name)}</h2>
+            </div>
+          </div>
+          <div class="flex items-center gap-3 sm:w-48">
+            <div class="flex-1 h-2 bg-border-subtle rounded-full overflow-hidden"><div class="h-full bg-primary-container rounded-full" style="width:${pct}%"></div></div>
+            <span class="font-label-md text-[13px] text-text-secondary whitespace-nowrap">${done}/${pl.length} klara</span>
+          </div>
+        </div>
+        <div class="flex flex-col -mx-space-md">${rows || '<p class="px-space-md font-body-regular text-[14px] text-text-tertiary">Lektionerna kommer snart.</p>'}</div>
+      </div>`;
+  }).join('');
+
+  return `
+    <div class="flex flex-col gap-4 mb-space-xl">
+      ${cards}
+      <details class="group">
+        <summary class="inline-flex items-center gap-1 cursor-pointer font-label-md text-[13px] text-text-secondary hover:text-text-primary list-none"><span class="material-symbols-outlined text-[18px]">add</span>Gå med i en till klass</summary>
+        <div class="max-w-lg">${joinForm(false)}</div>
+      </details>
+    </div>`;
+}
+
+function escapeHtml(v) {
+  return String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
+function bindJoinClass(root) {
+  const form = root.querySelector('[data-join-class]');
+  if (!form) return;
+  const msg = root.querySelector('[data-join-msg]');
+  const show = (text, ok) => {
+    msg.textContent = text;
+    msg.className = `font-body-regular text-[14px] mt-2 ${ok ? 'text-positive-spruce' : 'text-critical-danger'}`;
+  };
+  form.addEventListener('submit', async e => {
+    e.preventDefault();
+    const code = form.code.value.trim().toUpperCase();
+    if (!code) { show('Skriv in klasskoden du fått av din lärare.', false); form.code.focus(); return; }
+    const btn = form.querySelector('button');
+    btn.disabled = true;
+    const { data, error } = await sb.rpc('join_class', { p_code: code });
+    if (error) {
+      btn.disabled = false;
+      // join_class raises its own Swedish messages (P0001)
+      show(error.code === 'P0001' ? error.message : 'Det gick inte att gå med just nu. Försök igen om en stund.', false);
+      return;
+    }
+    show(`Klart! Du är nu med i ${data?.class_name || 'klassen'}.`, true);
+    setTimeout(() => location.reload(), 900);
+  });
 }
 
 // ---------------------------------------------------------------------
@@ -486,10 +600,10 @@ async function initLessonPage(ctx) {
     return;
   }
 
-  const catMeta = CATEGORY_META[lesson.category] || CATEGORY_META.aktier;
+  const catMeta = metaOf(lesson);
 
   const steps = lesson.content.steps;
-  const quiz = lesson.content.quiz;
+  const quiz = lesson.content.quiz || [];
   // Mutable: becomes true once this visit completes, so retakes never award XP twice
   let alreadyCompleted = existingProgress?.status === 'completed';
   let saving = false;
@@ -657,7 +771,7 @@ async function initLessonPage(ctx) {
       <div class="flex items-center justify-between mt-space-xl pt-space-lg border-t border-border-subtle">
         <button id="lesson-back" class="px-5 py-2.5 rounded-xl font-label-md text-label-md text-text-secondary hover:bg-surface-subdued transition-all ${stepIndex === 0 ? 'invisible' : ''}">← Tillbaka</button>
         <button id="lesson-next" class="px-6 py-3 rounded-xl bg-primary-container hover:bg-primary-deep text-on-primary font-label-md text-label-md transition-all shadow-sm flex items-center gap-2">
-          <span>${stepIndex === steps.length - 1 ? 'Till quiz' : 'Nästa'}</span>
+          <span>${stepIndex < steps.length - 1 ? 'Nästa' : quiz.length ? 'Till quiz' : 'Slutför lektionen'}</span>
           <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
         </button>
       </div>`;
@@ -675,6 +789,8 @@ async function initLessonPage(ctx) {
         maxStep = Math.max(maxStep, stepIndex);
         if (!alreadyCompleted) saveInBackground('in_progress', maxStep);
         renderStep();
+      } else if (!quiz.length) {
+        finishWithoutQuiz();
       } else {
         if (!alreadyCompleted) saveInBackground('in_progress', steps.length);
         resetQuiz();
@@ -687,6 +803,31 @@ async function initLessonPage(ctx) {
       if (e.key === 'ArrowRight') { e.preventDefault(); next(); }
       else if (e.key === 'ArrowLeft') { e.preventDefault(); back(); }
     };
+  }
+
+  // Lessons without a quiz (e.g. the package lessons) are done after the last step
+  async function finishWithoutQuiz() {
+    if (saving) return;
+    const btn = document.getElementById('lesson-next');
+    const earnedXp = !alreadyCompleted && !preview;
+    if (!alreadyCompleted) {
+      saving = true;
+      btn.disabled = true;
+      btn.textContent = 'Sparar…';
+      try {
+        await saveProgress('completed', steps.length, 100);
+        await awardCompletion(100);
+      } catch (err) {
+        saving = false;
+        btn.disabled = false;
+        btn.textContent = 'Försök igen';
+        toast('Kunde inte spara. Kontrollera din uppkoppling och försök igen.');
+        return;
+      }
+      saving = false;
+    }
+    alreadyCompleted = true;
+    renderDone(100, earnedXp);
   }
 
   function renderQuiz() {
@@ -788,6 +929,13 @@ async function initLessonPage(ctx) {
   function suggestedNext() {
     const done = new Set(ctx.progress.filter(p => p.status === 'completed').map(p => p.lesson_id));
     done.add(lesson.id);
+    // In a lesson package: the next lesson of the same package that isn't done
+    if (lesson.package_id) {
+      return (ctx.packageLessons || [])
+        .filter(l => l.package_id === lesson.package_id && !done.has(l.id))
+        .sort((a, b) => a.order_index - b.order_index)
+        .find(l => l.order_index > lesson.order_index) || null;
+    }
     const order = Object.keys(CATEGORY_META);
     return lessons
       .filter(l => l.category !== lesson.category && isLessonOpen(l, lessons) && !done.has(l.id))
@@ -800,7 +948,8 @@ async function initLessonPage(ctx) {
     const points = passed ? masteryPoints() : [];
     const missed = quiz.map((q, i) => ({ q, a: answers[i] })).filter(x => x.a && !x.a.correct);
     const next = suggestedNext();
-    const nextMeta = next && (CATEGORY_META[next.category] || CATEGORY_META.aktier);
+    const nextMeta = next && metaOf(next);
+    const nextLabel = next && (next.package_id ? next.title.replace(/^.*–\s*/, '') : nextMeta.label);
     const btnPrimary = 'inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-primary-container hover:bg-primary-deep text-on-primary font-label-md text-label-md transition-all shadow-sm';
     const btnSecondary = 'inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-surface-subdued hover:bg-surface-container text-text-primary font-label-md text-label-md transition-all';
 
@@ -811,7 +960,9 @@ async function initLessonPage(ctx) {
           <span class="material-symbols-outlined text-[40px]">${passed ? 'celebration' : 'school'}</span>
         </div>
         <h2 class="font-headline-1 text-headline-1 text-text-primary mb-2">${passed ? 'Lektion klar!' : 'Nästan där!'}</h2>
-        <p class="font-body-medium text-body-medium text-text-secondary">Du fick <strong>${correctCount} av ${quiz.length}</strong> rätt (${score}%)${earnedXp ? ` och tjänade <strong class="text-primary-deep">+${lesson.xp_reward} XP</strong>` : ''}.</p>
+        ${quiz.length
+          ? `<p class="font-body-medium text-body-medium text-text-secondary">Du fick <strong>${correctCount} av ${quiz.length}</strong> rätt (${score}%)${earnedXp ? ` och tjänade <strong class="text-primary-deep">+${lesson.xp_reward} XP</strong>` : ''}.</p>`
+          : `<p class="font-body-medium text-body-medium text-text-secondary">Bra jobbat${earnedXp ? ` – du tjänade <strong class="text-primary-deep">+${lesson.xp_reward} XP</strong>` : ''}!</p>`}
         ${passed ? '' : `<p class="font-body-regular text-body-regular text-text-secondary mt-1">Du behöver minst ${Math.ceil(quiz.length * PASS_THRESHOLD / 100)} av ${quiz.length} rätt för att gå vidare.</p>`}
       </div>
       ${points.length ? `
@@ -836,19 +987,19 @@ async function initLessonPage(ctx) {
       </div>` : ''}
       <div class="mt-space-xl pt-space-lg border-t border-border-subtle flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center justify-center gap-3">
         ${passed && next
-          ? `<a href="lektion.html?id=${encodeURIComponent(next.id)}" class="${btnPrimary}"><span>Nästa: ${nextMeta.label}</span><span class="material-symbols-outlined text-[18px]">arrow_forward</span></a>`
+          ? `<a href="lektion.html?id=${encodeURIComponent(next.id)}" class="${btnPrimary}"><span>Nästa: ${nextLabel}</span><span class="material-symbols-outlined text-[18px]">arrow_forward</span></a>`
           : ''}
-        <button id="done-retake" type="button" class="${passed && next ? btnSecondary : btnPrimary}"><span class="material-symbols-outlined text-[18px]">replay</span><span>Gör om quizet</span></button>
+        ${quiz.length ? `<button id="done-retake" type="button" class="${passed && next ? btnSecondary : btnPrimary}"><span class="material-symbols-outlined text-[18px]">replay</span><span>Gör om quizet</span></button>` : ''}
         ${passed ? '' : `<button id="done-reread" type="button" class="${btnSecondary}"><span class="material-symbols-outlined text-[18px]">menu_book</span><span>Läs lektionen igen</span></button>`}
         <a href="${APP_HOME}" class="${btnSecondary}">${preview ? 'Till klassöversikten' : 'Till översikten'}</a>
       </div>
-      ${passed && !next ? '<p class="text-center font-body-regular text-body-regular text-text-secondary mt-space-md">Du har klarat alla öppna lektioner – fler är under utveckling!</p>' : ''}`;
+      ${passed && !next ? `<p class="text-center font-body-regular text-body-regular text-text-secondary mt-space-md">${lesson.package_id ? 'Du har gjort alla lektioner i paketet – snyggt!' : 'Du har klarat alla öppna lektioner – fler är under utveckling!'}</p>` : ''}`;
     toTop();
-    document.getElementById('done-retake').addEventListener('click', () => { resetQuiz(); renderQuiz(); });
+    document.getElementById('done-retake')?.addEventListener('click', () => { resetQuiz(); renderQuiz(); });
     document.getElementById('done-reread')?.addEventListener('click', () => { stepIndex = 0; renderStep(); });
   }
 
-  if (existingProgress?.status === 'in_progress' && existingProgress.current_step >= steps.length) {
+  if (quiz.length && existingProgress?.status === 'in_progress' && existingProgress.current_step >= steps.length) {
     renderQuiz();
   } else {
     renderStep();
@@ -1537,6 +1688,72 @@ function buildDemoClass(cls, lessons) {
   });
 }
 
+// The lesson package a teacher holds: the teacher file (PDF, served only to
+// approved teachers by the teacher-file Edge Function) + the students' lessons.
+function packageCardHtml(ctx) {
+  const pl = (ctx.packageLessons || []).filter(l => l.package_id === 'test-lektion').sort((a, b) => a.order_index - b.order_index);
+  return `
+    <div class="bg-surface-card rounded-3xl shadow-sm p-space-lg md:p-space-xl mb-space-xl">
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-space-md">
+        <div class="flex items-start gap-space-md min-w-0">
+          <div class="w-12 h-12 shrink-0 rounded-xl bg-primary-container text-on-primary flex items-center justify-center"><span class="material-symbols-outlined text-[26px]">menu_book</span></div>
+          <div class="min-w-0">
+            <p class="font-caption-micro text-caption-micro text-text-tertiary uppercase tracking-wide">Ditt lektionspaket</p>
+            <h2 class="font-headline-2 text-headline-2 text-text-primary">Test lektion</h2>
+            <p class="font-body-regular text-[14px] text-text-secondary mt-1">En lektion för dig att hålla (PDF) och ${pl.length || 5} lektioner för eleverna, som de hittar på sin översikt när de gått med i klassen.</p>
+          </div>
+        </div>
+        <button type="button" data-teacher-file="test-lektion" class="shrink-0 inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-primary-container hover:bg-primary-deep text-on-primary font-label-md text-label-md transition-all shadow-sm disabled:opacity-60"><span class="material-symbols-outlined text-[20px]">download</span><span>Ladda ner lektionen</span></button>
+      </div>
+      ${pl.length ? `
+      <div class="mt-space-lg pt-space-md border-t border-border-subtle">
+        <p class="font-label-md text-[13px] text-text-secondary mb-2">Elevernas lektioner <span class="text-text-tertiary font-normal">· klicka för att förhandsgranska</span></p>
+        <div class="flex flex-wrap gap-2">
+          ${pl.map((l, i) => `<a href="lektion.html?id=${encodeURIComponent(l.id)}" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface-subdued hover:bg-primary-tint text-text-primary hover:text-primary-deep font-label-md text-[12px] transition-colors" title="${escapeHtml(l.title)}"><span class="material-symbols-outlined text-[16px]">visibility</span>Lektion ${i + 1}</a>`).join('')}
+        </div>
+      </div>` : ''}
+      <p data-teacher-file-msg class="font-body-regular text-[14px] text-critical-danger mt-3 hidden" role="status"></p>
+    </div>`;
+}
+
+function bindTeacherFileDownload(root) {
+  const btn = root.querySelector('[data-teacher-file]');
+  if (!btn) return;
+  const msg = root.querySelector('[data-teacher-file-msg]');
+  btn.addEventListener('click', async () => {
+    const label = btn.querySelector('span:last-child');
+    btn.disabled = true;
+    label.textContent = 'Hämtar…';
+    msg.classList.add('hidden');
+    try {
+      const { data: { session } } = await sb.auth.getSession();
+      const res = await fetch(`${SUPABASE_URL}/functions/v1/teacher-file`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${session?.access_token}`, apikey: SUPABASE_ANON_KEY, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ package_id: btn.dataset.teacherFile }),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || 'Det gick inte att hämta filen just nu.');
+      }
+      const blob = await res.blob();
+      const name = (res.headers.get('content-disposition') || '').match(/filename="([^"]+)"/)?.[1] || 'test-lektion.pdf';
+      const url = URL.createObjectURL(blob);
+      const a = Object.assign(document.createElement('a'), { href: url, download: name });
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 10000);
+    } catch (e) {
+      msg.textContent = e.message || 'Det gick inte att hämta filen just nu.';
+      msg.classList.remove('hidden');
+    } finally {
+      btn.disabled = false;
+      label.textContent = 'Ladda ner lektionen';
+    }
+  });
+}
+
 function initTeacherPage(ctx) {
   const root = document.getElementById('teacher-root');
   let lessons = ctx.lessons.filter(l => isLessonOpen(l, ctx.lessons));
@@ -1639,6 +1856,7 @@ function initTeacherPage(ctx) {
         </div>
         <div class="flex gap-2">${DEMO_CLASSES.map(c => `<button type="button" data-class="${c.id}" class="px-4 py-2 rounded-xl font-label-md text-label-md transition-colors ${c.id === state.classId ? 'bg-primary-container text-on-primary shadow-sm' : 'bg-surface-card text-text-secondary hover:text-text-primary border border-border-subtle'}">${c.name}</button>`).join('')}</div>
       </div>
+      ${packageCardHtml(ctx)}
       <div class="flex items-start gap-3 bg-primary-tint rounded-2xl px-space-lg py-space-md mb-space-xl">
         <span class="material-symbols-outlined text-[20px] text-primary-deep mt-0.5">info</span>
         <p class="font-body-regular text-[14px] text-text-secondary">Det här är en <strong class="text-text-primary">demo</strong> av lärarvyn. Klasserna och eleverna är påhittade, men lektionerna är de riktiga som finns i plattformen.</p>
@@ -1673,6 +1891,7 @@ function initTeacherPage(ctx) {
         </div>
       </div>`;
 
+    bindTeacherFileDownload(root);
     root.querySelectorAll('[data-class]').forEach(b => b.addEventListener('click', () => { state.classId = b.dataset.class; state.filter = 'all'; state.query = ''; render(); }));
     root.querySelectorAll('[data-filter]').forEach(b => b.addEventListener('click', () => { state.filter = b.dataset.filter; render(); }));
     root.querySelectorAll('[data-assign]').forEach(b => b.addEventListener('click', () => toast(`Demo: "${b.dataset.assign}" tilldelades ${cls.name}`)));
@@ -1821,18 +2040,31 @@ document.addEventListener('DOMContentLoaded', async () => {
     return;
   }
 
-  const [{ data: profile }, { data: lessons }, { data: progress }] = await Promise.all([
+  const [{ data: profile }, { data: lessons }, { data: progress }, { data: memberships }] = await Promise.all([
     sb.from('profiles').select('*').eq('id', user.id).single(),
-    sb.from('lessons').select('id, category, order_index, title, description, estimated_minutes, xp_reward').order('order_index'),
+    sb.from('lessons').select('id, category, order_index, title, description, estimated_minutes, xp_reward, package_id').order('order_index'),
     sb.from('user_lesson_progress').select('lesson_id, status, current_step, quiz_score, updated_at, completed_at').eq('user_id', user.id),
+    APP_ROLE === 'student'
+      ? sb.from('class_members').select('class_id, joined_at, classes(id, name, package_id, schools(name))').eq('user_id', user.id)
+      : Promise.resolve({ data: [] }),
   ]);
+  const classes = (memberships || []).filter(m => m.classes).map(m => ({
+    id: m.classes.id, name: m.classes.name, package_id: m.classes.package_id,
+    school: m.classes.schools?.name || '', joined_at: m.joined_at,
+  }));
+  CLASS_PACKAGES = new Set(classes.map(c => c.package_id).filter(Boolean));
 
   const safeProfile = profile || { display_name: user.email?.split('@')[0] || 'Medlem', xp: 0, streak_days: 0, best_streak_days: 0, daily_goal_minutes: 15, minutes_today: 0, last_active_date: null, created_at: new Date().toISOString() };
   renderSidebarChrome(safeProfile);
   renderPrototypeChrome(user);
   renderAccountMenu(user, safeProfile, APP_ROLE);
 
-  const ctx = { user, role: APP_ROLE, profile: safeProfile, lessons: lessons || [], progress: progress || [] };
+  const allLessons = lessons || [];
+  const ctx = {
+    user, role: APP_ROLE, profile: safeProfile, progress: progress || [], classes,
+    lessons: allLessons.filter(l => !l.package_id), // the regular course lessons
+    packageLessons: allLessons.filter(l => l.package_id),
+  };
 
   if (document.getElementById('dashboard-root')) renderDashboard(ctx);
   else if (document.getElementById('lesson-root')) initLessonPage(ctx);

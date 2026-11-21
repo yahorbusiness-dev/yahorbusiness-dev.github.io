@@ -35,6 +35,13 @@ Edge Function (`supabase/functions/admin/`) checks that on every request.
   `join_class(code)`. RLS lets a teacher read only their own students' profiles
   and progress.
 - Admin panel → Skolor: create schools, link teachers, see classes and students.
+- Students join on `oversikt.html` ("Gå med i din klass") and then see the package's
+  lessons there. Lessons with a `package_id` are left out of Kurser and open only to
+  class members and teachers (`CLASS_PACKAGES` in `stitch-assets/app.js`). Lessons with
+  an empty `quiz` are completed after the last step.
+- The teacher file ("Ladda ner lektionen" on `larare.html`) comes from the Edge Function
+  `teacher-file` (teachers only). It serves `lesson_packages.teacher_file` from the
+  private Storage bucket `teacher-files` if uploaded, else a generated placeholder PDF.
 
 ## Lösenord
 
