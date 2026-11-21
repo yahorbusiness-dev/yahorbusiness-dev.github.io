@@ -718,7 +718,7 @@ function renderLogin(message) {
     const { data, error } = await sb.auth.signInWithPassword({ email: form.email.value.trim(), password: form.password.value, options: HCAPTCHA_SITE_KEY ? { captchaToken } : undefined });
     try { hcaptcha.reset(captchaId); } catch (err) { /* ignore */ }
     if (!error && data.user?.app_metadata?.role === 'admin') { location.reload(); return; }
-    if (!error) await sb.auth.signOut(); // signed in, but not an admin
+    if (!error) await sb.auth.signOut({ scope: 'local' }); // signed in, but not an admin
     errorEl.textContent = error
       ? (error.message === 'Invalid login credentials' ? 'Fel e-post eller lösenord.' : /captcha/i.test(error.message) ? 'Captcha-kontrollen gick inte igenom. Klicka i rutan och försök igen.' : error.message)
       : 'Det här kontot har inte admin-behörighet.';
@@ -732,7 +732,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const user = session?.user;
   if (!user) { renderLogin(); return; }
   if (user.app_metadata?.role !== 'admin') {
-    await sb.auth.signOut();
+    await sb.auth.signOut({ scope: 'local' });
     renderLogin('Det här kontot har inte admin-behörighet.');
     return;
   }
