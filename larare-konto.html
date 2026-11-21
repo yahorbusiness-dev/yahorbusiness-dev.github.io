@@ -83,7 +83,9 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // hCaptcha: Supabase requires a captcha token for sign-in, sign-up and password
 // reset. The site key is public; the secret lives only in Supabase.
-const HCAPTCHA_SITE_KEY = '7a6048f0-4206-424e-8858-36ead912cbd4';
+// Captcha is OFF in Supabase for now: leave this empty to hide the widget and
+// skip the token. Put the site key back here when captcha is turned on again.
+const HCAPTCHA_SITE_KEY = '';
 const captchaIds = {};
 window.onHcaptchaLoad = () => {
   ['captcha-login', 'captcha-reset'].forEach(id => {
@@ -92,6 +94,10 @@ window.onHcaptchaLoad = () => {
   });
 };
 (function loadHcaptcha() {
+  if (!HCAPTCHA_SITE_KEY) {
+    ['captcha-login', 'captcha-reset'].forEach(id => document.getElementById(id)?.remove());
+    return;
+  }
   const s = document.createElement('script');
   s.src = 'https://js.hcaptcha.com/1/api.js?hl=sv&render=explicit&onload=onHcaptchaLoad';
   s.async = true;
@@ -188,8 +194,8 @@ form.addEventListener('submit', async (e) => {
   e.preventDefault();
   errorEl.classList.add('hidden');
   infoEl.classList.add('hidden');
-  const captcha = captchaToken('captcha-login');
-  if (!captcha) {
+  const captcha = HCAPTCHA_SITE_KEY ? captchaToken('captcha-login') : undefined;
+  if (HCAPTCHA_SITE_KEY && !captcha) {
     errorEl.textContent = CAPTCHA_MISSING;
     errorEl.classList.remove('hidden');
     return;
@@ -283,8 +289,8 @@ resetForm.addEventListener('submit', async (e) => {
   e.preventDefault();
   resetError.classList.add('hidden');
   resetInfo.classList.add('hidden');
-  const captcha = captchaToken('captcha-reset');
-  if (!captcha) {
+  const captcha = HCAPTCHA_SITE_KEY ? captchaToken('captcha-reset') : undefined;
+  if (HCAPTCHA_SITE_KEY && !captcha) {
     resetError.textContent = CAPTCHA_MISSING;
     resetError.classList.remove('hidden');
     return;
