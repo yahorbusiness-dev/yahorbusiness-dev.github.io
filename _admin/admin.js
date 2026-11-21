@@ -4,7 +4,8 @@
 // an admin; this page only renders.
 const SUPABASE_URL = 'https://psvjlxqdqcuhmafqorlv.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_yuBvIFJ1sU3sfLpC0P3rmA_lNdgxITd';
-const HCAPTCHA_SITE_KEY = '7a6048f0-4206-424e-8858-36ead912cbd4'; // public; the secret lives in Supabase
+// Captcha is OFF in Supabase for now; put the public site key back here to turn it on
+const HCAPTCHA_SITE_KEY = '';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 const ROLE_LABEL = { student: 'Elev', teacher: 'Lärare', admin: 'Admin', pending: 'Vill bli lärare', rejected: 'Nekad lärare' };
@@ -793,8 +794,10 @@ function renderLogin(message) {
   const errorEl = root.querySelector('[data-login-error]');
   // hCaptcha: Supabase requires a token for every password sign-in
   let captchaId;
+  if (!HCAPTCHA_SITE_KEY) root.querySelector('[data-captcha]').remove();
   window.onHcaptchaLoad = () => { captchaId = hcaptcha.render(root.querySelector('[data-captcha]'), { sitekey: HCAPTCHA_SITE_KEY }); };
-  if (window.hcaptcha) window.onHcaptchaLoad();
+  if (!HCAPTCHA_SITE_KEY) { /* captcha off */ }
+  else if (window.hcaptcha) window.onHcaptchaLoad();
   else {
     const sc = document.createElement('script');
     sc.src = 'https://js.hcaptcha.com/1/api.js?hl=sv&render=explicit&onload=onHcaptchaLoad';
@@ -807,13 +810,13 @@ function renderLogin(message) {
     errorEl.classList.add('hidden');
     let captchaToken = '';
     try { captchaToken = captchaId !== undefined ? hcaptcha.getResponse(captchaId) : ''; } catch (err) { /* not loaded */ }
-    if (!captchaToken) {
+    if (HCAPTCHA_SITE_KEY && !captchaToken) {
       errorEl.textContent = 'Bekräfta att du inte är en robot genom att klicka i rutan ovan.';
       errorEl.classList.remove('hidden');
       return;
     }
     btn.disabled = true;
-    const { data, error } = await sb.auth.signInWithPassword({ email: form.email.value.trim(), password: form.password.value, options: { captchaToken } });
+    const { data, error } = await sb.auth.signInWithPassword({ email: form.email.value.trim(), password: form.password.value, options: HCAPTCHA_SITE_KEY ? { captchaToken } : undefined });
     try { hcaptcha.reset(captchaId); } catch (err) { /* ignore */ }
     if (!error && data.user?.app_metadata?.role === 'admin') { location.reload(); return; }
     if (!error) await sb.auth.signOut(); // signed in, but not an admin
