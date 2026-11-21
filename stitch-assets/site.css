@@ -51,7 +51,11 @@
 /* Hero screenshot: desktop image, portrait image below 960px. The images carry
    their own frame and the page's --paper background, so no box styling here. */
 .lp-shot img { display: block; width: 100%; height: auto; }
-@media (max-width: 959px) { .lp-shot { max-width: 440px; margin: 0 auto; } }
+@media (max-width: 959px) {
+  .lp-shot { max-width: 440px; margin: 0 auto; }
+  /* The mobile hero image has wide empty margins above and below the device; crop them */
+  .lp-shot img { aspect-ratio: 920 / 1160; object-fit: cover; object-position: 50% 58%; }
+}
 @media (min-width: 960px) {
   .lp-hero { padding: 5.5rem 0 5rem; }
   .lp-hero-grid { grid-template-columns: 5fr 6fr; gap: 4rem; }
