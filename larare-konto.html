@@ -210,7 +210,7 @@ form.addEventListener('submit', async (e) => {
       if (error) throw error;
       if (!allowedHere(data.user)) {
         // Wrong kind of account for this page: sign straight back out
-        await sb.auth.signOut();
+        await sb.auth.signOut({ scope: 'local' });
         errorEl.innerHTML = wrongAccountMessage(data.user);
         errorEl.classList.remove('hidden');
         return;
@@ -260,7 +260,7 @@ sb.auth.getSession().then(async ({ data }) => {
   const user = data.session?.user;
   if (!user) return;
   if (allowedHere(user)) { location.href = HOME; return; }
-  await sb.auth.signOut();
+  await sb.auth.signOut({ scope: 'local' });
   infoEl.textContent = `Du loggades ut från ${user.email} eftersom det inte är ett lärarkonto.`;
   infoEl.classList.remove('hidden');
 });

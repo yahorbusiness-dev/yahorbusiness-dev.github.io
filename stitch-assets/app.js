@@ -2276,7 +2276,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const user = session.user;
   APP_ROLE = roleOf(user);
   // Admin accounts only work in the admin panel, never as a student or teacher
-  if (APP_ROLE === 'admin') { await sb.auth.signOut(); location.replace(isTeacherPage ? 'larare-konto.html' : 'auth.html'); return; }
+  if (APP_ROLE === 'admin') { await sb.auth.signOut({ scope: 'local' }); location.replace(isTeacherPage ? 'larare-konto.html' : 'auth.html'); return; }
   APP_HOME = isTeacherSide(APP_ROLE) ? 'larare.html' : 'oversikt.html';
   // Each role has its own dashboard; send people to theirs
   if (APP_ROLE === 'teacher' && document.getElementById('dashboard-root')) { location.replace('larare.html'); return; }
