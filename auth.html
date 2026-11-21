@@ -34,6 +34,7 @@
 <input autocomplete="current-password" class="w-full px-4 py-3 rounded-xl border border-border-subtle bg-surface-subdued/50 font-body-regular text-body-regular focus:outline-none focus:ring-2 focus:ring-primary-container transition-all" id="password" minlength="6" placeholder="Minst 6 tecken" required type="password"/>
 </div>
 
+<div class="flex justify-center min-h-[78px]" id="captcha-login"></div>
 <p id="auth-error" class="hidden text-[13px] text-critical-danger font-body-medium"></p>
 <p id="auth-info" class="hidden text-[13px] text-secondary font-body-medium"></p>
 
@@ -49,6 +50,7 @@
 <label class="font-label-md text-label-md text-text-secondary" for="reset-email">E-post</label>
 <input autocomplete="email" class="w-full px-4 py-3 rounded-xl border border-border-subtle bg-surface-subdued/50 font-body-regular text-body-regular focus:outline-none focus:ring-2 focus:ring-primary-container transition-all" id="reset-email" required type="email"/>
 </div>
+<div class="flex justify-center min-h-[78px]" id="captcha-reset"></div>
 <p id="reset-error" class="hidden text-[13px] text-critical-danger font-body-medium"></p>
 <p id="reset-info" class="hidden text-[13px] text-secondary font-body-medium"></p>
 <button class="w-full mt-2 px-6 py-3.5 rounded-xl bg-primary-container hover:bg-primary-deep text-on-primary font-label-md text-label-md transition-all shadow-sm disabled:opacity-60 disabled:cursor-not-allowed" id="reset-btn" type="submit">Skicka återställningslänk</button>
@@ -69,6 +71,29 @@ Genom att fortsätta godkänner du att UngEkonom är en utbildningstjänst och i
 const SUPABASE_URL = 'https://psvjlxqdqcuhmafqorlv.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_yuBvIFJ1sU3sfLpC0P3rmA_lNdgxITd';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// hCaptcha: Supabase requires a captcha token for sign-in, sign-up and password
+// reset. The site key is public; the secret lives only in Supabase.
+const HCAPTCHA_SITE_KEY = '7a6048f0-4206-424e-8858-36ead912cbd4';
+const captchaIds = {};
+window.onHcaptchaLoad = () => {
+  ['captcha-login', 'captcha-reset'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el && captchaIds[id] === undefined) captchaIds[id] = hcaptcha.render(el, { sitekey: HCAPTCHA_SITE_KEY });
+  });
+};
+(function loadHcaptcha() {
+  const s = document.createElement('script');
+  s.src = 'https://js.hcaptcha.com/1/api.js?hl=sv&render=explicit&onload=onHcaptchaLoad';
+  s.async = true;
+  document.head.appendChild(s);
+})();
+const captchaToken = id => {
+  try { return window.hcaptcha && captchaIds[id] !== undefined ? hcaptcha.getResponse(captchaIds[id]) : ''; } catch (e) { return ''; }
+};
+// Tokens are single use, so clear the box after every attempt
+const resetCaptcha = id => { try { if (window.hcaptcha && captchaIds[id] !== undefined) hcaptcha.reset(captchaIds[id]); } catch (e) { /* not loaded */ } };
+const CAPTCHA_MISSING = 'Bekräfta att du inte är en robot genom att klicka i rutan ovan.';
 
 // Prototype test round: sign-ups are open and need no email confirmation
 // (Supabase: "Confirm email" off). Set to false to hide the register tab and show
@@ -146,13 +171,19 @@ form.addEventListener('submit', async (e) => {
   e.preventDefault();
   errorEl.classList.add('hidden');
   infoEl.classList.add('hidden');
+  const captcha = captchaToken('captcha-login');
+  if (!captcha) {
+    errorEl.textContent = CAPTCHA_MISSING;
+    errorEl.classList.remove('hidden');
+    return;
+  }
   submitBtn.disabled = true;
   const email = document.getElementById('email').value.trim();
   const password = document.getElementById('password').value;
 
   try {
     if (mode === 'login') {
-      const { data, error } = await sb.auth.signInWithPassword({ email, password });
+      const { data, error } = await sb.auth.signInWithPassword({ email, password, options: { captchaToken: captcha } });
       if (error) throw error;
       if (!allowedHere(data.user)) {
         // Wrong kind of account for this page: sign straight back out
@@ -170,7 +201,7 @@ form.addEventListener('submit', async (e) => {
         // Confirmation link lands on oversikt.html, which loads the Supabase client
         // and picks up the session from the URL. Must be in Auth > URL Configuration
         // > Redirect URLs, otherwise Supabase falls back to the Site URL.
-        options: { data: { display_name: displayName }, emailRedirectTo: new URL('oversikt.html', location.href).href },
+        options: { data: { display_name: displayName }, emailRedirectTo: new URL('oversikt.html', location.href).href, captchaToken: captcha },
       });
       if (error) throw error;
       if (data.session) {
@@ -188,10 +219,11 @@ form.addEventListener('submit', async (e) => {
       'email rate limit exceeded': 'För många försök just nu. Vänta en stund och försök igen.',
       'Password should be at least 6 characters.': 'Lösenordet måste vara minst 6 tecken.',
     };
-    errorEl.textContent = messages[err.message] || err.message || 'Något gick fel, försök igen.';
+    errorEl.textContent = /captcha/i.test(err.message || '') ? 'Captcha-kontrollen gick inte igenom. Klicka i rutan och försök igen.' : (messages[err.message] || err.message || 'Något gick fel, försök igen.');
     errorEl.classList.remove('hidden');
   } finally {
     submitBtn.disabled = false;
+    resetCaptcha('captcha-login');
   }
 });
 
@@ -230,12 +262,25 @@ resetForm.addEventListener('submit', async (e) => {
   e.preventDefault();
   resetError.classList.add('hidden');
   resetInfo.classList.add('hidden');
+  const captcha = captchaToken('captcha-reset');
+  if (!captcha) {
+    resetError.textContent = CAPTCHA_MISSING;
+    resetError.classList.remove('hidden');
+    return;
+  }
   resetBtn.disabled = true;
   const { error } = await sb.auth.resetPasswordForEmail(resetEmail.value.trim(), {
     // Must be listed under Auth > URL Configuration > Redirect URLs in Supabase
     redirectTo: new URL('nytt-losenord.html', location.href).href,
+    captchaToken: captcha,
   });
   resetBtn.disabled = false;
+  resetCaptcha('captcha-reset');
+  if (error && /captcha/i.test(error.message)) {
+    resetError.textContent = 'Captcha-kontrollen gick inte igenom. Klicka i rutan och försök igen.';
+    resetError.classList.remove('hidden');
+    return;
+  }
   if (error && /rate limit|security purposes/i.test(error.message)) {
     resetError.textContent = 'För många försök just nu. Vänta en stund och försök igen.';
     resetError.classList.remove('hidden');
