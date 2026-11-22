@@ -259,6 +259,8 @@ function renderAccountMenu(user, profile, role) {
   function showSettings() {
     if (document.getElementById('settings-panel')) return;
     const row = (label, value) => value ? `<div class="flex justify-between gap-4 py-2.5 border-b border-border-subtle last:border-0"><span class="font-body-regular text-[14px] text-text-secondary">${label}</span><span class="font-label-md text-[14px] text-text-primary text-right truncate">${value}</span></div>` : '';
+    const deleteMailto = 'mailto:hej@ungekonom.se?subject=' + encodeURIComponent('Radera mitt konto')
+      + '&body=' + encodeURIComponent(`Hej!\n\nJag vill att ni raderar mitt UngEkonom-konto och all data som hör till det.\n\nKontots e-post: ${user.email || ''}\nKontotyp: ${roleLabel}\n`);
     const overlay = document.createElement('div');
     overlay.id = 'settings-panel';
     overlay.setAttribute('role', 'dialog');
@@ -283,6 +285,11 @@ function renderAccountMenu(user, profile, role) {
         <button type="button" data-settings-signout class="mt-space-lg w-full inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl border border-border-subtle hover:bg-[#FEF2F2] hover:border-[#FCA5A5] text-critical-danger font-label-md text-label-md transition-all">
           <span class="material-symbols-outlined text-[18px]">logout</span>Logga ut
         </button>
+        <div class="mt-space-md pt-space-md border-t border-border-subtle flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+          <a href="integritetspolicy.html" target="_blank" rel="noopener" class="font-label-md text-[13px] text-text-secondary hover:text-text-primary hover:underline">Integritetspolicy</a>
+          <a href="${deleteMailto}" data-settings-delete class="inline-flex items-center gap-1 font-label-md text-[13px] text-text-tertiary hover:text-critical-danger hover:underline"><span class="material-symbols-outlined text-[16px]">delete</span>Radera konto</a>
+        </div>
+        <p class="mt-2 font-caption-micro text-caption-micro text-text-tertiary">Radera konto öppnar ett mejl till oss. Skicka det från ${escapeHtml(user.email || 'din e-postadress')} så raderar vi kontot och all din data inom 30 dagar.</p>
       </div>`;
     const close = () => { overlay.remove(); document.removeEventListener('keydown', onEsc); avatar.focus(); };
     const onEsc = e => { if (e.key === 'Escape') close(); };

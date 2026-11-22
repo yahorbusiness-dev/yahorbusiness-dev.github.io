@@ -22,6 +22,7 @@ const LOG_LABEL = {
   create_school: 'Skapade skolan', delete_school: 'Tog bort skolan',
   set_teacher_school: 'Kopplade till skola:', remove_teacher_school: 'Kopplade bort från skola:',
   approve_teacher: 'Godkände läraren', reject_teacher: 'Nekade läraren', revoke_teacher: 'Tog bort lärarbehörighet för',
+  upload_teacher_file: 'Laddade upp lärarfil för', remove_teacher_file: 'Tog bort lärarfilen för',
 };
 const TEACHERISH = new Set(['teacher', 'pending', 'rejected']);
 
@@ -424,13 +425,14 @@ function initShell(me) {
   const tabs = [
     { key: 'konton', label: 'Konton', icon: 'group' },
     { key: 'skolor', label: 'Skolor', icon: 'domain' },
+    { key: 'paket', label: 'Lektionspaket', icon: 'menu_book' },
   ];
-  let current = location.hash === '#skolor' ? 'skolor' : 'konton';
+  let current = tabs.some(t => '#' + t.key === location.hash) ? location.hash.slice(1) : 'konton';
   root.innerHTML = `
     <div class="mb-space-lg">
       <span class="font-label-md text-label-md text-primary-deep uppercase tracking-wider">Admin</span>
       <h1 class="font-display-xl text-display-xl text-text-primary tracking-tight mt-2">Adminpanel</h1>
-      <p class="font-body-regular text-body-regular text-text-secondary mt-1">Hantera konton, skolor och klasser.</p>
+      <p class="font-body-regular text-body-regular text-text-secondary mt-1">Hantera konton, skolor, klasser och lektionspaket.</p>
     </div>
     <div class="flex gap-1 border-b border-border-subtle mb-space-xl" role="tablist" data-tabs></div>
     <div data-view-host></div>`;
@@ -438,7 +440,7 @@ function initShell(me) {
   const host = root.querySelector('[data-view-host]');
   function show(key) {
     current = key;
-    history.replaceState(null, '', key === 'skolor' ? '#skolor' : location.pathname);
+    history.replaceState(null, '', key === 'konton' ? location.pathname : '#' + key);
     tabBar.innerHTML = tabs.map(t => `
       <button type="button" role="tab" aria-selected="${t.key === current}" data-tab="${t.key}" class="inline-flex items-center gap-1.5 px-4 py-2.5 -mb-px border-b-2 font-label-md text-label-md transition-colors ${t.key === current ? 'border-primary-container text-primary-deep' : 'border-transparent text-text-secondary hover:text-text-primary'}">
         <span class="material-symbols-outlined text-[18px]">${t.icon}</span>${t.label}${t.demo ? '<span class="ml-1 px-1.5 py-0.5 rounded-full bg-[#FEF3C7] text-[#B45309] text-[10px] font-semibold uppercase tracking-wide">Demo</span>' : ''}
@@ -446,7 +448,7 @@ function initShell(me) {
     tabBar.querySelectorAll('[data-tab]').forEach(b => b.addEventListener('click', () => { if (b.dataset.tab !== current) show(b.dataset.tab); }));
     const view = document.createElement('div');
     host.replaceChildren(view);
-    if (key === 'skolor') initSchools(view); else initAccounts(me, view);
+    if (key === 'skolor') initSchools(view); else if (key === 'paket') initPackages(view); else initAccounts(me, view);
   }
   show(current);
 }
@@ -687,6 +689,81 @@ function initSchools(root) {
 }
 
 // The admin panel has its own login and only lets admin accounts in
+// ---------------------------------------------------------------------
+// Lektionspaket: upload the teacher file (PDF) that approved teachers download
+// on larare.html. Without an upload the teacher-file function serves a
+// generated placeholder PDF.
+// ---------------------------------------------------------------------
+function initPackages(root) {
+  const card = 'bg-surface-card rounded-2xl shadow-sm';
+  const btnPrimary = 'inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-primary-container hover:bg-primary-deep text-on-primary font-label-md text-label-md transition-colors cursor-pointer';
+  const btnQuiet = 'inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl border border-border-subtle hover:bg-surface-subdued text-text-secondary font-label-md text-label-md transition-colors';
+  const MAX = 15 * 1024 * 1024;
+  const size = b => b == null ? '' : b < 1024 * 1024 ? `${Math.max(1, Math.round(b / 1024))} kB` : `${(b / 1024 / 1024).toFixed(1).replace('.', ',')} MB`;
+
+  async function load() {
+    root.innerHTML = '<p class="font-body-regular text-body-regular text-text-secondary">Hämtar lektionspaket…</p>';
+    let data;
+    try { data = await schoolApi('packages'); } catch (err) {
+      root.innerHTML = `<div class="${card} p-space-xl"><p class="font-body-regular text-body-regular text-critical-danger">${esc(err.message)}</p></div>`;
+      return;
+    }
+    render(data.packages || []);
+  }
+
+  function render(packages) {
+    root.innerHTML = `
+      <p class="font-body-regular text-body-regular text-text-secondary mb-space-lg">Lärarfilen är PDF:en som godkända lärare laddar ner under <strong>Ditt lektionspaket</strong>. Innan du har laddat upp en får de en platshållare.</p>
+      ${packages.length ? `<div class="flex flex-col gap-4">${packages.map(p => `
+        <div class="${card} p-space-lg md:p-space-xl flex flex-col gap-space-md">
+          <div class="flex flex-col md:flex-row md:items-start justify-between gap-space-md">
+            <div class="min-w-0">
+              <h2 class="font-headline-2 text-headline-2 text-text-primary">${esc(p.title)}</h2>
+              <p class="font-caption-micro text-caption-micro text-text-tertiary mt-1">${p.lessons.length} elevlektioner · id ${esc(p.id)}</p>
+            </div>
+            <div class="flex flex-wrap gap-2 shrink-0">
+              <label class="${btnPrimary}"><span class="material-symbols-outlined text-[18px]">upload_file</span>${p.file ? 'Byt PDF' : 'Ladda upp PDF'}
+                <input type="file" accept="application/pdf,.pdf" data-upload="${esc(p.id)}" class="sr-only"/></label>
+              ${p.file ? `<button type="button" data-remove="${esc(p.id)}" class="${btnQuiet}"><span class="material-symbols-outlined text-[18px]">delete</span>Ta bort</button>` : ''}
+            </div>
+          </div>
+          <div class="flex items-center gap-3 rounded-xl px-space-md py-3 ${p.file ? 'bg-positive-wash' : 'bg-[#FEF3C7]'}">
+            <span class="material-symbols-outlined text-[22px] ${p.file ? 'text-secondary' : 'text-[#B45309]'}">${p.file ? 'picture_as_pdf' : 'hourglass_empty'}</span>
+            <p class="font-body-regular text-[14px] text-text-primary">${p.file
+              ? `<strong>${esc(p.teacher_file)}</strong> · ${size(p.file.size)} · uppladdad ${fmtDateTime(p.file.updated_at)}`
+              : 'Ingen fil uppladdad – lärarna får platshållar-PDF:en (”Här kommer det att komma en lektion …”).'}</p>
+          </div>
+          ${p.lessons.length ? `<div class="flex flex-wrap gap-2">${p.lessons.map(l => `<span class="px-3 py-1 rounded-full bg-surface-subdued font-caption-micro text-caption-micro text-text-secondary">${esc(l.title)}</span>`).join('')}</div>` : ''}
+        </div>`).join('')}</div>` : `<div class="${card} p-space-xl text-center"><p class="font-body-regular text-body-regular text-text-secondary">Inga lektionspaket finns.</p></div>`}`;
+
+    root.querySelectorAll('[data-upload]').forEach(input => input.addEventListener('change', async () => {
+      const file = input.files?.[0];
+      input.value = '';
+      if (!file) return;
+      if (file.size > MAX) { toast('Filen är för stor (max 15 MB).', 'error'); return; }
+      if (!/\.pdf$/i.test(file.name) && file.type !== 'application/pdf') { toast('Välj en PDF-fil.', 'error'); return; }
+      const label = input.closest('label');
+      label.classList.add('opacity-60', 'pointer-events-none');
+      try {
+        const buf = new Uint8Array(await file.arrayBuffer());
+        let bin = '';
+        for (let i = 0; i < buf.length; i += 0x8000) bin += String.fromCharCode.apply(null, buf.subarray(i, i + 0x8000));
+        await schoolApi('upload_teacher_file', { package_id: input.dataset.upload, file_base64: btoa(bin) });
+        toast('Lärarfilen är uppladdad. Lärarna får den nya filen direkt.');
+        await load();
+      } catch (err) { toast(err.message, 'error'); label.classList.remove('opacity-60', 'pointer-events-none'); }
+    }));
+    root.querySelectorAll('[data-remove]').forEach(b => b.addEventListener('click', async () => {
+      const ok = await confirmDialog({ title: 'Ta bort lärarfilen?', text: 'Lärarna får platshållar-PDF:en tills du laddar upp en ny fil.', confirmLabel: 'Ta bort', danger: true });
+      if (!ok) return;
+      try { await schoolApi('remove_teacher_file', { package_id: b.dataset.remove }); toast('Lärarfilen är borttagen.'); await load(); }
+      catch (err) { toast(err.message, 'error'); }
+    }));
+  }
+
+  load();
+}
+
 function renderLogin(message) {
   document.getElementById('hdr-avatar').style.display = 'none';
   const root = document.getElementById('admin-root');

@@ -46,6 +46,11 @@ Edge Function (`supabase/functions/admin/`) checks that on every request.
 - The teacher file ("Ladda ner lektionen" on `larare.html`) comes from the Edge Function
   `teacher-file` (teachers only). It serves `lesson_packages.teacher_file` from the
   private Storage bucket `teacher-files` if uploaded, else a generated placeholder PDF.
+  Admin panel → Lektionspaket uploads/replaces that PDF (`upload_teacher_file` in the `admin` function,
+  stored as `<package id>.pdf`).
+- Package lessons `barnbyar-1..5` have draft content (3 steps + 3 quiz questions each), see
+  `supabase/migrations/20261122_test_lektion_content.sql`. Teachers can read students' progress only
+  for package lessons (RLS).
 
 ## Lösenord
 
@@ -58,3 +63,10 @@ recovery links that land on the site root.
 
 `stitch-assets/tailwind.css` is a prebuilt Tailwind v3 file. After adding new
 classes, rebuild it (content: `*.html`, `_admin/*`, `stitch-assets/app.js`).
+
+## Integritet (GDPR)
+
+`integritetspolicy.html` is the privacy policy (linked from public footers, the sign-up pages and
+Inställningar). "Radera konto" in Inställningar opens a pre-filled e-mail to hej@ungekonom.se; an admin then
+deletes the account in the admin panel (all user data cascades). Keep the policy in sync when adding new
+personal data, trackers or sub-processors.

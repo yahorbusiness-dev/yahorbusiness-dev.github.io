@@ -188,6 +188,49 @@ Deno.serve(async (req) => {
       });
     }
 
+    // ---- Lesson packages: the teacher file (PDF) in the private "teacher-files" bucket ----
+    if (action === 'packages') {
+      const [{ data: pkgs }, { data: lessons }, { data: files }] = await Promise.all([
+        admin.from('lesson_packages').select('id, title, teacher_file, created_at').order('created_at'),
+        admin.from('lessons').select('id, title, package_id, order_index').not('package_id', 'is', null).order('order_index'),
+        admin.storage.from('teacher-files').list('', { limit: 1000 }),
+      ]);
+      const fileByName = new Map((files || []).map((f: any) => [f.name, f]));
+      return json({
+        packages: (pkgs || []).map((p: any) => {
+          const f: any = p.teacher_file ? fileByName.get(p.teacher_file) : null;
+          return {
+            ...p,
+            lessons: (lessons || []).filter((l: any) => l.package_id === p.id).map((l: any) => ({ id: l.id, title: l.title })),
+            file: f ? { size: f.metadata?.size ?? null, updated_at: f.updated_at || f.created_at } : null,
+          };
+        }),
+      });
+    }
+
+    if (action === 'upload_teacher_file' || action === 'remove_teacher_file') {
+      const { data: pkg } = await admin.from('lesson_packages').select('id, title').eq('id', body.package_id || '').maybeSingle();
+      if (!pkg) return json({ error: 'Lektionspaketet finns inte.' }, 404);
+      const path = `${pkg.id}.pdf`;
+      if (action === 'remove_teacher_file') {
+        const { error } = await admin.storage.from('teacher-files').remove([path]);
+        if (error) throw error;
+        await log('remove_teacher_file', { id: caller.id, email: pkg.title });
+        return json({ ok: true });
+      }
+      if (typeof body.file_base64 !== 'string' || !body.file_base64) return json({ error: 'Ingen fil skickades.' }, 400);
+      let bytes: Uint8Array;
+      try { bytes = Uint8Array.from(atob(body.file_base64), c => c.charCodeAt(0)); } catch { return json({ error: 'Filen kunde inte läsas.' }, 400); }
+      if (bytes.length > 15 * 1024 * 1024) return json({ error: 'Filen är för stor (max 15 MB).' }, 400);
+      if (new TextDecoder().decode(bytes.slice(0, 5)) !== '%PDF-') return json({ error: 'Filen måste vara en PDF.' }, 400);
+      const { error } = await admin.storage.from('teacher-files').upload(path, bytes, { contentType: 'application/pdf', upsert: true });
+      if (error) throw error;
+      const { error: e2 } = await admin.from('lesson_packages').update({ teacher_file: path }).eq('id', pkg.id);
+      if (e2) throw e2;
+      await log('upload_teacher_file', { id: caller.id, email: pkg.title });
+      return json({ ok: true });
+    }
+
     if (!id || typeof id !== 'string') return json({ error: 'Saknar konto-id.' }, 400);
     const { data: target, error: targetErr } = await admin.auth.admin.getUserById(id);
     if (targetErr || !target?.user) return json({ error: 'Kontot finns inte.' }, 404);
