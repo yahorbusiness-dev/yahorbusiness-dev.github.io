@@ -259,8 +259,6 @@ function renderAccountMenu(user, profile, role) {
   function showSettings() {
     if (document.getElementById('settings-panel')) return;
     const row = (label, value) => value ? `<div class="flex justify-between gap-4 py-2.5 border-b border-border-subtle last:border-0"><span class="font-body-regular text-[14px] text-text-secondary">${label}</span><span class="font-label-md text-[14px] text-text-primary text-right truncate">${value}</span></div>` : '';
-    const deleteMailto = 'mailto:hej@ungekonom.se?subject=' + encodeURIComponent('Radera mitt konto')
-      + '&body=' + encodeURIComponent(`Hej!\n\nJag vill att ni raderar mitt UngEkonom-konto och all data som hör till det.\n\nKontots e-post: ${user.email || ''}\nKontotyp: ${roleLabel}\n`);
     const overlay = document.createElement('div');
     overlay.id = 'settings-panel';
     overlay.setAttribute('role', 'dialog');
@@ -287,18 +285,117 @@ function renderAccountMenu(user, profile, role) {
         </button>
         <div class="mt-space-md pt-space-md border-t border-border-subtle flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
           <a href="integritetspolicy.html" target="_blank" rel="noopener" class="font-label-md text-[13px] text-text-secondary hover:text-text-primary hover:underline">Integritetspolicy</a>
-          <a href="${deleteMailto}" data-settings-delete class="inline-flex items-center gap-1 font-label-md text-[13px] text-text-tertiary hover:text-critical-danger hover:underline"><span class="material-symbols-outlined text-[16px]">delete</span>Radera konto</a>
+          <button type="button" data-settings-delete aria-expanded="false" class="inline-flex items-center gap-1 font-label-md text-[13px] text-text-tertiary hover:text-critical-danger hover:underline"><span class="material-symbols-outlined text-[16px]">delete</span>Radera konto</button>
         </div>
-        <p class="mt-2 font-caption-micro text-caption-micro text-text-tertiary">Radera konto öppnar ett mejl till oss. Skicka det från ${escapeHtml(user.email || 'din e-postadress')} så raderar vi kontot och all din data inom 30 dagar.</p>
+        <div data-delete-panel hidden class="mt-space-md"></div>
       </div>`;
     const close = () => { overlay.remove(); document.removeEventListener('keydown', onEsc); avatar.focus(); };
     const onEsc = e => { if (e.key === 'Escape') close(); };
     overlay.addEventListener('click', e => { if (e.target === overlay) close(); });
     overlay.querySelector('[data-settings-close]').addEventListener('click', close);
     overlay.querySelector('[data-settings-signout]').addEventListener('click', e => { e.currentTarget.disabled = true; signOut(); });
+    initDeleteAccount(overlay);
     document.addEventListener('keydown', onEsc);
     document.body.appendChild(overlay);
     overlay.querySelector('[data-settings-close]').focus();
+  }
+
+  // "Radera konto": type your e-mail over the faint grey copy of it; when it
+  // matches, the button schedules deletion in 30 days (pg_cron deletes it then).
+  // Until then the request can be cancelled here.
+  function initDeleteAccount(overlay) {
+    const toggle = overlay.querySelector('[data-settings-delete]');
+    const panel = overlay.querySelector('[data-delete-panel]');
+    const email = user.email || '';
+    const fmt = d => new Date(d).toLocaleDateString('sv-SE', { day: 'numeric', month: 'long', year: 'numeric' });
+    let pending = null;
+
+    const showScheduled = () => {
+      toggle.style.display = 'none';
+      panel.hidden = false;
+      panel.innerHTML = `
+        <div class="rounded-xl border border-[#FCA5A5] bg-[#FEF2F2] p-space-md">
+          <p class="font-label-md text-[14px] text-critical-danger flex items-center gap-1.5"><span class="material-symbols-outlined text-[18px]">schedule</span>Ditt konto raderas ${fmt(pending)}</p>
+          <p class="mt-1 font-body-regular text-[13px] text-text-secondary">Då tas allt om dig bort: konto, progress, XP och klasser. Ändrar du dig kan du ångra fram till dess.</p>
+          <button type="button" data-delete-cancel class="mt-space-sm w-full px-4 py-2.5 rounded-xl bg-surface-card border border-border-subtle hover:bg-surface-subdued text-text-primary font-label-md text-[14px] transition-colors disabled:opacity-60">Ångra – behåll mitt konto</button>
+          <p data-delete-msg class="hidden mt-2 text-[13px] text-critical-danger"></p>
+        </div>`;
+      panel.querySelector('[data-delete-cancel]').addEventListener('click', async e => {
+        const btn = e.currentTarget;
+        btn.disabled = true;
+        const { error } = await sb.rpc('cancel_account_deletion');
+        if (error) {
+          btn.disabled = false;
+          const msg = panel.querySelector('[data-delete-msg]');
+          msg.textContent = 'Det gick inte att ångra just nu. Försök igen.';
+          msg.classList.remove('hidden');
+          return;
+        }
+        pending = null;
+        panel.hidden = true;
+        panel.innerHTML = '';
+        toggle.style.display = '';
+        toggle.setAttribute('aria-expanded', 'false');
+      });
+    };
+
+    const showConfirm = () => {
+      panel.hidden = false;
+      toggle.setAttribute('aria-expanded', 'true');
+      panel.innerHTML = `
+        <div class="rounded-xl border border-border-subtle bg-bg-root p-space-md">
+          <p class="font-label-md text-[14px] text-text-primary">Radera ditt konto</p>
+          <p class="mt-1 font-body-regular text-[13px] text-text-secondary">Kontot och allt om dig raderas om 30 dagar. Skriv din e-postadress för att bekräfta.</p>
+          <label for="delete-email" class="sr-only">Skriv din e-postadress för att bekräfta</label>
+          <div class="relative mt-space-sm rounded-xl border border-border-subtle bg-surface-card focus-within:ring-2 focus-within:ring-critical-danger/40 overflow-hidden">
+            <div data-delete-ghost aria-hidden="true" class="absolute inset-0 px-4 py-2.5 font-body-regular text-[15px] leading-6 whitespace-pre overflow-hidden pointer-events-none text-text-tertiary opacity-60"></div>
+            <input id="delete-email" type="email" autocomplete="off" autocapitalize="off" spellcheck="false" inputmode="email"
+              class="relative w-full px-4 py-2.5 bg-transparent font-body-regular text-[15px] leading-6 text-text-primary focus:outline-none"/>
+          </div>
+          <button type="button" data-delete-confirm disabled class="mt-space-sm w-full inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-critical-danger hover:opacity-90 text-on-primary font-label-md text-[14px] transition-opacity disabled:opacity-30 disabled:cursor-not-allowed"><span class="material-symbols-outlined text-[18px]">delete</span>Radera konto</button>
+          <p data-delete-msg class="hidden mt-2 text-[13px] text-critical-danger"></p>
+        </div>`;
+      const input = panel.querySelector('#delete-email');
+      const ghost = panel.querySelector('[data-delete-ghost]');
+      const btn = panel.querySelector('[data-delete-confirm]');
+      const msg = panel.querySelector('[data-delete-msg]');
+      const norm = v => v.trim().toLowerCase();
+      const sync = () => {
+        const typed = input.value;
+        const prefix = email.toLowerCase().startsWith(typed.toLowerCase());
+        // Typed part hidden (it sits under the real text), the rest shown faintly
+        ghost.innerHTML = prefix ? `<span class="invisible">${escapeHtml(typed)}</span>${escapeHtml(email.slice(typed.length))}` : '';
+        ghost.scrollLeft = input.scrollLeft;
+        btn.disabled = !email || norm(typed) !== norm(email);
+        msg.classList.add('hidden');
+      };
+      input.addEventListener('input', sync);
+      input.addEventListener('scroll', () => { ghost.scrollLeft = input.scrollLeft; });
+      input.addEventListener('keydown', e => { if (e.key === 'Enter' && !btn.disabled) btn.click(); });
+      btn.addEventListener('click', async () => {
+        btn.disabled = true;
+        const { data, error } = await sb.rpc('request_account_deletion', { p_email: input.value });
+        if (error) {
+          msg.textContent = error.code === 'P0001' ? error.message : 'Det gick inte att radera kontot just nu. Försök igen.';
+          msg.classList.remove('hidden');
+          btn.disabled = false;
+          return;
+        }
+        pending = data;
+        showScheduled();
+      });
+      sync();
+      input.focus();
+    };
+
+    toggle.addEventListener('click', () => {
+      if (!panel.hidden) { panel.hidden = true; panel.innerHTML = ''; toggle.setAttribute('aria-expanded', 'false'); return; }
+      showConfirm();
+    });
+
+    // Already scheduled? Show the date and the undo button instead.
+    sb.from('account_deletions').select('delete_after').eq('user_id', user.id).maybeSingle()
+      .then(({ data }) => { if (data?.delete_after && overlay.isConnected) { pending = data.delete_after; showScheduled(); } });
   }
 }
 

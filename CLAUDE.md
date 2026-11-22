@@ -67,6 +67,9 @@ classes, rebuild it (content: `*.html`, `_admin/*`, `stitch-assets/app.js`).
 ## Integritet (GDPR)
 
 `integritetspolicy.html` is the privacy policy (linked from public footers, the sign-up pages and
-Inställningar). "Radera konto" in Inställningar opens a pre-filled e-mail to hej@ungekonom.se; an admin then
-deletes the account in the admin panel (all user data cascades). Keep the policy in sync when adding new
+Inställningar). Students and teachers delete their own account in Inställningar → "Radera konto": they type
+their e-mail over a faint grey copy of it, then RPC `request_account_deletion(p_email)` adds a row to
+`account_deletions` (delete_after = now + 30 days). They can undo with `cancel_account_deletion()` until then.
+The daily pg_cron job `purge-account-deletions` runs `purge_due_account_deletions()`, which deletes due users
+from `auth.users` (all user data cascades; admins are never deleted). Keep the policy in sync when adding new
 personal data, trackers or sub-processors.
