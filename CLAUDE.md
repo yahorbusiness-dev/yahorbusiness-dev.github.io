@@ -31,9 +31,14 @@ Edge Function (`supabase/functions/admin/`) checks that on every request.
   `classes` (teacher-owned, unique `join_code`), `class_members`, `lesson_packages`;
   `lessons.package_id` marks a package's student lessons (first package:
   `test-lektion` with lessons `barnbyar-1..5`). See `supabase/migrations/`.
-- Teachers create classes via RPC `create_class(name)`; students join via
-  `join_class(code)`. RLS lets a teacher read only their own students' profiles
-  and progress.
+- Teachers create classes via RPC `create_class(name, code?, max_students=30, logo)` (code empty =
+  random `PREFIX-XXXXXX`; own codes 6–16 chars A–Z/0–9/-) and change them later with
+  `update_class(...)` ("Inställningar" on the class). Students join via `join_class(code)`, which
+  refuses when the class is full (`classes.max_students`) and after 10 wrong codes per hour
+  (`class_join_attempts`); a wrong code returns `{error}` instead of raising so the attempt is kept.
+  RLS lets a teacher read only their own students' profiles and progress.
+- Class logos: five brand-style SVGs in `CLASS_LOGOS` (`stitch-assets/app.js`), keys
+  tillvaxt/spara/mal/budget/laget (`classes.logo`, check constraint).
 - Admin panel → Skolor: create schools, link teachers, see classes and students.
 - Students join on `oversikt.html` ("Gå med i din klass") and then see the package's
   lessons there. Lessons with a `package_id` are left out of Kurser and open only to

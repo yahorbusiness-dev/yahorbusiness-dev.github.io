@@ -23,6 +23,19 @@ const PASS_THRESHOLD = 90;
 // open only to students in a class that has the package, and to teachers
 // (as a preview). They never show up in Kurser or the subject lists.
 let CLASS_PACKAGES = new Set();
+// Five class logos the teacher picks from. Same family as the UngEkonom symbol
+// (rounded square, 3-unit strokes with round caps, the green growth dot) and only
+// colours from the brand palette.
+const CLASS_LOGOS = [
+  { key: 'tillvaxt', label: 'Tillväxt', svg: '<rect width="36" height="36" rx="10" fill="#2563EB"/><rect x="8.5" y="21" width="4.5" height="7" rx="1.5" fill="#fff"/><rect x="15.75" y="16" width="4.5" height="12" rx="1.5" fill="#fff"/><rect x="23" y="12.5" width="4.5" height="15.5" rx="1.5" fill="#fff"/><circle cx="25.25" cy="7.5" r="2.6" fill="#10B981" stroke="#fff" stroke-width="1.5"/>' },
+  { key: 'spara', label: 'Sparande', svg: '<rect width="36" height="36" rx="10" fill="#1E40AF"/><circle cx="17" cy="19.5" r="9.5" fill="#fff"/><circle cx="17" cy="19.5" r="6.75" fill="none" stroke="#1E40AF" stroke-width="1.5" opacity=".35"/><text x="17" y="22.6" text-anchor="middle" font-family="Plus Jakarta Sans, Arial, sans-serif" font-weight="800" font-size="8.5" fill="#1E40AF">kr</text><circle cx="27.5" cy="8.5" r="2.8" fill="#10B981" stroke="#fff" stroke-width="1.5"/>' },
+  { key: 'mal', label: 'Mål', svg: '<rect width="36" height="36" rx="10" fill="#EFF6FF"/><path d="M13.5 28V9" fill="none" stroke="#1E40AF" stroke-width="3" stroke-linecap="round"/><path d="M15 9.5H27.5L24 14.25L27.5 19H15Z" fill="#2563EB" stroke="#2563EB" stroke-width="1.5" stroke-linejoin="round"/><circle cx="13.5" cy="7.5" r="2.6" fill="#10B981" stroke="#fff" stroke-width="1.5"/>' },
+  { key: 'budget', label: 'Budget', svg: '<rect width="36" height="36" rx="10" fill="#FEF3C7"/><circle cx="18" cy="18" r="9.5" fill="none" stroke="#B45309" stroke-width="3"/><path d="M18 18V8.5A9.5 9.5 0 0 1 27.5 18Z" fill="#D97706"/>' },
+  { key: 'laget', label: 'Laget', svg: '<rect width="36" height="36" rx="10" fill="#ECFDF5"/><circle cx="23" cy="11.5" r="2.8" fill="none" stroke="#006C4A" stroke-width="2.5"/><path d="M18.25 23a4.75 4.75 0 0 1 9.5 0" fill="none" stroke="#006C4A" stroke-width="2.5" stroke-linecap="round"/><circle cx="13.5" cy="16" r="3.4" fill="#ECFDF5" stroke="#006C4A" stroke-width="3"/><path d="M7.5 28.5a6 6 0 0 1 12 0" fill="#ECFDF5" stroke="#006C4A" stroke-width="3" stroke-linecap="round"/><circle cx="28.5" cy="27" r="2.6" fill="#10B981" stroke="#fff" stroke-width="1.5"/>' },
+];
+const classLogo = key => CLASS_LOGOS.find(l => l.key === key) || CLASS_LOGOS[0];
+const classLogoSvg = (key, size = 44, extra = '') => `<svg viewBox="0 0 36 36" width="${size}" height="${size}" class="shrink-0 ${extra}" role="img" aria-label="Klasslogga: ${classLogo(key).label}">${classLogo(key).svg}</svg>`;
+
 const PACKAGE_META = { label: 'Klasslektion', icon: 'groups', iconBg: 'bg-primary-tint', iconColor: 'text-primary-deep' };
 const metaOf = l => CATEGORY_META[l?.category] || (l?.package_id ? PACKAGE_META : CATEGORY_META.aktier);
 
@@ -605,7 +618,7 @@ function classSectionHtml(data, statusOf) {
       <div class="bg-surface-card rounded-3xl p-space-lg md:p-space-xl shadow-sm">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-space-md mb-space-md">
           <div class="flex items-center gap-space-md min-w-0">
-            <div class="w-11 h-11 shrink-0 rounded-xl bg-primary-tint text-primary-deep flex items-center justify-center"><span class="material-symbols-outlined text-[24px]">groups</span></div>
+            ${classLogoSvg(c.logo, 44)}
             <div class="min-w-0">
               <p class="font-caption-micro text-caption-micro text-text-tertiary uppercase tracking-wide">Din klass${c.school ? ` · ${escapeHtml(c.school)}` : ''}</p>
               <h2 class="font-headline-3 text-headline-3 text-text-primary truncate">${escapeHtml(c.name)}</h2>
@@ -655,6 +668,7 @@ function bindJoinClass(root) {
       show(error.code === 'P0001' ? error.message : 'Det gick inte att gå med just nu. Försök igen om en stund.', false);
       return;
     }
+    if (data?.error) { btn.disabled = false; show(data.error, false); return; }
     show(`Klart! Du är nu med i ${data?.class_name || 'klassen'}.`, true);
     setTimeout(() => location.reload(), 900);
   });
@@ -2034,7 +2048,7 @@ async function initTeacherPage(ctx) {
   async function load() {
     const [{ data: link }, { data: classes, error }] = await Promise.all([
       sb.from('school_teachers').select('school_id, schools(name, city)').eq('user_id', ctx.user.id).maybeSingle(),
-      sb.from('classes').select('id, name, join_code, package_id, created_at').eq('teacher_id', ctx.user.id).order('created_at'),
+      sb.from('classes').select('id, name, join_code, package_id, max_students, logo, created_at').eq('teacher_id', ctx.user.id).order('created_at'),
     ]);
     if (error) throw error;
     const classIds = (classes || []).map(c => c.id);
@@ -2072,13 +2086,138 @@ async function initTeacherPage(ctx) {
     return { lessons, students };
   }
 
-  const createForm = (id) => `
-    <form data-create-class="${id}" class="flex flex-col sm:flex-row gap-2" novalidate>
-      <label class="sr-only" for="new-class-${id}">Klassens namn</label>
-      <input id="new-class-${id}" name="classname" maxlength="40" autocomplete="off" placeholder="Klassens namn, t.ex. Ek21b" class="flex-1 min-w-0 px-4 py-2.5 rounded-xl border border-border-subtle bg-surface-card font-body-regular text-body-regular focus:outline-none focus:border-primary-container"/>
-      <button type="submit" class="${btnPrimary}"><span class="material-symbols-outlined text-[18px]">add</span>Skapa klass</button>
-    </form>
-    <p data-create-msg class="font-body-regular text-[14px] text-critical-danger mt-2 hidden" role="status"></p>`;
+  // One form for "Ny klass" and for "Inställningar" on an existing class (cls)
+  const MAX_MIN = 1, MAX_MAX = 100;
+  const classForm = (id, cls = null) => {
+    const edit = !!cls;
+    const field = 'w-full px-4 py-2.5 rounded-xl border border-border-subtle bg-surface-card font-body-regular text-body-regular focus:outline-none focus:border-primary-container';
+    const pill = 'flex items-center gap-2 px-4 py-2.5 rounded-xl border border-border-subtle bg-surface-card cursor-pointer font-label-md text-[14px] text-text-secondary transition-colors has-[:checked]:border-primary-container has-[:checked]:bg-primary-tint has-[:checked]:text-primary-deep has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-primary-container';
+    const codeModes = edit
+      ? [['keep', `Behåll ${escapeHtml(cls.join_code)}`], ['random', 'Ny slumpad kod'], ['own', 'Välj egen kod']]
+      : [['random', 'Slumpa en kod'], ['own', 'Välj egen kod']];
+    const logo = cls?.logo || 'tillvaxt';
+    const max = cls?.max_students || 30;
+    return `
+    <form data-class-form="${id}" ${edit ? `data-class-id="${cls.id}"` : ''} class="flex flex-col gap-space-lg" novalidate>
+      <div class="flex flex-col gap-1.5">
+        <label for="cf-name-${id}" class="font-label-md text-label-md text-text-primary">Klassens namn</label>
+        <input id="cf-name-${id}" name="classname" maxlength="40" autocomplete="off" value="${escapeHtml(cls?.name || '')}" placeholder="T.ex. Ek21b" class="${field}"/>
+      </div>
+      <fieldset class="flex flex-col gap-2">
+        <legend class="font-label-md text-label-md text-text-primary mb-1.5">Klasskod</legend>
+        <div class="flex flex-wrap gap-2">${codeModes.map(([v, l], k) => `
+          <label class="${pill}"><input type="radio" name="codemode" value="${v}" ${k === 0 ? 'checked' : ''} class="sr-only"/>${l}</label>`).join('')}
+        </div>
+        <div data-own-code hidden><div class="flex flex-col gap-1.5 mt-1">
+          <label for="cf-code-${id}" class="sr-only">Egen klasskod</label>
+          <input id="cf-code-${id}" name="code" maxlength="16" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="T.ex. EKONOMI-21B" class="${field} uppercase tracking-wider placeholder:normal-case placeholder:tracking-normal"/>
+          <p class="font-caption-micro text-caption-micro text-text-tertiary">6–16 tecken: bokstäver A–Z, siffror och bindestreck. Välj något som är svårt att gissa.</p>
+        </div></div>
+      </fieldset>
+      <div class="flex flex-col gap-1.5">
+        <label for="cf-max-${id}" class="font-label-md text-label-md text-text-primary">Antal elever</label>
+        <div class="flex items-center gap-2">
+          <button type="button" data-step="-1" aria-label="En elev färre" class="w-11 h-11 shrink-0 rounded-xl border border-border-subtle bg-surface-card hover:bg-surface-subdued text-text-primary flex items-center justify-center disabled:opacity-40"><span class="material-symbols-outlined text-[20px]">remove</span></button>
+          <input id="cf-max-${id}" name="max" type="number" inputmode="numeric" min="${MAX_MIN}" max="${MAX_MAX}" value="${max}" class="w-20 h-11 px-2 rounded-xl border border-border-subtle bg-surface-card text-center font-headline-3 text-headline-3 text-text-primary focus:outline-none focus:border-primary-container [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"/>
+          <button type="button" data-step="1" aria-label="En elev till" class="w-11 h-11 shrink-0 rounded-xl border border-border-subtle bg-surface-card hover:bg-surface-subdued text-text-primary flex items-center justify-center disabled:opacity-40"><span class="material-symbols-outlined text-[20px]">add</span></button>
+        </div>
+        <p class="font-caption-micro text-caption-micro text-text-tertiary">Så många elever kan gå med med koden. Du kan ändra det senare.</p>
+      </div>
+      <fieldset class="flex flex-col gap-2">
+        <legend class="font-label-md text-label-md text-text-primary mb-1.5">Klassens logga</legend>
+        <div class="grid grid-cols-3 sm:grid-cols-5 gap-2">${CLASS_LOGOS.map(l => `
+          <label class="flex flex-col items-center gap-1.5 p-2 rounded-xl border-2 border-transparent cursor-pointer hover:bg-surface-subdued transition-colors has-[:checked]:border-primary-container has-[:checked]:bg-primary-tint has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-primary-container">
+            <input type="radio" name="logo" value="${l.key}" ${l.key === logo ? 'checked' : ''} class="sr-only"/>
+            ${classLogoSvg(l.key, 44)}
+            <span class="font-caption-micro text-caption-micro text-text-secondary text-center">${l.label}</span>
+          </label>`).join('')}
+        </div>
+      </fieldset>
+      <div class="flex flex-col sm:flex-row sm:items-center gap-3">
+        <button type="submit" class="${btnPrimary} sm:self-start"><span class="material-symbols-outlined text-[18px]">${edit ? 'check' : 'add'}</span>${edit ? 'Spara ändringar' : 'Skapa klass'}</button>
+        <p data-create-msg class="font-body-regular text-[14px] text-critical-danger hidden" role="status"></p>
+      </div>
+    </form>`;
+  };
+
+  function bindClassForm(form, onDone) {
+    const own = form.querySelector('[data-own-code]');
+    const maxInput = form.max;
+    const clamp = v => Math.min(MAX_MAX, Math.max(MAX_MIN, Number.isFinite(v) ? Math.round(v) : 30));
+    const syncSteps = () => {
+      const v = Number(maxInput.value);
+      form.querySelector('[data-step="-1"]').disabled = v <= MAX_MIN;
+      form.querySelector('[data-step="1"]').disabled = v >= MAX_MAX;
+    };
+    form.querySelectorAll('[name=codemode]').forEach(r => r.addEventListener('change', () => {
+      own.hidden = form.codemode.value !== 'own';
+      if (!own.hidden) form.code.focus();
+    }));
+    form.querySelectorAll('[data-step]').forEach(b => b.addEventListener('click', () => {
+      maxInput.value = clamp(Number(maxInput.value) + Number(b.dataset.step));
+      syncSteps();
+    }));
+    maxInput.addEventListener('change', () => { maxInput.value = clamp(Number(maxInput.value)); syncSteps(); });
+    maxInput.addEventListener('input', syncSteps);
+    syncSteps();
+
+    form.addEventListener('submit', async e => {
+      e.preventDefault();
+      const msg = form.querySelector('[data-create-msg]');
+      const fail = text => { msg.textContent = text; msg.classList.remove('hidden'); };
+      msg.classList.add('hidden');
+      const name = form.classname.value.trim();
+      const mode = form.codemode.value;
+      const code = form.code.value.trim().toUpperCase();
+      const max = clamp(Number(maxInput.value));
+      maxInput.value = max;
+      if (!name) { fail('Skriv ett namn på klassen.'); form.classname.focus(); return; }
+      if (mode === 'own' && !/^[A-Z0-9]+(-[A-Z0-9]+)*$/.test(code)) { fail('Koden får bara innehålla bokstäver A–Z, siffror och bindestreck.'); form.code.focus(); return; }
+      if (mode === 'own' && (code.length < 6 || code.length > 16)) { fail('Koden ska vara 6–16 tecken lång.'); form.code.focus(); return; }
+      const btn = form.querySelector('[type=submit]');
+      btn.disabled = true;
+      const classId = form.dataset.classId;
+      const { data: saved, error } = classId
+        ? await sb.rpc('update_class', { p_class_id: classId, p_name: name, p_max_students: max, p_logo: form.logo.value, p_code: mode === 'own' ? code : null, p_random_code: mode === 'random' })
+        : await sb.rpc('create_class', { p_name: name, p_code: mode === 'own' ? code : null, p_max_students: max, p_logo: form.logo.value });
+      if (error) {
+        btn.disabled = false;
+        fail(error.code === 'P0001' ? error.message : 'Det gick inte att spara just nu. Försök igen.');
+        return;
+      }
+      onDone(saved, name);
+    });
+  }
+
+  function openClassSettings(cls) {
+    const overlay = document.createElement('div');
+    overlay.setAttribute('role', 'dialog');
+    overlay.setAttribute('aria-modal', 'true');
+    overlay.setAttribute('aria-labelledby', 'class-settings-title');
+    overlay.style.cssText = 'position:fixed;inset:0;z-index:70;background:rgba(15,23,42,.45);display:flex;align-items:center;justify-content:center;padding:16px';
+    overlay.innerHTML = `
+      <div class="bg-surface-card rounded-2xl shadow-lg w-full p-space-lg md:p-space-xl" style="max-width:560px;max-height:calc(100vh - 32px);overflow:auto">
+        <div class="flex items-center justify-between mb-space-lg">
+          <h2 class="font-headline-2 text-headline-2 text-text-primary" id="class-settings-title">Inställningar för ${escapeHtml(cls.name)}</h2>
+          <button type="button" data-close aria-label="Stäng" class="w-9 h-9 rounded-full hover:bg-surface-subdued flex items-center justify-center text-text-secondary"><span class="material-symbols-outlined text-[20px]">close</span></button>
+        </div>
+        ${classForm('edit', cls)}
+      </div>`;
+    const close = () => { overlay.remove(); document.removeEventListener('keydown', onEsc); };
+    const onEsc = e => { if (e.key === 'Escape') close(); };
+    overlay.addEventListener('click', e => { if (e.target === overlay) close(); });
+    overlay.querySelector('[data-close]').addEventListener('click', close);
+    document.addEventListener('keydown', onEsc);
+    document.body.appendChild(overlay);
+    bindClassForm(overlay.querySelector('[data-class-form]'), async saved => {
+      close();
+      try { state.loaded = await load(); } catch { /* keep old data */ }
+      state.classId = saved?.id || state.classId;
+      render();
+      toast(saved?.join_code && saved.join_code !== cls.join_code ? `Sparat – ny klasskod: ${saved.join_code}` : 'Ändringarna är sparade');
+    });
+    overlay.querySelector('[name=classname]').focus();
+  }
 
   function classView(data, cls) {
     const { lessons, students } = studentsOf(data, cls);
@@ -2094,6 +2233,19 @@ async function initTeacherPage(ctx) {
         <span class="font-label-md text-label-md text-text-primary">${label}</span>
         <span class="font-caption-micro text-caption-micro text-text-tertiary">${sub}</span>
       </div>`;
+    const full = n >= (cls.max_students || 30);
+    const header = `
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-space-md mb-space-md">
+        <div class="flex items-center gap-space-md min-w-0">
+          ${classLogoSvg(cls.logo, 52)}
+          <div class="min-w-0">
+            <h2 class="font-headline-2 text-headline-2 text-text-primary truncate">${escapeHtml(cls.name)}</h2>
+            <p class="font-body-regular text-[14px] text-text-secondary">${n} av ${cls.max_students || 30} platser används</p>
+          </div>
+        </div>
+        <button type="button" data-edit-class="${cls.id}" class="${btnGhost} self-start sm:self-auto"><span class="material-symbols-outlined text-[18px]">tune</span>Inställningar</button>
+      </div>
+      ${full ? `<div class="flex items-start gap-2 rounded-2xl bg-[#FEF3C7] px-space-md py-3 mb-space-md"><span class="material-symbols-outlined text-[20px] text-[#B45309]">info</span><p class="font-body-regular text-[14px] text-[#92400E]">Klassen är full. Nya elever kan inte gå med förrän du höjer antalet under <strong>Inställningar</strong>.</p></div>` : ''}`;
     const codeCard = `
       <div class="bg-primary-container rounded-3xl p-space-lg md:p-space-xl text-on-primary flex flex-col md:flex-row md:items-center justify-between gap-space-md">
         <div>
@@ -2129,6 +2281,7 @@ async function initTeacherPage(ctx) {
         <td class="py-3 font-body-regular text-[14px] text-text-secondary whitespace-nowrap">${shortDate(s.joined)}</td>
       </tr>`).join('');
     return `
+      ${header}
       ${codeCard}
       <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-space-lg">
         ${stat('group', n, n === 1 ? 'elev' : 'elever', 'har gått med i klassen')}
@@ -2194,19 +2347,19 @@ async function initTeacherPage(ctx) {
             <div class="w-11 h-11 shrink-0 rounded-xl bg-primary-tint text-primary-deep flex items-center justify-center"><span class="material-symbols-outlined text-[24px]">group_add</span></div>
             <div>
               <h2 class="font-headline-3 text-headline-3 text-text-primary">Skapa din första klass</h2>
-              <p class="font-body-regular text-[14px] text-text-secondary mt-1">Du får en klasskod som eleverna skriver in. Sedan ser du deras framsteg i lektionerna här.</p>
+              <p class="font-body-regular text-[14px] text-text-secondary mt-1">Välj namn, klasskod, hur många elever som får plats och en logga. Allt går att ändra senare.</p>
             </div>
           </div>
-          <div class="max-w-xl">${createForm('first')}</div>
+          <div class="max-w-xl">${classForm('first')}</div>
         </div>`;
     } else {
-      const tabs = data.classes.map(c => `<button type="button" data-class-tab="${c.id}" class="px-4 py-2 rounded-xl font-label-md text-label-md transition-colors ${c.id === cls.id ? 'bg-primary-container text-on-primary shadow-sm' : 'bg-surface-card text-text-secondary hover:text-text-primary border border-border-subtle'}">${escapeHtml(c.name)}</button>`).join('');
+      const tabs = data.classes.map(c => `<button type="button" data-class-tab="${c.id}" class="inline-flex items-center gap-2 pl-2 pr-4 py-1.5 rounded-xl font-label-md text-label-md transition-colors ${c.id === cls.id ? 'bg-primary-container text-on-primary shadow-sm' : 'bg-surface-card text-text-secondary hover:text-text-primary border border-border-subtle'}">${classLogoSvg(c.logo, 24)}${escapeHtml(c.name)}</button>`).join('');
       body = `
         <div class="flex flex-wrap items-center gap-2 mb-space-md">
           ${tabs}
           <button type="button" data-toggle-create class="${btnGhost}"><span class="material-symbols-outlined text-[18px]">${state.creating ? 'close' : 'add'}</span>${state.creating ? 'Avbryt' : 'Ny klass'}</button>
         </div>
-        ${state.creating ? `<div class="bg-surface-card rounded-2xl shadow-sm p-space-md mb-space-md max-w-xl">${createForm('more')}</div>` : ''}
+        ${state.creating ? `<div class="bg-surface-card rounded-3xl shadow-sm p-space-lg md:p-space-xl mb-space-xl max-w-xl"><h2 class="font-headline-3 text-headline-3 text-text-primary mb-space-md">Ny klass</h2>${classForm('more')}</div>` : ''}
         ${classView(data, cls)}`;
     }
 
@@ -2228,31 +2381,22 @@ async function initTeacherPage(ctx) {
     root.querySelector('[data-toggle-create]')?.addEventListener('click', () => {
       state.creating = !state.creating;
       render();
-      root.querySelector('[data-create-class] input')?.focus();
+      root.querySelector('[data-class-form] [name=classname]')?.focus();
     });
     root.querySelectorAll('[data-copy-code]').forEach(b => b.addEventListener('click', async () => {
       try { await navigator.clipboard.writeText(b.dataset.copyCode); toast('Klasskoden är kopierad'); }
       catch { toast(`Klasskoden: ${b.dataset.copyCode}`); }
     }));
-    root.querySelectorAll('[data-create-class]').forEach(form => form.addEventListener('submit', async e => {
-      e.preventDefault();
-      const msg = form.parentElement.querySelector('[data-create-msg]');
-      const name = form.classname.value.trim();
-      const fail = text => { msg.textContent = text; msg.classList.remove('hidden'); };
-      if (!name) { fail("Skriv ett namn på klassen."); form.classname.focus(); return; }
-      const btn = form.querySelector('button');
-      btn.disabled = true;
-      const { data: created, error } = await sb.rpc('create_class', { p_name: name });
-      if (error) {
-        btn.disabled = false;
-        fail(error.code === 'P0001' ? error.message : 'Det gick inte att skapa klassen just nu. Försök igen.');
-        return;
-      }
+    root.querySelectorAll('[data-class-form]').forEach(form => bindClassForm(form, async (created, name) => {
       state.creating = false;
       try { state.loaded = await load(); } catch { /* keep old data */ }
       state.classId = created?.id || state.classId;
       render();
       toast(`Klassen ${name} är skapad`);
+    }));
+    root.querySelectorAll('[data-edit-class]').forEach(b => b.addEventListener('click', () => {
+      const cls = state.loaded.classes.find(c => c.id === b.dataset.editClass);
+      if (cls) openClassSettings(cls);
     }));
   }
 
@@ -2402,11 +2546,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     sb.from('lessons').select('id, category, order_index, title, description, estimated_minutes, xp_reward, package_id').order('order_index'),
     sb.from('user_lesson_progress').select('lesson_id, status, current_step, quiz_score, updated_at, completed_at').eq('user_id', user.id),
     APP_ROLE === 'student'
-      ? sb.from('class_members').select('class_id, joined_at, classes(id, name, package_id, schools(name))').eq('user_id', user.id)
+      ? sb.from('class_members').select('class_id, joined_at, classes(id, name, package_id, logo, schools(name))').eq('user_id', user.id)
       : Promise.resolve({ data: [] }),
   ]);
   const classes = (memberships || []).filter(m => m.classes).map(m => ({
-    id: m.classes.id, name: m.classes.name, package_id: m.classes.package_id,
+    id: m.classes.id, name: m.classes.name, package_id: m.classes.package_id, logo: m.classes.logo,
     school: m.classes.schools?.name || '', joined_at: m.joined_at,
   }));
   CLASS_PACKAGES = new Set(classes.map(c => c.package_id).filter(Boolean));
