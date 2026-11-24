@@ -79,5 +79,7 @@ Inställningar). Students and teachers delete their own account in Inställninga
 their e-mail over a faint grey copy of it, then RPC `request_account_deletion(p_email)` adds a row to
 `account_deletions` (delete_after = now + 30 days). They can undo with `cancel_account_deletion()` until then.
 The daily pg_cron job `purge-account-deletions` runs `purge_due_account_deletions()`, which deletes due users
-from `auth.users` (all user data cascades; admins are never deleted). Keep the policy in sync when adding new
-personal data, trackers or sub-processors.
+from `auth.users` (all user data cascades; admins are never deleted). A second daily job,
+`purge-inactive-accounts` → `purge_inactive_accounts()`, deletes non-admin accounts not used for two years
+(latest of sign-in, profile activity, session refresh and creation), as the policy promises. Keep the policy
+in sync when adding new personal data, trackers or sub-processors.
