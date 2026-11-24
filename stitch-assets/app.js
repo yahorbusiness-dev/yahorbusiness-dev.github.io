@@ -573,8 +573,9 @@ async function renderDashboard(data) {
 // class's package lessons with status.
 function classSectionHtml(data, statusOf) {
   const classes = data.classes || [];
-  const joinForm = (compact) => `
-    <form data-join-class class="flex flex-col sm:flex-row gap-2 ${compact ? '' : 'mt-space-md'}" novalidate>
+  // A student can be in one class only, so the form is shown only before joining
+  const joinForm = () => `
+    <form data-join-class class="flex flex-col sm:flex-row gap-2" novalidate>
       <label class="sr-only" for="join-code">Klasskod</label>
       <input id="join-code" name="code" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="20" placeholder="T.ex. KLASS-7K2M" class="flex-1 min-w-0 px-4 py-3 rounded-xl border border-border-subtle bg-surface-card font-body-regular text-body-regular uppercase tracking-wider placeholder:normal-case placeholder:tracking-normal focus:outline-none focus:border-primary-container"/>
       <button type="submit" class="inline-flex items-center justify-center gap-1.5 px-6 py-3 rounded-xl bg-primary-container hover:bg-primary-deep text-on-primary font-label-md text-label-md transition-all shadow-sm">Gå med<span class="material-symbols-outlined text-[18px]">arrow_forward</span></button>
@@ -591,7 +592,7 @@ function classSectionHtml(data, statusOf) {
             <p class="font-body-regular text-[14px] text-text-secondary mt-1">Har du fått en klasskod av din lärare? Skriv in den här så får du klassens lektioner.</p>
           </div>
         </div>
-        <div class="md:flex-1">${joinForm(true)}</div>
+        <div class="md:flex-1">${joinForm()}</div>
       </div>`;
   }
 
@@ -636,10 +637,6 @@ function classSectionHtml(data, statusOf) {
   return `
     <div class="flex flex-col gap-4 mb-space-xl">
       ${cards}
-      <details class="group">
-        <summary class="inline-flex items-center gap-1 cursor-pointer font-label-md text-[13px] text-text-secondary hover:text-text-primary list-none"><span class="material-symbols-outlined text-[18px]">add</span>Gå med i en till klass</summary>
-        <div class="max-w-lg">${joinForm(false)}</div>
-      </details>
     </div>`;
 }
 
@@ -2278,7 +2275,8 @@ async function initTeacherPage(ctx) {
           ${s.status.map(st => `<span class="w-4 h-1.5 rounded-full ${dot(st)}"></span>`).join('')}
           <span class="ml-2 font-caption-micro text-caption-micro text-text-secondary">${s.completed}/${lessons.length}</span></div></td>
         <td class="py-3 pr-4 font-body-regular text-[14px] text-text-secondary whitespace-nowrap">${lastActive(s.lastActiveDays)}</td>
-        <td class="py-3 font-body-regular text-[14px] text-text-secondary whitespace-nowrap">${shortDate(s.joined)}</td>
+        <td class="py-3 pr-4 font-body-regular text-[14px] text-text-secondary whitespace-nowrap">${shortDate(s.joined)}</td>
+        <td class="py-3 text-right"><button type="button" data-remove-student="${s.id}" data-student-name="${escapeHtml(s.name)}" aria-label="Ta bort ${escapeHtml(s.name)} ur klassen" title="Ta bort ur klassen" class="w-9 h-9 inline-flex items-center justify-center rounded-full text-text-tertiary hover:text-critical-danger hover:bg-[#FEF2F2] transition-colors"><span class="material-symbols-outlined text-[20px]">person_remove</span></button></td>
       </tr>`).join('');
     return `
       ${header}
@@ -2299,7 +2297,7 @@ async function initTeacherPage(ctx) {
         <div class="bg-surface-card rounded-2xl shadow-sm px-space-lg py-2 overflow-x-auto">
           <table class="w-full text-left">
             <thead><tr class="font-caption-micro text-caption-micro text-text-tertiary uppercase tracking-wide">
-              <th class="py-3 pr-4 font-semibold">Elev</th><th class="py-3 pr-4 font-semibold">Lektioner</th><th class="py-3 pr-4 font-semibold">Senast aktiv</th><th class="py-3 font-semibold">Gick med</th>
+              <th class="py-3 pr-4 font-semibold">Elev</th><th class="py-3 pr-4 font-semibold">Lektioner</th><th class="py-3 pr-4 font-semibold">Senast aktiv</th><th class="py-3 pr-4 font-semibold">Gick med</th><th class="py-3 relative"><span class="sr-only">Ta bort</span></th>
             </tr></thead>
             <tbody>${rows}</tbody>
           </table>
@@ -2398,6 +2396,53 @@ async function initTeacherPage(ctx) {
       const cls = state.loaded.classes.find(c => c.id === b.dataset.editClass);
       if (cls) openClassSettings(cls);
     }));
+    root.querySelectorAll('[data-remove-student]').forEach(b => b.addEventListener('click', () => {
+      const cls = state.loaded.classes.find(c => c.id === state.classId);
+      if (cls) confirmRemoveStudent(cls, b.dataset.removeStudent, b.dataset.studentName);
+    }));
+  }
+
+  // Removing a student only ends their class membership; their own account and
+  // progress stay. They can then join another class with a code.
+  function confirmRemoveStudent(cls, userId, name) {
+    const overlay = document.createElement('div');
+    overlay.setAttribute('role', 'dialog');
+    overlay.setAttribute('aria-modal', 'true');
+    overlay.setAttribute('aria-labelledby', 'remove-student-title');
+    overlay.style.cssText = 'position:fixed;inset:0;z-index:70;background:rgba(15,23,42,.45);display:flex;align-items:center;justify-content:center;padding:16px';
+    overlay.innerHTML = `
+      <div class="bg-surface-card rounded-2xl shadow-lg w-full p-space-lg md:p-space-xl" style="max-width:420px">
+        <h2 class="font-headline-2 text-headline-2 text-text-primary" id="remove-student-title">Ta bort ${escapeHtml(name)}?</h2>
+        <p class="font-body-regular text-body-regular text-text-secondary mt-2">${escapeHtml(name)} tas bort ur ${escapeHtml(cls.name)} och ser inte längre klassens lektioner. Elevens eget konto finns kvar. Byt gärna klasskod under <strong class="text-text-primary">Inställningar</strong> om koden har spridits.</p>
+        <p data-remove-msg class="hidden mt-2 font-body-regular text-[14px] text-critical-danger" role="status"></p>
+        <div class="flex flex-wrap justify-end gap-2 mt-space-lg">
+          <button type="button" data-cancel class="${btnGhost}">Avbryt</button>
+          <button type="button" data-ok class="inline-flex items-center justify-center gap-1.5 px-5 py-2.5 rounded-xl bg-critical-danger hover:opacity-90 text-on-primary font-label-md text-label-md transition-opacity disabled:opacity-60"><span class="material-symbols-outlined text-[18px]">person_remove</span>Ta bort ur klassen</button>
+        </div>
+      </div>`;
+    const close = () => { overlay.remove(); document.removeEventListener('keydown', onEsc); };
+    const onEsc = e => { if (e.key === 'Escape') close(); };
+    overlay.addEventListener('click', e => { if (e.target === overlay) close(); });
+    overlay.querySelector('[data-cancel]').addEventListener('click', close);
+    overlay.querySelector('[data-ok]').addEventListener('click', async e => {
+      const btn = e.currentTarget;
+      btn.disabled = true;
+      const { error } = await sb.rpc('remove_class_member', { p_class_id: cls.id, p_user_id: userId });
+      if (error) {
+        btn.disabled = false;
+        const msg = overlay.querySelector('[data-remove-msg]');
+        msg.textContent = error.code === 'P0001' ? error.message : 'Det gick inte att ta bort eleven just nu. Försök igen.';
+        msg.classList.remove('hidden');
+        return;
+      }
+      close();
+      try { state.loaded = await load(); } catch { /* keep old data */ }
+      render();
+      toast(`${name} är borttagen ur klassen`);
+    });
+    document.addEventListener('keydown', onEsc);
+    document.body.appendChild(overlay);
+    overlay.querySelector('[data-cancel]').focus();
   }
 
   try {

@@ -36,6 +36,9 @@ Edge Function (`supabase/functions/admin/`) checks that on every request.
   `update_class(...)` ("Inställningar" on the class). Students join via `join_class(code)`, which
   refuses when the class is full (`classes.max_students`) and after 10 wrong codes per hour
   (`class_join_attempts`); a wrong code returns `{error}` instead of raising so the attempt is kept.
+  A student can be in one class only (unique index on `class_members.user_id`; joining another class
+  is refused). Teachers remove a student with `remove_class_member(class_id, user_id)` (person icon in
+  the students table); the student keeps their account and can then join another class.
   RLS lets a teacher read only their own students' profiles and progress.
 - Class logos: five brand-style SVGs in `CLASS_LOGOS` (`stitch-assets/app.js`), keys
   tillvaxt/spara/mal/budget/laget (`classes.logo`, check constraint).
