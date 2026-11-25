@@ -639,7 +639,7 @@ footer {
 .footer-bottom-link:hover { color: var(--gray-400); }
 </style>
  <!-- Supabase SDK -->
- <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+ <script src="stitch-assets/vendor/supabase-js-2.45.4/supabase.min.js"></script>
  <script>
  const SUPABASE_URL = 'https://fkluryozbgpyoatxhcyd.supabase.co';
  const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZrbHVyeW96YmdweW9hdHhoY3lkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU1MzczMTQsImV4cCI6MjA5MTExMzMxNH0.40alZoxjQc85qfCrmZAL_-egqqPvLTi82ZKXhnzMCzs';
@@ -1433,9 +1433,10 @@ async function handleNewsletter() {
  return;
  }
 
- const { error } = await supabaseClient.from('subscribers').insert({ email });
+ // Goes through a checked database function (format check, duplicates ignored, rate limit)
+ const { error } = await supabaseClient.rpc('newsletter_subscribe', { p_email: email });
 
- if (error && error.code !== '23505') {
+ if (error) {
  input.style.borderColor = 'rgba(244,63,94,0.6)';
  input.placeholder = 'Något gick fel, försök igen.';
  return;

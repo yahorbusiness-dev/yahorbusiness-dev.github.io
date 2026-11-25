@@ -26,6 +26,15 @@ const roleOf = (u: any) => {
   return 'student';
 };
 
+function jwtClaims(token: string): any {
+  try {
+    const part = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+    return JSON.parse(atob(part + '='.repeat((4 - part.length % 4) % 4)));
+  } catch {
+    return {};
+  }
+}
+
 async function allUsers(admin: any) {
   const users: any[] = [];
   for (let page = 1; page < 50; page++) {
@@ -48,6 +57,11 @@ Deno.serve(async (req) => {
   const token = (req.headers.get('Authorization') || '').replace(/^Bearer\s+/i, '');
   const { data: { user: caller } } = await admin.auth.getUser(token);
   if (!caller || caller.app_metadata?.role !== 'admin') return json({ error: 'Endast för admin.' }, 403);
+  // Admins must have passed two-factor authentication (TOTP) in this session.
+  // getUser above verified the token, so its own claims can be trusted here.
+  if (jwtClaims(token).aal !== 'aal2') {
+    return json({ error: 'Tvåstegsverifiering krävs. Logga in igen i adminpanelen.', code: 'mfa_required' }, 403);
+  }
 
   let body: any = {};
   try { body = await req.json(); } catch { /* empty body */ }

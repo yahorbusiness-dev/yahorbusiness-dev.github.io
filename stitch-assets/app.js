@@ -810,16 +810,28 @@ async function initLessonPage(ctx) {
   }
   resetQuiz();
 
-  async function saveProgress(status, currentStep, quizScore) {
+  // The client only saves "in progress"; completion goes through completeLesson
+  async function saveProgress(status, currentStep) {
     if (preview) return;
     const payload = { user_id: user.id, lesson_id: lessonId, status, current_step: currentStep, updated_at: new Date().toISOString() };
-    if (quizScore !== undefined) {
-      payload.quiz_score = quizScore;
-      payload.completed_at = new Date().toISOString();
-    }
     const { error } = await sb.from('user_lesson_progress').upsert(payload);
     if (error) throw error;
   }
+
+  // Completion, quiz grading and XP happen on the server (RPC complete_lesson),
+  // so progress and XP can't be faked from the browser. Answers are sent as the
+  // original option indexes.
+  async function completeLesson() {
+    const picks = quiz.map((_, i) => answers[i]?.chosen ?? -1);
+    const { data, error } = await sb.rpc('complete_lesson', { p_lesson_id: lessonId, p_answers: picks });
+    if (error) throw error;
+    if (data?.profile) {
+      Object.assign(profile, data.profile);
+      renderSidebarChrome(profile); // refresh XP / streak in the header right away
+    }
+    return data || {};
+  }
+  const TOO_FAST = 'Det gick lite för fort. Ta dig tid att läsa igenom lektionen och försök igen om en stund.';
 
   // Step progress is saved in the background so "Nästa" never waits on the network
   function saveInBackground(status, currentStep) {
@@ -840,25 +852,6 @@ async function initLessonPage(ctx) {
     el.hidden = false;
     clearTimeout(el._t);
     el._t = setTimeout(() => { el.hidden = true; }, 5000);
-  }
-
-  async function awardCompletion(score) {
-    if (alreadyCompleted || preview) return; // no double XP on retakes, none in teacher preview
-    const today = new Date().toISOString().slice(0, 10);
-    const sameDay = profile.last_active_date === today;
-    const newStreak = sameDay ? profile.streak_days : (isYesterday(profile.last_active_date) ? profile.streak_days + 1 : 1);
-    const update = {
-      xp: profile.xp + lesson.xp_reward,
-      streak_days: newStreak,
-      best_streak_days: Math.max(profile.best_streak_days || 0, newStreak),
-      last_active_date: today,
-      minutes_today: sameDay ? profile.minutes_today + lesson.estimated_minutes : lesson.estimated_minutes,
-      updated_at: new Date().toISOString(),
-    };
-    const { error } = await sb.from('profiles').update(update).eq('id', user.id);
-    if (error) throw error;
-    Object.assign(profile, update);
-    renderSidebarChrome(profile); // refresh XP / streak in the header right away
   }
 
   // Legacy lesson bodies link onward via onclick="openLektion('id')"; disable
@@ -924,22 +917,29 @@ async function initLessonPage(ctx) {
   async function finishWithoutQuiz() {
     if (saving) return;
     const btn = document.getElementById('lesson-next');
-    const earnedXp = !alreadyCompleted && !preview;
-    if (!alreadyCompleted) {
+    let earnedXp = false;
+    if (!alreadyCompleted && !preview) {
       saving = true;
       btn.disabled = true;
       btn.textContent = 'Sparar…';
+      let res;
       try {
-        await saveProgress('completed', steps.length, 100);
-        await awardCompletion(100);
+        res = await completeLesson();
       } catch (err) {
         saving = false;
         btn.disabled = false;
         btn.textContent = 'Försök igen';
-        toast('Kunde inte spara. Kontrollera din uppkoppling och försök igen.');
+        toast(err?.code === 'P0001' ? err.message : 'Kunde inte spara. Kontrollera din uppkoppling och försök igen.');
         return;
       }
       saving = false;
+      if (!res.passed) {
+        btn.disabled = false;
+        btn.textContent = 'Slutför lektionen';
+        toast(TOO_FAST);
+        return;
+      }
+      earnedXp = res.xp_awarded > 0;
     }
     alreadyCompleted = true;
     renderDone(100, earnedXp);
@@ -1007,18 +1007,29 @@ async function initLessonPage(ctx) {
         btn.disabled = true;
         btn.textContent = 'Sparar…';
         saving = true;
-        try {
-          await saveProgress('completed', steps.length, score);
-          await awardCompletion(score);
-        } catch (err) {
-          saving = false;
-          btn.disabled = false;
-          btn.textContent = 'Försök igen';
-          toast('Kunde inte spara resultatet. Kontrollera din uppkoppling och försök igen.');
-          return;
+        let earnedXp = false;
+        if (!preview) {
+          let res;
+          try {
+            res = await completeLesson();
+          } catch (err) {
+            saving = false;
+            btn.disabled = false;
+            btn.textContent = 'Försök igen';
+            toast(err?.code === 'P0001' ? err.message : 'Kunde inte spara resultatet. Kontrollera din uppkoppling och försök igen.');
+            return;
+          }
+          if (res.too_fast) {
+            saving = false;
+            btn.disabled = false;
+            btn.textContent = 'Se resultat';
+            toast(TOO_FAST);
+            return;
+          }
+          if (!res.passed) { saving = false; renderDone(res.score, false); return; }
+          earnedXp = res.xp_awarded > 0;
         }
         saving = false;
-        const earnedXp = !alreadyCompleted && !preview;
         alreadyCompleted = true;
         renderDone(score, earnedXp);
       }

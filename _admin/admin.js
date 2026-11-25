@@ -820,6 +820,106 @@ function renderLogin(message) {
   });
 }
 
+// ---------------------------------------------------------------------
+// Tvåstegsverifiering: first time, enrol an authenticator app (QR code);
+// after that, a 6-digit code is asked for after every password sign-in.
+// Returns true when this session is verified (aal2).
+// ---------------------------------------------------------------------
+async function ensureMfa(user) {
+  const { data: aal } = await sb.auth.mfa.getAuthenticatorAssuranceLevel();
+  if (aal?.currentLevel === 'aal2') return true;
+  const { data: factors, error } = await sb.auth.mfa.listFactors();
+  if (error) { renderLogin('Kunde inte kontrollera tvåstegsverifieringen. Logga in igen.'); await forceSignOut(); return false; }
+  const verified = (factors?.totp || []).find(f => f.status === 'verified');
+  if (verified) renderMfaCode(user, verified.id);
+  else await renderMfaEnroll(user, factors?.all || []);
+  return false;
+}
+
+function mfaShell(title, lead, inner) {
+  document.getElementById('hdr-avatar').style.display = 'none';
+  const root = document.getElementById('admin-root');
+  root.innerHTML = `
+    <div class="max-w-md mx-auto bg-surface-card rounded-2xl shadow-lg p-space-xl">
+      <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-text-primary text-on-primary text-[11px] font-semibold uppercase tracking-wide"><span class="material-symbols-outlined text-[14px]">verified_user</span>Tvåstegsverifiering</span>
+      <h1 class="font-headline-2 text-headline-2 text-text-primary mt-3">${title}</h1>
+      <p class="font-body-regular text-[14px] text-text-secondary mt-1">${lead}</p>
+      ${inner}
+      <button type="button" data-mfa-cancel class="mt-space-md w-full font-label-md text-label-md text-text-secondary hover:text-text-primary">Avbryt och logga ut</button>
+    </div>`;
+  root.querySelector('[data-mfa-cancel]').addEventListener('click', async () => { await forceSignOut(); location.reload(); });
+  return root;
+}
+
+const mfaCodeForm = `
+  <form data-mfa-form class="flex flex-col gap-space-md mt-space-lg" novalidate>
+    <label class="flex flex-col gap-1.5 font-label-md text-label-md text-text-secondary">Kod från appen
+      <input name="code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]{6}" placeholder="123456" class="w-full px-4 py-3 rounded-xl border border-border-subtle bg-surface-subdued/50 font-headline-3 text-headline-3 tracking-[0.3em] text-center text-text-primary focus:outline-none focus:ring-2 focus:ring-primary-container"/></label>
+    <p data-mfa-error class="hidden text-[13px] text-critical-danger font-body-medium" role="status"></p>
+    <button type="submit" class="w-full px-6 py-3.5 rounded-xl bg-text-primary hover:opacity-90 text-on-primary font-label-md text-label-md transition-all disabled:opacity-60">Verifiera</button>
+  </form>`;
+
+function bindMfaForm(root, factorId) {
+  const form = root.querySelector('[data-mfa-form]');
+  const err = root.querySelector('[data-mfa-error]');
+  form.code.focus();
+  form.code.addEventListener('input', () => { form.code.value = form.code.value.replace(/\D/g, '').slice(0, 6); });
+  form.addEventListener('submit', async e => {
+    e.preventDefault();
+    const code = form.code.value.trim();
+    if (!/^\d{6}$/.test(code)) { err.textContent = 'Skriv de 6 siffrorna från appen.'; err.classList.remove('hidden'); return; }
+    const btn = form.querySelector('[type=submit]');
+    btn.disabled = true;
+    const { error } = await sb.auth.mfa.challengeAndVerify({ factorId, code });
+    if (error) {
+      btn.disabled = false;
+      err.textContent = /invalid|expired/i.test(error.message) ? 'Fel kod eller för gammal kod. Försök med den som visas nu.' : error.message;
+      err.classList.remove('hidden');
+      form.code.select();
+      return;
+    }
+    location.reload();
+  });
+}
+
+function renderMfaCode(user, factorId) {
+  const root = mfaShell('Skriv in koden', `Öppna din kodapp och skriv in den 6-siffriga koden för UngEkonom (${esc(user.email)}).`, mfaCodeForm);
+  bindMfaForm(root, factorId);
+}
+
+async function renderMfaEnroll(user, allFactors) {
+  // Remove half-finished enrolments so a new one can start
+  for (const f of allFactors.filter(f => f.status !== 'verified')) {
+    try { await sb.auth.mfa.unenroll({ factorId: f.id }); } catch (err) { /* ignore */ }
+  }
+  const { data, error } = await sb.auth.mfa.enroll({ factorType: 'totp', friendlyName: `UngEkonom admin ${new Date().toISOString().slice(0, 10)}` });
+  if (error) {
+    mfaShell('Tvåstegsverifiering', `Det gick inte att starta: ${esc(error.message)}`, '');
+    return;
+  }
+  const qr = String(data.totp.qr_code || '');
+  const root = mfaShell('Slå på tvåstegsverifiering',
+    'Adminkonton måste ha tvåstegsverifiering. Skanna QR-koden med en kodapp (t.ex. Google Authenticator, Microsoft Authenticator eller 1Password) och skriv in koden som visas.',
+    `<div class="mt-space-lg flex flex-col items-center gap-space-sm">
+      <img data-mfa-qr alt="QR-kod för kodappen" width="200" height="200" class="w-[200px] h-[200px] rounded-xl border border-border-subtle bg-white p-2"/>
+      <details class="w-full">
+        <summary class="cursor-pointer font-label-md text-[13px] text-text-secondary hover:text-text-primary text-center">Kan du inte skanna? Visa koden</summary>
+        <p class="mt-2 font-body-regular text-[13px] text-text-secondary text-center">Lägg till manuellt med den här nyckeln:</p>
+        <p class="mt-1 font-label-md text-[14px] text-text-primary text-center break-all select-all tracking-wider">${esc(data.totp.secret)}</p>
+      </details>
+    </div>
+    ${mfaCodeForm}`);
+  // qr_code is an SVG, either raw markup or a data URL with unescaped markup
+  // (characters like # break it), so re-encode it unless it is base64
+  let qrSrc = qr;
+  if (!/;base64,/.test(qr)) {
+    const svg = qr.startsWith('data:') ? qr.slice(qr.indexOf(',') + 1) : qr;
+    qrSrc = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+  }
+  root.querySelector('[data-mfa-qr]').src = qrSrc;
+  bindMfaForm(root, data.id);
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
   const { data: { session } } = await sb.auth.getSession();
   let user = session?.user;
@@ -838,6 +938,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     renderLogin('Det här kontot har inte admin-behörighet.');
     return;
   }
+  // Two-factor authentication (TOTP) is required: the admin Edge Function
+  // refuses sessions that haven't reached aal2.
+  if (!(await ensureMfa(user))) return;
   renderAccountMenu(user);
   initShell(user);
 });
