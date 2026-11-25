@@ -15,6 +15,10 @@ session. When the user asks to open the admin panel ("öppna adminpanelen"):
 2. Report port 8787 as the preview port so the page opens in the Claude app.
 3. The user logs in with their admin account on the panel's own login form.
 
+**Temporarily** it is also published at `/admin.html` for testing (`_config.yml`
+includes `_admin`; `admin.html` loads `_admin/admin.js`). To make it local-only
+again, delete `admin.html` and the `include` in `_config.yml`.
+
 Only accounts with `app_metadata.role = 'admin'` can use it, and the `admin`
 Edge Function (`supabase/functions/admin/`) checks that on every request.
 
