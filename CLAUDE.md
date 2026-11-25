@@ -20,7 +20,11 @@ includes `_admin`; `admin.html` loads `_admin/admin.js`). To make it local-only
 again, delete `admin.html` and the `include` in `_config.yml`.
 
 Only accounts with `app_metadata.role = 'admin'` can use it, and the `admin`
-Edge Function (`supabase/functions/admin/`) checks that on every request.
+Edge Function (`supabase/functions/admin/`) checks that on every request. Admins also
+need two-factor authentication (TOTP): the panel enrols an authenticator app on first
+sign-in and asks for a code after each password sign-in; the function refuses JWTs whose
+`aal` claim isn't `aal2`. A lost phone is fixed in the Supabase dashboard (Authentication →
+Users → remove the MFA factor).
 
 ## Roles
 
@@ -63,6 +67,18 @@ Edge Function (`supabase/functions/admin/`) checks that on every request.
 - Package lessons `barnbyar-1..5` have draft content (3 steps + 3 quiz questions each), see
   `supabase/migrations/20261122_test_lektion_content.sql`. Teachers can read students' progress only
   for package lessons (RLS).
+
+## Säkerhet
+
+- supabase-js is self-hosted and pinned: `stitch-assets/vendor/supabase-js-2.45.4/supabase.min.js`
+  (no third-party CDN scripts on any page).
+- Lessons are completed only via RPC `complete_lesson(lesson_id, answers[])`: it grades the quiz
+  from the original option indexes, requires class membership for package lessons, a minimum
+  time since `user_lesson_progress.started_at`, and awards XP/streak once. Clients may only
+  write `in_progress` rows (column grants + RLS) and only `display_name`/`daily_goal_minutes` in
+  `profiles`.
+- Newsletter sign-ups go through RPC `newsletter_subscribe(email)` (format check, dedupe, global
+  rate limit); direct inserts into `subscribers` are not allowed.
 
 ## Lösenord
 
