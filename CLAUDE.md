@@ -24,7 +24,9 @@ Edge Function (`supabase/functions/admin/`) checks that on every request. Admins
 need two-factor authentication (TOTP): the panel enrols an authenticator app on first
 sign-in and asks for a code after each password sign-in; the function refuses JWTs whose
 `aal` claim isn't `aal2`. A lost phone is fixed in the Supabase dashboard (Authentication →
-Users → remove the MFA factor).
+Users → remove the MFA factor). Deploy the site and the `admin` function together: the function's
+aal2 check refuses an older panel that can't do MFA ("Tvåstegsverifiering krävs"), so if the GitHub
+Pages deploy lags, the live panel is locked out until it lands.
 
 ## Roles
 
