@@ -31,7 +31,7 @@
 </div>
 <div class="flex flex-col gap-1.5">
 <div class="flex items-center justify-between gap-2"><label class="font-label-md text-label-md text-text-secondary" for="password">Lösenord</label><button class="font-label-md text-[13px] text-primary-container hover:underline" id="forgot-link" type="button">Glömt lösenord?</button></div>
-<input autocomplete="current-password" class="w-full px-4 py-3 rounded-xl border border-border-subtle bg-surface-subdued/50 font-body-regular text-body-regular focus:outline-none focus:ring-2 focus:ring-primary-container transition-all" id="password" minlength="6" placeholder="Minst 6 tecken" required type="password"/>
+<input autocomplete="current-password" class="w-full px-4 py-3 rounded-xl border border-border-subtle bg-surface-subdued/50 font-body-regular text-body-regular focus:outline-none focus:ring-2 focus:ring-primary-container transition-all" id="password" placeholder="Ditt lösenord" required type="password"/>
 </div>
 
 <div class="flex justify-center min-h-[78px]" id="captcha-login"></div>
@@ -155,6 +155,10 @@ function setMode(next) {
     nameField.classList.add('flex');
     submitBtn.textContent = 'Skapa konto';
   }
+  const pwField = document.getElementById('password');
+  if (mode === 'login') pwField.removeAttribute('minlength'); else pwField.minLength = 8;
+  pwField.placeholder = mode === 'login' ? 'Ditt lösenord' : 'Minst 8 tecken';
+  pwField.autocomplete = mode === 'login' ? 'current-password' : 'new-password';
   document.getElementById('forgot-link').hidden = mode !== 'login';
   errorEl.classList.add('hidden');
   infoEl.classList.add('hidden');
@@ -223,9 +227,12 @@ form.addEventListener('submit', async (e) => {
       'User already registered': 'Det finns redan ett konto med den e-postadressen.',
       'Email not confirmed': 'Bekräfta din e-post först – kolla inkorgen (och skräpposten) efter vårt mejl.',
       'email rate limit exceeded': 'För många försök just nu. Vänta en stund och försök igen.',
-      'Password should be at least 6 characters.': 'Lösenordet måste vara minst 6 tecken.',
     };
-    errorEl.textContent = /captcha/i.test(err.message || '') ? 'Captcha-kontrollen gick inte igenom. Klicka i rutan och försök igen.' : (messages[err.message] || err.message || 'Något gick fel, försök igen.');
+    const msg = err.message || '';
+    errorEl.textContent = /captcha/i.test(msg) ? 'Captcha-kontrollen gick inte igenom. Klicka i rutan och försök igen.'
+      : /at least \d+ characters/i.test(msg) ? 'Lösenordet måste vara minst 8 tecken.'
+      : /pwned|leaked|compromised/i.test(msg) ? 'Det lösenordet har läckt i ett dataintrång. Välj ett annat.'
+      : (messages[msg] || msg || 'Något gick fel, försök igen.');
     errorEl.classList.remove('hidden');
   } finally {
     submitBtn.disabled = false;

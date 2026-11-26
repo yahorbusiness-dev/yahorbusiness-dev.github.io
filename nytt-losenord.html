@@ -27,11 +27,11 @@
 </div>
 <div class="flex flex-col gap-1.5">
 <label class="font-label-md text-label-md text-text-secondary" for="new-password">Nytt lösenord</label>
-<input autocomplete="new-password" class="w-full px-4 py-3 rounded-xl border border-border-subtle bg-surface-subdued/50 font-body-regular text-body-regular focus:outline-none focus:ring-2 focus:ring-primary-container transition-all" id="new-password" minlength="6" placeholder="Minst 6 tecken" required type="password"/>
+<input autocomplete="new-password" class="w-full px-4 py-3 rounded-xl border border-border-subtle bg-surface-subdued/50 font-body-regular text-body-regular focus:outline-none focus:ring-2 focus:ring-primary-container transition-all" id="new-password" minlength="8" placeholder="Minst 8 tecken" required type="password"/>
 </div>
 <div class="flex flex-col gap-1.5">
 <label class="font-label-md text-label-md text-text-secondary" for="repeat-password">Upprepa lösenordet</label>
-<input autocomplete="new-password" class="w-full px-4 py-3 rounded-xl border border-border-subtle bg-surface-subdued/50 font-body-regular text-body-regular focus:outline-none focus:ring-2 focus:ring-primary-container transition-all" id="repeat-password" minlength="6" required type="password"/>
+<input autocomplete="new-password" class="w-full px-4 py-3 rounded-xl border border-border-subtle bg-surface-subdued/50 font-body-regular text-body-regular focus:outline-none focus:ring-2 focus:ring-primary-container transition-all" id="repeat-password" minlength="8" required type="password"/>
 </div>
 <p id="form-error" class="hidden text-[13px] text-critical-danger font-body-medium"></p>
 <button class="w-full mt-2 px-6 py-3.5 rounded-xl bg-primary-container hover:bg-primary-deep text-on-primary font-label-md text-label-md transition-all shadow-sm disabled:opacity-60 disabled:cursor-not-allowed" id="save-btn" type="submit">Spara nytt lösenord</button>
@@ -130,9 +130,8 @@ document.getElementById('state-form').addEventListener('submit', async (e) => {
   if (error) {
     const messages = {
       'New password should be different from the old password.': 'Välj ett annat lösenord än det gamla.',
-      'Password should be at least 6 characters.': 'Lösenordet måste vara minst 6 tecken.',
     };
-    errorEl.textContent = messages[error.message] || (/pwned|leaked|compromised/i.test(error.message) ? 'Det lösenordet har läckt i ett dataintrång. Välj ett annat.' : error.message);
+    errorEl.textContent = messages[error.message] || (/at least \d+ characters/i.test(error.message) ? 'Lösenordet måste vara minst 8 tecken.' : null) || (/pwned|leaked|compromised/i.test(error.message) ? 'Det lösenordet har läckt i ett dataintrång. Välj ett annat.' : error.message);
     errorEl.classList.remove('hidden');
     return;
   }
